@@ -159,7 +159,7 @@ The fundamental concepts behind this paper inspired our research. We develop our
  
 ### Other tasks solved
 
-Besides Atari games, we have also used our theory to solve different continous control environments involving task such as:
+Besides Atari games, we have also used our theory to solve different continuous control environments involving task such as:
 
 - **Collecting rocks with a spaceship** ([Video](https://www.youtube.com/watch?v=HLbThk624jI) and [blog post](http://entropicai.blogspot.com.es/2016/04/understanding-mining-example.html)): 
     This agent can catch rocks using a hook that behaves like an elastic band. We are capable of sampling low  probability trajectories in such chaotic space state.
@@ -186,7 +186,8 @@ We cannot provide any formal proof about this algorithm, because we don't know a
  
  Any suggestion about how to prove our conjectures will be welcome. This list is non-exhaustive and it will be updated.
  
- **State Swarm**: Structure consisting of different states that interact with each other in order to build a cusal cone. The agent uses a Swarm to build a causal cone used to approximate the Q values of each action.
+ **State Swarm**: Structure consisting of different states that interact with each other in order to build a causal cone. 
+ The agent uses a Swarm to build a causal cone used to approximate the Q values of each action.
  
 - ***It is possible to prove that this algorithm is unprovable with any known mathematical tools.***
 
@@ -203,7 +204,8 @@ We cannot provide any formal proof about this algorithm, because we don't know a
   If we fix all the states in the Swarm to share time, states distribution in each slice of the causal cone  will be proportional to its reward density distribution in the limit.
  If we do not fix the time, a Swarm will automatically adjust to also distribute the states symmetrically with respect to the time horizon.
   
-- ***Given a uniform prior, this algorithm will never perform worse than random. And it will only perform randomly when no information is available in the sampled Swarm of states that we can levare to build a more efficient causal cone.*** 
+- ***Given a uniform prior, this algorithm will never perform worse than random. And it will only perform randomly when no information is available in the sampled Swarm of states that
+ we can leverage to build a more efficient causal cone.*** 
 
     Yes, we have read about the No Free Lunch Theorem, and we think this is an exception.
 
@@ -211,7 +213,7 @@ We cannot provide any formal proof about this algorithm, because we don't know a
  
   If we happen to be right, and complexity is better measured using our methods, there would be NP hard problems which should be possible to solve in polynomial time. Our complexity measure can classify some P, and NP problems in the same category.
 
-- ***There exits an arbitrary good approximation to [Density Functional Theory](https://en.wikipedia.org/wiki/Density_functional_theory) that scales lienarly with the number of particles, and which uncertainty depends on the amount of computational resources used to calculate the approximation.*** 
+- ***There exits an arbitrary good approximation to [Density Functional Theory](https://en.wikipedia.org/wiki/Density_functional_theory) that scales linearly with the number of particles, and which uncertainty depends on the amount of computational resources used to calculate the approximation.*** 
 
   If you treat electrons as agents, you can use the minimum action principle to formulate a proper approximation of the potential
    function in almost any known physical problem. Then you can move the particles around as if you were solving a multi-agent environment. 
@@ -223,10 +225,10 @@ If there are any questions regarding our methods, we will be answering them here
  
 ## About
 
-We have developed this theory for the pleasure of finding thing out as a hobby, while I was at college and Sergio worked as a programmer.
- We had almost no financial support nor access to a proper technical infrastructure besides the 6 months [Source{d}](https://sourced.tech/) sponsored us. 
+We have developed this theory for the pleasure of finding thing out as a hobby, while I was at college, and Sergio worked as a programmer.
+ We had almost no financial support, nor access to a proper technical infrastructure, besides the 6 months [Source{d}](https://sourced.tech/) sponsored us. 
  
- We are not part of academia, and we have no affiliation.
+ We are not part of academia, we have no affiliation and no track record.
 
 
 - **[Sergio Hernández Cerezo](https://twitter.com/EntropyFarmer)**: Studied mathematics, works as programmer, dreams about physics.
