@@ -122,7 +122,8 @@ open an issue and we will update the document.
 [A Fragile Theory of Intelligence](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing):
 This document explains the fundamental principles of the Fractal AI theory in which our Agent is based. 
 We tried very hard to build our own solution, so we worked all the fundamental principles completely from scratch.
-This means that is should contain anything you need to understand the theory without further reading required.
+This means that it should contain anything you need to understand the theory without further reading required.
+Any comment on how to explain things more clearly will be welcome.
 
 ### Blog
  [Sergio's Blog: EntropicAI](http://entropicai.blogspot.com.es/):
@@ -140,8 +141,8 @@ recorded using a custom library, which can be used to create different task in c
 
 [GAS Paper](https://arxiv.org/abs/1705.08691):
  We tried to publish a paper describing an application of our theory to general optimization,
-but it was not published because our method "lacked scientific relevance" and there was no need for more algorithms that were not proven to work at  a hughe scale.
-As we lack the resources to deploy our methods at a bigger scale, we were unable to meet the requirements. 
+but it was not published because our method "lacked scientific relevance", and there was no need for more algorithms that were not proven to work at a huge scale.
+As we lack the resources to deploy our methods at a bigger scale, we were unable to meet the requirements for publishing. 
 
 There are better ways to apply our theory to general optimization, but it is a nice example of why code is better than math to explain our theory. When you try to formalize it, 
 it gets really non-intuitive.
@@ -149,8 +150,38 @@ it gets really non-intuitive.
 [Causal Entropic Forces by Alexander Wiessner Gross](http://alexwg.org/publications/PhysRevLett_110-168702.pdf): 
 The fundamental concepts behind this paper inspired our research. We develop our theory aiming to calculate future entropy faster,
  and being able to leverage the information contained in the Entropy of any state space, together with any potential function.
+ 
+
+## Conjectures on some of its properties
 
 
+We cannot provide any formal proof about this algorithm, because we don't know any tool suitable for analyzing
+ the far-from-equilibrium regime in which the Agent operates. These are just conjectures and they could be wrong.
+ 
+ Any suggestion about how to prove our conjectures will be welcome. This list is non-exhaustive and it will be updated.
+ 
+ **State Swarm**: Structure consisting of different states that interact with each other in order to build a cusal cone. The agent uses a Swarm to build a causal cone used to approximate the Q values of each action.
+ 
+- ***It is possible to prove that this algorithm is unprovable with any known mathematical tools.***
+ Maybe someone can proof that FAI is unprovable.
+![Improvable](assets/improvable.png)   
+ 
+- ***A State Swarm can leverage efficiently both the information contained in the physical structure of a given State Space (Entropy/Exploration), and the potential field associated with each state.***
+
+ This means that we are not taking only into account "how good an state is", but also "How different an state is with respect to the others", effectively solving the exploration vs exploitation problem.
+ 
+- ***This algorithm tends to achieve symmetry. In the limit, a swarm of states will be distributed proportionally to the space-time reward distribution of the space state.*** 
+
+ If we fix all the states in the Swarm to share time, states distribution in each slice of the causal cone  will be proportional to its reward density distribution in the limit.
+ If we do not fix the time, a Swarm will automatically adjust to also distribute the states symmetrically with respect to the time horizon.
+  
+- ***Given a uniform prior, this algorithm will never perform worse than random. And it will only perform randomly when no information is available in the sampled Swarm of states that we can levare to build a more efficient causal cone.*** 
+
+    Yes, I have read about the No Free Lunch Theorem, and I think this is an exception.
+
+- ***P vs NP is not the right question to ask***. If we happen to be right, and complexiti is better measured using our methods, there would be NP hard problems which should be possible to solve in polynomial time. Our complexity measure can classify some P, and NP problems in the same category.
+
+ 
 ## FAQ
 
 ## About
