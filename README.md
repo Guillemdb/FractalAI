@@ -1,7 +1,11 @@
 # Fractalai: An approach to General Artificial Intelligence
 
 ### Sergio Hernández Cerezo and Guillem Duran Ballester
-Under construction
+
+>“Once you start doubting, just like you’re supposed to doubt, you ask me if the science is true.
+ You say no, we don’t know what’s true, we’re trying to find out and everything is possibly wrong.”
+>
+>  **Richard P. Feynman**, *The Pleasure of Finding Things Out*: The Best Short Works of Richard P. Feynman 
 
 ## Table of Contents
 
@@ -13,6 +17,8 @@ Under construction
   * [Blog](#blog)
   * [YouTube](#youtube)
   * [Related papers](#related-papers)
+- [Other tasks solved](#Other-tasks-solved)
+- [Conjectures on some of its properties](#conjectures-on-some-of-its-properties)
 - [FAQ](#faq)
 - [About](#about)
 
@@ -109,7 +115,7 @@ should be able to get similar performance.
 |wizard of wor |93090  |785.44%|NaN|2229|4|35|5000|NaN|
 
 In the following Google Sheet we are logging the performance of our Agent relative to the current alternatives.
-If you find that some benchmark is outdated, or you are not capable of replicating any of our results, please
+If you find that some benchmark is outdated, or you are not capable of replicating some of our results, please
 open an issue and we will update the document.
 
 > [Fractal AI Performance Sheet](https://docs.google.com/spreadsheets/d/1JcNw2L0YL_I2iGZPJ0bNKJshlTaqMuEl5CP2W5zie6M/edit?usp=sharing)
@@ -147,10 +153,30 @@ As we lack the resources to deploy our methods at a bigger scale, we were unable
 There are better ways to apply our theory to general optimization, but it is a nice example of why code is better than math to explain our theory. When you try to formalize it, 
 it gets really non-intuitive.
 
-[Causal Entropic Forces by Alexander Wiessner Gross](http://alexwg.org/publications/PhysRevLett_110-168702.pdf): 
+[Causal Entropic Forces by Alexander Wissner-Gross](http://alexwg.org/publications/PhysRevLett_110-168702.pdf): 
 The fundamental concepts behind this paper inspired our research. We develop our theory aiming to calculate future entropy faster,
  and being able to leverage the information contained in the Entropy of any state space, together with any potential function.
  
+### Other tasks solved
+
+Besides Atari games, we have also used our theory to solve different continous control environments involving task such as:
+
+- **Collecting rocks with a spaceship** ([Video](https://www.youtube.com/watch?v=HLbThk624jI) and [blog post](http://entropicai.blogspot.com.es/2016/04/understanding-mining-example.html)): 
+    This agent can catch rocks using a hook that behaves like an elastic band. We are capable of sampling low  probability trajectories in such chaotic space state.
+       
+       
+- **Multi Agent Environments**: It is aso possible to control multi agent environments, like [Maintaining a formation](https://www.youtube.com/watch?v=J9kW1lhT06A), [cooperating to achieve a shared goal](https://www.youtube.com/watch?v=DsvSH3cNhnE), or [fighting](http://entropicai.blogspot.com.es/2015/05/tonight-four-of-my-new-fractal-minded.html) against each other. A nice property of our methods is that they computational cost scales linearly with the number of agents. 
+       
+
+- **Stochastic simulations**: It can even [handle uncertainty in a continuous domain](http://entropicai.blogspot.com.es/2015/06/passing-asteroids-test.html?m=0).
+You can also check this on Atari games by setting the clone_seeds parameter of the agent to False.
+
+
+- **Multi objective and multi agent path finding**: We can solve multi objective path finding in nearly real time.  [Video 1](https://www.youtube.com/watch?v=AoiGseO7g1I) [Video 2](https://www.youtube.com/watch?v=R61FRUf-F6M) [Blog Post](http://entropicai.blogspot.com.es/search/label/Path%20finding)
+
+
+- **General optimization**: Here you can find a [visual representation](http://entropicai.blogspot.com.es/2016/02/serious-fractal-optimizing.html?m=0) of how our algorithm explores the state space.
+
 
 ## Conjectures on some of its properties
 
@@ -163,25 +189,46 @@ We cannot provide any formal proof about this algorithm, because we don't know a
  **State Swarm**: Structure consisting of different states that interact with each other in order to build a cusal cone. The agent uses a Swarm to build a causal cone used to approximate the Q values of each action.
  
 - ***It is possible to prove that this algorithm is unprovable with any known mathematical tools.***
- Maybe someone can proof that FAI is unprovable.
+
+  Maybe someone can proof that FAI is unprovable.
+ 
 ![Improvable](assets/improvable.png)   
  
 - ***A State Swarm can leverage efficiently both the information contained in the physical structure of a given State Space (Entropy/Exploration), and the potential field associated with each state.***
 
- This means that we are not taking only into account "how good an state is", but also "How different an state is with respect to the others", effectively solving the exploration vs exploitation problem.
+  This means that we are not taking only into account "how good an state is", but also "How different an state is with respect to the others", effectively solving the exploration vs exploitation problem.
  
 - ***This algorithm tends to achieve symmetry. In the limit, a swarm of states will be distributed proportionally to the space-time reward distribution of the space state.*** 
 
- If we fix all the states in the Swarm to share time, states distribution in each slice of the causal cone  will be proportional to its reward density distribution in the limit.
+  If we fix all the states in the Swarm to share time, states distribution in each slice of the causal cone  will be proportional to its reward density distribution in the limit.
  If we do not fix the time, a Swarm will automatically adjust to also distribute the states symmetrically with respect to the time horizon.
   
 - ***Given a uniform prior, this algorithm will never perform worse than random. And it will only perform randomly when no information is available in the sampled Swarm of states that we can levare to build a more efficient causal cone.*** 
 
-    Yes, I have read about the No Free Lunch Theorem, and I think this is an exception.
+    Yes, we have read about the No Free Lunch Theorem, and we think this is an exception.
 
-- ***P vs NP is not the right question to ask***. If we happen to be right, and complexiti is better measured using our methods, there would be NP hard problems which should be possible to solve in polynomial time. Our complexity measure can classify some P, and NP problems in the same category.
+- ***P vs NP is not the right question to ask***. 
+ 
+  If we happen to be right, and complexity is better measured using our methods, there would be NP hard problems which should be possible to solve in polynomial time. Our complexity measure can classify some P, and NP problems in the same category.
 
+- ***There exits an arbitrary good approximation to [Density Functional Theory](https://en.wikipedia.org/wiki/Density_functional_theory) that scales lienarly with the number of particles, and which uncertainty depends on the amount of computational resources used to calculate the approximation.*** 
+
+  If you treat electrons as agents, you can use the minimum action principle to formulate a proper approximation of the potential
+   function in almost any known physical problem. Then you can move the particles around as if you were solving a multi-agent environment. 
+ Our method  scales linearly with the number of particles, so it gives a new approach to complex problems.
  
 ## FAQ
 
+If there are any questions regarding our methods, we will be answering them here.
+ 
 ## About
+
+We have developed this theory for the pleasure of finding thing out as a hobby, while I was at college and Sergio worked as a programmer.
+ We had almost no financial support nor access to a proper technical infrastructure besides the 6 months [Source{d}](https://sourced.tech/) sponsored us. 
+ 
+ We are not part of academia, and we have no affiliation.
+
+
+- **[Sergio Hernández Cerezo](https://twitter.com/EntropyFarmer)**: Studied mathematics, works as programmer, dreams about physics.
+
+- **[Guillem Duran Ballester](https://twitter.com/Miau_DB)**: Rogue scientist, loves learning and teaching. Currently looking for an AI-related job.
