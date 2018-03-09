@@ -38,7 +38,7 @@ using a less than 1000 samples to calculate one action. Fractal AI makes it poss
 ## Installation
 
 This code release relies aims for simplicity and self-explainability. 
-So it should be pretty straightforward to run.
+So it should be pretty straightforward to run in Python 3. Python 2 is not supported.
 
 It only needs numpy and [gym["atari"]](https://github.com/openai/gym), although we also recommend
  installing the Jupyter Notebook for running the example.
@@ -50,8 +50,8 @@ First, install the dependencies explained on the gym documentation.
 >To install the full set of environments, you'll need to have some system
 packages installed. We'll build out the list here over time; please let us know
 what you end up installing on your platform.
->In case you want to run the ntoebook:
-> ``pip3 install jupyter``
+>In case you want to run the notebook:
+>  ``pip3 install jupyter``
 >
 >On OSX:
 >
@@ -59,7 +59,7 @@ what you end up installing on your platform.
 >
 >On Ubuntu 14.04:
 >
->    ``apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev 
+>    ``sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev 
 >xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig``
 
 #### Cloning and installing the repository
@@ -113,23 +113,31 @@ open an issue and we will update the document.
 
 > [Fractal AI Performance Sheet](https://docs.google.com/spreadsheets/d/1JcNw2L0YL_I2iGZPJ0bNKJshlTaqMuEl5CP2W5zie6M/edit?usp=sharing)
 
+#### Or just run the example and check by yourself!
 
 ## Additional Resources
 
-###[Fractal AI: An approach to Intelligence]()
+### Theoretical foundations
+[A Fragile Theory of Intelligence](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing):
+This document explains the fundamental principles of the Fractal AI theory in which our Agent is based. 
+We tried very hard to build our own solution, so we worked all the fundamental principles completely from scratch.
+This means that is should contain anything you need to understand the theory without further reading required.
 
-This document explains the fundamental principles of the Fractal AI theory
-
-###[EntropicAI Blog](http://entropicai.blogspot.com.es/)
+### Blog
+ [Sergio's Blog: EntropicAI](http://entropicai.blogspot.com.es/):
  Here we have documented and explained the evolution of our research process for developing this algorithm,
  and some experiments where we tried to apply our theory to other fields than reinforcement learning.
  
-###[YouTube channel](https://www.youtube.com/user/finaysergio/videos)
+### YouTube
+
+[Sergio's YouTube channel](https://www.youtube.com/user/finaysergio/videos)
 Here you can find some videos of what we accomplished over the years. Among other things, you can find videos 
 recorded using a custom library, which can be used to create different task in continuous control environments,
   and visualizations of how the Agent samples the state space.
 
-###[GAS Paper]()
+### Related Papers
+
+[GAS Paper](https://arxiv.org/abs/1705.08691):
  We tried to publish a paper describing an application of our theory to general optimization,
 but it was not published because our method "lacked scientific relevance" and there was no need for more algorithms that were not proven to work at  a hughe scale.
 As we lack the resources to deploy our methods at a bigger scale, we were unable to meet the requirements. 
@@ -137,8 +145,9 @@ As we lack the resources to deploy our methods at a bigger scale, we were unable
 There are better ways to apply our theory to general optimization, but it is a nice example of why code is better than math to explain our theory. When you try to formalize it, 
 it gets really non-intuitive.
 
+[Causal Entropic Forces by Alexander Wiessner Gross](http://alexwg.org/publications/PhysRevLett_110-168702.pdf): 
+The fundamental concepts behind this paper inspired our research. We develop our theory aiming to calculate future entropy faster,
+ and being able to leverage the information contained in the Entropy of any state space, together with any potential function.
+
 
 ## Benchmarks
-
-[Google spreadsheet](https://docs.google.com/spreadsheets/d/1JcNw2L0YL_I2iGZPJ0bNKJshlTaqMuEl5CP2W5zie6M/edit?usp=sharing)
-## Run the example notebook to check out by yourself
