@@ -325,11 +325,11 @@ class AtariEnvironment(Environment):
                 steps.
         """
         end = False
-        _dead = False
+        # _dead = False We will be deactivating this hack for now.
         for i in range(fixed_steps):
             observed, reward, _end, lives = self.env.step(action.argmax())
             end = end or _end
-            _dead = _dead or reward < 0
+            # _dead = _dead or reward < 0
             self._cum_reward += reward
             if end:
                 break
@@ -342,6 +342,7 @@ class AtariEnvironment(Environment):
 
         self.state.update_state(observed=observed, reward=self._cum_reward,
                                 end=end, lives=lives, microstate=Microstate(self.env, microstate))
+        # self.state._dead = _dead
         if end:
             self.env.reset()
         return self.state
