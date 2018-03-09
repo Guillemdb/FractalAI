@@ -9,10 +9,10 @@ Under construction
 - [Running the code](#installation)
 - [Benchmarks](#benchmarks)
 - [Additional Resources](#additional-resources)
-  * [Introduction to Fractal AI](#introduction-to-fractal-ai)
-  * [EntropicAI Blog](#entropicai-blog)
-  * [YouTube Channel](#youtube-channel)
-  * [GAS paper](#gas-paper)
+  * [Theoretical foundations](#theoretical-foundations)
+  * [Blog](#blog)
+  * [YouTube](#youtube)
+  * [Related papers](#related-papers)
 - [FAQ](#faq)
 - [About](#about)
 
@@ -51,6 +51,7 @@ First, install the dependencies explained on the gym documentation.
 packages installed. We'll build out the list here over time; please let us know
 what you end up installing on your platform.
 >In case you want to run the notebook:
+>
 >  ``pip3 install jupyter``
 >
 >On OSX:
@@ -150,4 +151,6 @@ The fundamental concepts behind this paper inspired our research. We develop our
  and being able to leverage the information contained in the Entropy of any state space, together with any potential function.
 
 
-## Benchmarks
+## FAQ
+
+## About
