@@ -33,7 +33,7 @@ In this repository we are are presenting a new Agent, derived from the first pri
  similar techniques, like Monte Carlo Tree Search. 
 
 The code provided shows how it is now viable to beat some of the current state of the art benchmarks on Atari games,
-using a less than 1000 samples to calculate one action. Fractal AI makes it possible to generate a huge database of
+using less than 1000 samples to calculate one action. Fractal AI makes it possible to generate a huge database of
  top performing examples with very little amount of computation required, transforming Reinforcement Learning into a 
  supervised problem.
  
@@ -44,8 +44,8 @@ using a less than 1000 samples to calculate one action. Fractal AI makes it poss
 
 ## Installation
 
-This code release relies aims for simplicity and self-explainability. 
-So it should be pretty straightforward to run in Python 3. Python 2 is not supported.
+This code release aims for simplicity and self-explainability. 
+It should be pretty straightforward to run in Python 3. Python 2 is not supported.
 
 It only needs numpy and [gym["atari"]](https://github.com/openai/gym), although we also recommend
  installing the Jupyter Notebook for running the example.
@@ -135,7 +135,7 @@ Any comment on how to explain things more clearly will be welcome.
 ### Blog
  [Sergio's Blog: EntropicAI](http://entropicai.blogspot.com.es/):
  Here we have documented and explained the evolution of our research process for developing this algorithm,
- and some experiments where we tried to apply our theory to other fields than reinforcement learning.
+ and some experiments where we tried to apply our theory to other research fields.
  
 ### YouTube
 
@@ -166,7 +166,8 @@ Besides Atari games, we have also used our theory to solve different continuous 
     This agent can catch rocks using a hook that behaves like an elastic band. We are capable of sampling low  probability trajectories in such chaotic space state.
        
        
-- **Multi Agent Environments**: It is aso possible to control multi agent environments, like [Maintaining a formation](https://www.youtube.com/watch?v=J9kW1lhT06A), [cooperating to achieve a shared goal](https://www.youtube.com/watch?v=DsvSH3cNhnE), or [fighting](http://entropicai.blogspot.com.es/2015/05/tonight-four-of-my-new-fractal-minded.html) against each other. A nice property of our methods is that they computational cost scales linearly with the number of agents. 
+- **Multi Agent Environments**: It is aso possible to control multi agent environments, like [Maintaining a formation](https://www.youtube.com/watch?v=J9kW1lhT06A), [cooperating to achieve a shared goal](https://www.youtube.com/watch?v=DsvSH3cNhnE), or [fighting](http://entropicai.blogspot.com.es/2015/05/tonight-four-of-my-new-fractal-minded.html) against each other.
+ A nice property of our methods is that their computational cost scales linearly with the number of agents. 
        
 
 - **Stochastic simulations**: It can even [handle uncertainty in a continuous domain](http://entropicai.blogspot.com.es/2015/06/passing-asteroids-test.html?m=0).
@@ -198,7 +199,7 @@ We cannot provide any formal proof about this algorithm, because we don't know a
  
 - ***A State Swarm can leverage efficiently both the information contained in the physical structure of a given State Space (Entropy/Exploration), and the potential field associated with each state.***
 
-  This means that we are not taking only into account "how good an state is", but also "How different an state is with respect to the others", effectively solving the exploration vs exploitation problem.
+  This means that we are not taking only into account "how good an state is", but also "how different an state is with respect to the others", effectively solving the exploration vs exploitation problem.
  
 - ***This algorithm tends to achieve symmetry. In the limit, a swarm of states will be distributed proportionally to the space-time reward distribution of the space state.*** 
 
@@ -212,13 +213,17 @@ We cannot provide any formal proof about this algorithm, because we don't know a
 
 - ***P vs NP is not the right question to ask***. 
  
-  If we happen to be right, and complexity is better measured using our methods, there would be NP hard problems which should be possible to solve in polynomial time. Our complexity measure can classify some P, and NP problems in the same category.
+  If we happen to be right, and complexity is better measured using our methods, there would be NP hard problems which should be possible to solve in polynomial time. 
+  Our complexity measure can classify some P and NP problems in the same category.
 
 - ***There exits an arbitrary good approximation to [Density Functional Theory](https://en.wikipedia.org/wiki/Density_functional_theory) that scales linearly with the number of particles, and which uncertainty depends on the amount of computational resources used to calculate the approximation.*** 
 
   If you treat electrons as agents, you can use the minimum action principle to formulate a proper approximation of the potential
    function in almost any known physical problem. Then you can move the particles around as if you were solving a multi-agent environment. 
  Our method  scales linearly with the number of particles, so it gives a new approach to complex problems.
+ 
+- ***Is it possible to create a functional AGI using only fractal methods***.
+ With proper funding, a lot of effort, and very large amounts of computer power we think we can build an AGI within 10 years.
 
 ## Other applications
 
@@ -231,14 +236,14 @@ Given that our algorithm is surprisingly good at path finding, we wonder how wel
 - **Neural nets**: It is possible to use our theory to make Deep Learning more efficient, but this code release does not focus on models.
                     For now, it should be pretty clear that using FAI instead of MCTS is worth trying.
                     
-- **Evolutionary strategies**: The principles of the theory, also allow to design evolutionary strategies for training DNN,
+- **Evolutionary strategies**: The principles of the theory also allow to design evolutionary strategies for training DNN,
  using something conceptually similar to what [Uber](https://eng.uber.com/deep-neuroevolution/) did.
   This is the way to go in case you want to solve Starcraft quickly without understanding the theory.
   Using this method, guarantees that you will end up with something you cannot control.
   If you try this in a properly scaled implementation without *perfect understanding*, a long term disaster is guaranteed.
 
 - **Economics**: Our theory allow us to quantify and model the *personality* and *irrationality* of an agent, 
-and it has non-equilibrium risk-control mechanisms, I bet someone will thing of an interesting application.
+and it has non-equilibrium risk-control mechanisms, I bet someone will think of an interesting application.
 
 - **Looks like Alien Math**: It is so weird that it almost qualifies as *"alien math"*. If you only knew this algorithm,
  you could pretty much arrive at the same conclusions as our current scientific knowledge arrives. 
@@ -255,6 +260,9 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
  We had almost no financial support, nor access to a proper technical infrastructure, besides the 6 months [Source{d}](https://sourced.tech/) sponsored us. 
  
  We are not part of academia, we have no affiliation and no track record.
+ 
+ We don't have the resources to carry on further our research, but we will gladly accept any contribution or
+  sponsorship that allows us to continue working in our passion.
 
 
 - **[Sergio Hernández Cerezo](https://twitter.com/EntropyFarmer)**: Studied mathematics, works as programmer, dreams about physics.
