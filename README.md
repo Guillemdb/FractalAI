@@ -17,8 +17,9 @@
   * [Blog](#blog)
   * [YouTube](#youtube)
   * [Related papers](#related-papers)
-- [Other tasks solved](#Other-tasks-solved)
+- [Other tasks solved](#other-tasks-solved)
 - [Conjectures on some of its properties](#conjectures-on-some-of-its-properties)
+- [Other applications](#other-applications)
 - [FAQ](#faq)
 - [About](#about)
 
@@ -218,7 +219,32 @@ We cannot provide any formal proof about this algorithm, because we don't know a
   If you treat electrons as agents, you can use the minimum action principle to formulate a proper approximation of the potential
    function in almost any known physical problem. Then you can move the particles around as if you were solving a multi-agent environment. 
  Our method  scales linearly with the number of particles, so it gives a new approach to complex problems.
+
+## Other applications
+
+- **Physics**: Physics is basically a path finding problem, so our theory can be thought as a sort of non-equilibrium statistical mechanics. 
+Given that our algorithm is surprisingly good at path finding, we wonder how well it can be applied to solve Feynman path integrals.
+ Conceptually, it is relatively simple to map some properties of a Swarm, to the properties of a wave function.
+ If you used something similar to our agent to move around the gaussian packets that are used when sampling integrals, 
+ maybe it would be easier to focus on regions with a meaningful contribution to the sum.
  
+- **Neural nets**: It is possible to use our theory to make Deep Learning more efficient, but this code release does not focus on models.
+                    For now, it should be pretty clear that using FAI instead of MCTS is worth trying.
+                    
+- **Evolutionary strategies**: The principles of the theory, also allow to design evolutionary strategies for training DNN,
+ using something conceptually similar to what [Uber](https://eng.uber.com/deep-neuroevolution/) did.
+  This is the way to go in case you want to solve Starcraft quickly without understanding the theory.
+  Using this method, guarantees that you will end up with something you cannot control.
+  If you try this in a properly scaled implementation without *perfect understanding*, a long term disaster is guaranteed.
+
+- **Economics**: Our theory allow us to quantify and model the *personality* and *irrationality* of an agent, 
+and it has non-equilibrium risk-control mechanisms, I bet someone will thing of an interesting application.
+
+- **Looks like Alien Math**: It is so weird that it almost qualifies as *"alien math"*. If you only knew this algorithm,
+ you could pretty much arrive at the same conclusions as our current scientific knowledge arrives. 
+ It is funny to think that Science without gradients is also possible.
+
+
 ## FAQ
 
 If there are any questions regarding our methods, we will be answering them here.
