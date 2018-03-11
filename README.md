@@ -20,6 +20,7 @@
 - [Other tasks solved](#other-tasks-solved)
 - [Conjectures on some of its properties](#conjectures-on-some-of-its-properties)
 - [Other applications](#other-applications)
+- [Cite us](#cite-us)
 - [FAQ](#faq)
 - [About](#about)
 
@@ -68,7 +69,7 @@ what you end up installing on your platform.
 >On Ubuntu 14.04:
 >
 >    ``sudo apt-get install -y python-numpy python-dev cmake zlib1g-dev libjpeg-dev 
->xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig``
+>xvfb libav-tools xorg-dev python-opengl libboost-all-dev libsdl2-dev swig libav-tools``
 
 #### Cloning and installing the repository
 
@@ -248,6 +249,9 @@ and it has non-equilibrium risk-control mechanisms, I bet someone will think of 
 - **Looks like Alien Math**: It is so weird that it almost qualifies as *"alien math"*. If you only knew this algorithm,
  you could pretty much arrive at the same conclusions as our current scientific knowledge arrives. 
  It is funny to think that Science without gradients is also possible.
+ 
+ 
+## Cite us
 
 
 ## FAQ
@@ -268,3 +272,14 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
 - **[Sergio Hernández Cerezo](https://twitter.com/EntropyFarmer)**: Studied mathematics, works as programmer, dreams about physics.
 
 - **[Guillem Duran Ballester](https://twitter.com/Miau_DB)**: Rogue scientist, loves learning and teaching. Currently looking for an AI-related job.
+
+**Special thanks**: We want to thank all the people who has believed in us during this years.
+ Their patience, understanding, and support made possible this work.
+ 
+ - Our families, HCSoft, [Eulàlia](https://twitter.com/linguistsmatter) and Fina. 
+ 
+ - The people at sourced, specially [Eiso](https://twitter.com/eisokant), [Waren](https://twitter.com/warenlg), [Vadim](https://twitter.com/tmarkhor),
+  [Marcelo](https://twitter.com/marnovo), and [Egor](https://twitter.com/egor_bu).
+ 
+ - Everyone who believed in our Alien math since Guillem was in college, specially [Antoni Elias](https://twitter.com/eliasfuste),
+ [Jose Berengueres](https://twitter.com/harriken) and [Javier Ozón](https://twitter.com/fjozon).
