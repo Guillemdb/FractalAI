@@ -1,4 +1,4 @@
-# Fractalai: An approach to General Artificial Intelligence
+# Fractal AI: A fragile theory of intelligence
 
 ### Sergio Hernández Cerezo and Guillem Duran Ballester
 
@@ -23,32 +23,38 @@
 - [Cite us](#cite-us)
 - [FAQ](#faq)
 - [About](#about)
+- [Bibliography](#bibliography)
 
 
 ## Abstract
 
-Fractal AI is a theoretical framework for general artificial intelligence, 
-that can be applied to any kind of Markov decision process.
-In this repository we are are presenting a new Agent, derived from the first principles of the theory,
- which is capable of solving Atari games several orders of magnitude more efficiently than 
+Fractal AI is a theoretical framework for general artificial intelligence. It allows to derive new mathematical tools
+that constitute the foundations for a new kind of stochastic calculus, by modelling information using cellular automaton-like
+ structures instead of smooth functions.
+
+In this repository we are presenting a new Agent, derived from the first principles of the theory,
+ which is capable of solving Atari games several orders of magnitude more efficiently than other 
  similar techniques, like Monte Carlo Tree Search. 
 
 The code provided shows how it is now viable to beat some of the current state of the art benchmarks on Atari games,
-using less than 1000 samples to calculate one action. Fractal AI makes it possible to generate a huge database of
+using less than 1000 samples to calculate each one of the actions. Among other things, Fractal AI makes it possible to generate a huge database of
  top performing examples with very little amount of computation required, transforming Reinforcement Learning into a 
  supervised problem.
  
  The algorithm presented is capable of solving the exploration vs exploitation dilemma, while
- maintaining control over any aspect of the behavior of the Agent. From a mathematical perspective, 
- Fractal AI also offers a new way of measuring intelligence, and complexity in any kind of state space, 
- thus giving rise to a new kind of risk control theory.
+ maintaining control over any aspect of the behavior of the Agent. From a general approach, 
+ new techniques presented here have direct applications to other areas such as:
+  Non-equilibrium thermodynamics, chemistry, quantum physics, economics, information theory, and non-linear control theory.
+  
+  
+
 
 ## Installation
 
 This code release aims for simplicity and self-explainability. 
 It should be pretty straightforward to run in Python 3. Python 2 is not supported.
 
-It only needs numpy and [gym["atari"]](https://github.com/openai/gym), although we also recommend
+It only needs numpy and [gym["atari"]](https://github.com/openai/gym) **[[1](#bibliography)]**, although we also recommend
  installing the Jupyter Notebook for running the example.
 
 #### Installing dependencies
@@ -93,6 +99,8 @@ easy to verify that Fractal AI works.
 The following benchmarks have been calculated in a laptop using a single thread implementation. 
 Some of them can be replicated in real time, and others require up to 20k samples per action, but anyone running this code
 should be able to get similar performance.
+
+We show performance with respect to benchmarks widely accepted in the reinforcement learning community.
 
 
 |Game          |FAI Score|% vs Best AI|% vs MCTS|Mean samples per action|N repeat action|Time horizon|Max samples per action|Max states|
@@ -253,6 +261,12 @@ and it has non-equilibrium risk-control mechanisms, I bet someone will think of 
  
 ## Cite us
 
+    @misc{HERE-ARXIV-ID,
+        Author = {Sergio Hernández Cerezo and Guillem Duran Ballester},
+        Title = {Fractal AI: A fragile theory of intelligence},
+        Year = {2018},
+        Eprint = {arXiv:HERE-ARXIV-ID},
+      }
 
 ## FAQ
 
@@ -276,10 +290,15 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
 **Special thanks**: We want to thank all the people who has believed in us during this years.
  Their patience, understanding, and support made possible this work.
  
- - Our families, HCSoft, [Eulàlia](https://twitter.com/linguistsmatter) and Fina. 
+ - Our families, HCSoft, Guillem's parents, [Eulàlia](https://twitter.com/linguistsmatter) and Fina. 
  
  - The people at sourced, specially [Eiso](https://twitter.com/eisokant), [Waren](https://twitter.com/warenlg), [Vadim](https://twitter.com/tmarkhor),
   [Marcelo](https://twitter.com/marnovo), and [Egor](https://twitter.com/egor_bu).
  
  - Everyone who believed in our Alien math since Guillem was in college, specially [Antoni Elias](https://twitter.com/eliasfuste),
  [Jose Berengueres](https://twitter.com/harriken) and [Javier Ozón](https://twitter.com/fjozon).
+ 
+ ## Bibliography
+ 
+ -  **[1]**  Greg Brockman and Vicki Cheung and Ludwig Pettersson and Jonas Schneider and John Schulman and Jie Tang and Wojciech Zaremba.
+*OpenAI Gym* . [arXiv:1606.01540](https://arxiv.org/pdf/1606.01540.pdf), 2016.
