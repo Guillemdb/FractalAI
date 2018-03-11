@@ -27,21 +27,26 @@
 
 ## Abstract
 
-Fractal AI is a theoretical framework for general artificial intelligence, 
-that can be applied to any kind of Markov decision process.
-In this repository we are are presenting a new Agent, derived from the first principles of the theory,
- which is capable of solving Atari games several orders of magnitude more efficiently than 
+Fractal AI is a theoretical framework for general artificial intelligence. It allows to derive new mathematical tools
+that constitute the foundations for a new kind of stochastic calculus, by modelling information using cellular automaton-like
+ structures instead of smooth functions.
+
+In this repository we are presenting a new Agent, derived from the first principles of the theory,
+ which is capable of solving Atari games several orders of magnitude more efficiently than other 
  similar techniques, like Monte Carlo Tree Search. 
 
 The code provided shows how it is now viable to beat some of the current state of the art benchmarks on Atari games,
-using less than 1000 samples to calculate one action. Fractal AI makes it possible to generate a huge database of
+using less than 1000 samples to calculate each one of the actions among other things. Fractal AI makes it possible to generate a huge database of
  top performing examples with very little amount of computation required, transforming Reinforcement Learning into a 
  supervised problem.
  
  The algorithm presented is capable of solving the exploration vs exploitation dilemma, while
- maintaining control over any aspect of the behavior of the Agent. From a mathematical perspective, 
- Fractal AI also offers a new way of measuring intelligence, and complexity in any kind of state space, 
- thus giving rise to a new kind of risk control theory.
+ maintaining control over any aspect of the behavior of the Agent. From a general approach, 
+ new techniques presented here have direct applications to other areas such as:
+  Non-equilibrium thermodynamics, chemistry, quantum physics, economics, information theory, and non-linear control theory.
+  
+  
+
 
 ## Installation
 
