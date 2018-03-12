@@ -1,6 +1,11 @@
-# Fractalai: An approach to General Artificial Intelligence
-
+# Fractal AI: A fragile theory of intelligence
 ### Sergio Hernández Cerezo and Guillem Duran Ballester
+
+![Boxing-v0](assets/boxing.gif "Boxing-v0 76 samples per action") ![MsPacman-v0](assets/mspacman.gif "MsPacman-v0 154 samples per action") ![Tennis-v0](assets/tennis.gif "Tennis-v0 1250 samples per action")   ![Centipede-v0](assets/centipede.png
+  "Centipede-v0 1960 samples per action") ![MontezumaRevenge-v0](assets/montezuma.gif
+ "MontezumaRevenge-v0 5175 samples per action")
+
+
 
 >“Once you start doubting, just like you’re supposed to doubt, you ask me if the science is true.
  You say no, we don’t know what’s true, we’re trying to find out and everything is possibly wrong.”
@@ -18,17 +23,19 @@
   * [YouTube](#youtube)
   * [Related papers](#related-papers)
 - [Other tasks solved](#other-tasks-solved)
-- [Conjectures on some of its properties](#conjectures-on-some-of-its-properties)
 - [Other applications](#other-applications)
+- [Conjectures on some of its properties](#conjectures-on-some-of-its-properties)
 - [Cite us](#cite-us)
 - [FAQ](#faq)
 - [About](#about)
+- [Bibliography](#bibliography)
 
 
 ## Abstract
 
-Fractal AI is a theoretical framework for general artificial intelligence. It allows to derive new mathematical tools
-that constitute the foundations for a new kind of stochastic calculus, by modelling information using cellular automaton-like
+
+[Fractal AI]( https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing) is a theoretical framework for general artificial intelligence. 
+It allows to derive new mathematical toolsthat constitute the foundations for a new kind of stochastic calculus, by modelling information using cellular automaton-like
  structures instead of smooth functions.
 
 In this repository we are presenting a new Agent, derived from the first principles of the theory,
@@ -36,7 +43,8 @@ In this repository we are presenting a new Agent, derived from the first princip
  similar techniques, like Monte Carlo Tree Search. 
 
 The code provided shows how it is now viable to beat some of the current state of the art benchmarks on Atari games,
-using less than 1000 samples to calculate each one of the actions among other things. Fractal AI makes it possible to generate a huge database of
+
+using less than 1000 samples to calculate each one of the actions. Among other things, Fractal AI makes it possible to generate a huge database of
  top performing examples with very little amount of computation required, transforming Reinforcement Learning into a 
  supervised problem.
  
@@ -53,7 +61,7 @@ using less than 1000 samples to calculate each one of the actions among other th
 This code release aims for simplicity and self-explainability. 
 It should be pretty straightforward to run in Python 3. Python 2 is not supported.
 
-It only needs numpy and [gym["atari"]](https://github.com/openai/gym), although we also recommend
+It only needs numpy and [gym["atari"]](https://github.com/openai/gym) **[[1](#bibliography)]**, although we also recommend
  installing the Jupyter Notebook for running the example.
 
 #### Installing dependencies
@@ -86,6 +94,7 @@ what you end up installing on your platform.
 
 
 ## Benchmarks
+
 >It doesn't matter how beautiful your theory is, it doesn't matter how smart you are. 
 >
 >If it doesn't agree with experiment, it's wrong.
@@ -98,6 +107,8 @@ easy to verify that Fractal AI works.
 The following benchmarks have been calculated in a laptop using a single thread implementation. 
 Some of them can be replicated in real time, and others require up to 20k samples per action, but anyone running this code
 should be able to get similar performance.
+
+We show performance with respect to benchmarks widely accepted in the reinforcement learning community.
 
 
 |Game          |FAI Score|% vs Best AI|% vs MCTS|Mean samples per action|N repeat action|Time horizon|Max samples per action|Max states|
@@ -186,6 +197,31 @@ You can also check this on Atari games by setting the clone_seeds parameter of t
 - **General optimization**: Here you can find a [visual representation](http://entropicai.blogspot.com.es/2016/02/serious-fractal-optimizing.html?m=0) of how our algorithm explores the state space.
 
 
+## Other applications
+
+- **Physics**: Physics is basically a path finding problem, so our theory can be thought as a sort of non-equilibrium statistical mechanics. 
+Given that our algorithm is surprisingly good at path finding, we wonder how well it can be applied to solve Feynman path integrals.
+ Conceptually, it is relatively simple to map some properties of a Swarm, to the properties of a wave function.
+ If you used something similar to our agent to move around the gaussian packets that are used when sampling integrals, 
+ maybe it would be easier to focus on regions with a meaningful contribution to the sum.
+ 
+- **Neural nets**: It is possible to use our theory to make Deep Learning more efficient, but this code release does not focus on models.
+                    For now, it should be pretty clear that using FAI instead of MCTS is worth trying.
+                    
+- **Evolutionary strategies**: The principles of the theory also allow to design evolutionary strategies for training DNN,
+ using something conceptually similar to what [Uber](https://eng.uber.com/deep-neuroevolution/) did.
+  This is the way to go in case you want to solve Starcraft quickly without understanding the theory.
+  Using this method, guarantees that you will end up with something you cannot control.
+  If you try this in a properly scaled implementation without *perfect understanding*, a long term disaster is guaranteed.
+
+- **Economics**: Our theory allow us to quantify and model the *personality* and *irrationality* of an agent, 
+and it has non-equilibrium risk-control mechanisms, I bet someone will think of an interesting application.
+
+- **Looks like Alien Math**: It is so weird that it almost qualifies as *"alien math"*. If you only knew this algorithm,
+ you could pretty much arrive at the same conclusions as our current scientific knowledge arrives. 
+ It is funny to think that Science without gradients is also possible.
+ 
+
 ## Conjectures on some of its properties
 
 
@@ -212,8 +248,9 @@ We cannot provide any formal proof about this algorithm, because we don't know a
   If we fix all the states in the Swarm to share time, states distribution in each slice of the causal cone  will be proportional to its reward density distribution in the limit.
  If we do not fix the time, a Swarm will automatically adjust to also distribute the states symmetrically with respect to the time horizon.
   
-- ***Given a uniform prior, this algorithm will never perform worse than random. And it will only perform randomly when no information is available in the sampled Swarm of states that
- we can leverage to build a more efficient causal cone.*** 
+- ***Given a uniform prior, this algorithm will never perform worse than random. And it will only perform randomly when no
+ information can be extracted from the different states in the Swarm. Changing the prior will allow for worse than random games, but
+ it will increase the performance in other problems.*** 
 
     Yes, we have read about the No Free Lunch Theorem, and we think this is an exception.
 
@@ -231,33 +268,15 @@ We cannot provide any formal proof about this algorithm, because we don't know a
 - ***Is it possible to create a functional AGI using only fractal methods***.
  With proper funding, a lot of effort, and very large amounts of computer power we think we can build an AGI within 10 years.
 
-## Other applications
 
-- **Physics**: Physics is basically a path finding problem, so our theory can be thought as a sort of non-equilibrium statistical mechanics. 
-Given that our algorithm is surprisingly good at path finding, we wonder how well it can be applied to solve Feynman path integrals.
- Conceptually, it is relatively simple to map some properties of a Swarm, to the properties of a wave function.
- If you used something similar to our agent to move around the gaussian packets that are used when sampling integrals, 
- maybe it would be easier to focus on regions with a meaningful contribution to the sum.
- 
-- **Neural nets**: It is possible to use our theory to make Deep Learning more efficient, but this code release does not focus on models.
-                    For now, it should be pretty clear that using FAI instead of MCTS is worth trying.
-                    
-- **Evolutionary strategies**: The principles of the theory also allow to design evolutionary strategies for training DNN,
- using something conceptually similar to what [Uber](https://eng.uber.com/deep-neuroevolution/) did.
-  This is the way to go in case you want to solve Starcraft quickly without understanding the theory.
-  Using this method, guarantees that you will end up with something you cannot control.
-  If you try this in a properly scaled implementation without *perfect understanding*, a long term disaster is guaranteed.
-
-- **Economics**: Our theory allow us to quantify and model the *personality* and *irrationality* of an agent, 
-and it has non-equilibrium risk-control mechanisms, I bet someone will think of an interesting application.
-
-- **Looks like Alien Math**: It is so weird that it almost qualifies as *"alien math"*. If you only knew this algorithm,
- you could pretty much arrive at the same conclusions as our current scientific knowledge arrives. 
- It is funny to think that Science without gradients is also possible.
- 
- 
 ## Cite us
 
+    @misc{HERE-ARXIV-ID,
+        Author = {Sergio Hernández Cerezo and Guillem Duran Ballester},
+        Title = {Fractal AI: A fragile theory of intelligence},
+        Year = {2018},
+        Eprint = {arXiv:HERE-ARXIV-ID},
+      }
 
 ## FAQ
 
@@ -281,10 +300,15 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
 **Special thanks**: We want to thank all the people who has believed in us during this years.
  Their patience, understanding, and support made possible this work.
  
- - Our families, HCSoft, [Eulàlia](https://twitter.com/linguistsmatter) and Fina. 
+ - Our families, HCSoft, Guillem's parents: Joan and Francisca, [Eulàlia Veny](https://twitter.com/linguistsmatter) and Fina. 
  
- - The people at sourced, specially [Eiso](https://twitter.com/eisokant), [Waren](https://twitter.com/warenlg), [Vadim](https://twitter.com/tmarkhor),
-  [Marcelo](https://twitter.com/marnovo), and [Egor](https://twitter.com/egor_bu).
+ - The people at sourced, specially [Eiso Kant](https://twitter.com/eisokant), [Waren Long](https://twitter.com/warenlg), [Vadim Markovtsev](https://twitter.com/tmarkhor),
+  [Marcelo Novaes](https://twitter.com/marnovo), and [Egor Bulychev](https://twitter.com/egor_bu).
  
  - Everyone who believed in our Alien math since Guillem was in college, specially [Antoni Elias](https://twitter.com/eliasfuste),
- [Jose Berengueres](https://twitter.com/harriken) and [Javier Ozón](https://twitter.com/fjozon).
+ [Jose Berengueres](https://twitter.com/harriken), [Javier Ozón](https://twitter.com/fjozon), and [Samuel Graván](https://twitter.com/Samuel__GP).
+ 
+ ## Bibliography
+ 
+ -  **[1]**  Greg Brockman and Vicki Cheung and Ludwig Pettersson and Jonas Schneider and John Schulman and Jie Tang and Wojciech Zaremba.
+*OpenAI Gym* . [arXiv:1606.01540](https://arxiv.org/pdf/1606.01540.pdf), 2016.
