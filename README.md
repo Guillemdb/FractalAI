@@ -35,17 +35,17 @@
 
 
 [Fractal AI](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing) 
-is a theoretical framework for general artificial intelligence. It allows to derive new mathematical
+is a theory for general artificial intelligence. It allows to derive new mathematical
  tools that constitute the foundations for a new kind of stochastic calculus, by modelling
   information using cellular automaton-like structures instead of smooth functions.
 
 In this repository we are presenting a new Agent, derived from the first principles of the theory,
  which is capable of solving Atari games several orders of magnitude more efficiently than other 
- similar techniques, like Monte Carlo Tree Search. 
+ similar techniques, like Monte Carlo Tree Search **[[1](#bibliography)]**. 
 
 The code provided shows how it is now possible to beat some of the current state of the art
- benchmarks on Atari games, using less than 1000 samples to calculate each one of the actions.
-  Among other things, Fractal AI makes it possible to generate a huge database of
+ benchmarks on Atari games, using less than 1000 samples to calculate each one of the actions when 
+ MCTS uses 3 Million samples. Among other things, Fractal AI makes it possible to generate a huge database of
  top performing examples with very little amount of computation required, transforming 
  Reinforcement Learning into a supervised problem.
  
@@ -61,7 +61,7 @@ The code provided shows how it is now possible to beat some of the current state
 This code release aims for simplicity and self-explainability. 
 It should be pretty straightforward to run in Python 3. Python 2 is not supported.
 
-It only needs numpy and [gym["atari"]](https://github.com/openai/gym) **[[1](#bibliography)]**, although we also recommend
+It only needs numpy and [gym["atari"]](https://github.com/openai/gym) **[[2](#bibliography)]**, although we also recommend
  installing the Jupyter Notebook for running the example.
 
 #### Installing dependencies
@@ -106,7 +106,7 @@ Some of them can be replicated in real time, and others require up to 20k sample
 anyone running this code should be able to get similar performance.
 
 We show performance with respect to benchmarks widely accepted in the reinforcement learning community.
- **[[4](#bibliography)]**, **[[5](#bibliography)]**, **[[6](#bibliography)]**, **[[7](#bibliography)]**, **[[8](#bibliography)]**
+ **[[1](#bibliography)]**, **[[3](#bibliography)]**, **[[4](#bibliography)]**, **[[5](#bibliography)]**, **[[6](#bibliography)]**
 
 
 <table border="1" class="dataframe">
@@ -387,7 +387,7 @@ recorded using a custom library, which can be used to create different task in c
 
 ### Related Papers
 
-[GAS paper](https://arxiv.org/abs/1705.08691) **[[3](#bibliography)]**:
+[GAS paper](https://arxiv.org/abs/1705.08691) **[[7](#bibliography)]**:
  We tried to publish a paper describing an application of our theory to general optimization,
 but it was not published because our method "lacked scientific relevance", and there was no need for more algorithms that were not proven to work at a huge scale.
 As we lack the resources to deploy our methods at a bigger scale, we were unable to meet the requirements for publishing. 
@@ -395,7 +395,7 @@ As we lack the resources to deploy our methods at a bigger scale, we were unable
 There are better ways to apply our theory to general optimization, but it is a nice example of why code is better than math to explain our theory. When you try to formalize it, 
 it gets really non-intuitive.
 
-[Causal Entropic Forces by Alexander Wissner-Gross](http://alexwg.org/publications/PhysRevLett_110-168702.pdf) **[[2](#bibliography)]**: 
+[Causal Entropic Forces by Alexander Wissner-Gross](http://alexwg.org/publications/PhysRevLett_110-168702.pdf) **[[8](#bibliography)]**: 
 The fundamental concepts behind this paper inspired our research. We develop our theory aiming to calculate future entropy faster,
  and being able to leverage the information contained in the Entropy of any state space, together with any potential function.
  
@@ -541,25 +541,24 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
  [Jose Berengueres](https://twitter.com/harriken), [Javier Ozón](https://twitter.com/fjozon), and [Samuel Graván](https://twitter.com/Samuel__GP).
  
  ## Bibliography
- 
- -  **[1]**  Greg Brockman and Vicki Cheung and Ludwig Pettersson and Jonas Schneider and John Schulman and Jie Tang and Wojciech Zaremba.
-***OpenAI Gym*** . [arXiv:1606.01540](https://arxiv.org/pdf/1606.01540.pdf), 2016.
-
-- **[2]**  Alexander Wissner-Gross. ***Causal entropic forces*** . [Physical Review Letters](http://alexwg.org/publications/PhysRevLett_110-168702.pdf), 2013.
-
-- **[3]**  Sergio Hernández, Guillem Duran, José M. Amigó. ***General Algorithmic Search***. [arXiv:1705.08691](https://arxiv.org/abs/1705.08691), 2017.
-
-- **[4]**  Volodymyr Mnih & others. ***Human-level control through deep reinforcement learning***. [doi:10.1038/nature14236](http://www.davidqiu.com:8888/research/nature14236.pdf), 2015.
-
-- **[5]**  Guo, Xiaoxiao and Singh, Satinder and Lee, Honglak and Lewis, Richard L and Wang, Xiaoshi. 
+ - **[1]**  Guo, Xiaoxiao and Singh, Satinder and Lee, Honglak and Lewis, Richard L and Wang, Xiaoshi. 
 ***Deep Learning for Real-Time Atari Game Play Using Offline Monte-Carlo Tree Search Planning***. [NIPS2014_5421](http://papers.nips.cc/paper/5421-deep-learning-for-real-time-atari-game-play-using-offline-monte-carlo-tree-search-planning.pdf), 2014.
 
-- **[6]**  Matthias Plappert, Rein Houthooft, Prafulla Dhariwal, Szymon Sidor, Richard Y. Chen, Xi Chen, Tamim Asfour, Pieter Abbeel, Marcin Andrychowicz.
+- **[2]**  Greg Brockman and Vicki Cheung and Ludwig Pettersson and Jonas Schneider and John Schulman and Jie Tang and Wojciech Zaremba.
+***OpenAI Gym*** . [arXiv:1606.01540](https://arxiv.org/pdf/1606.01540.pdf), 2016.
+
+- **[3]**  Volodymyr Mnih & others. ***Human-level control through deep reinforcement learning***. [doi:10.1038/nature14236](http://www.davidqiu.com:8888/research/nature14236.pdf), 2015.
+
+- **[4]**  Matthias Plappert, Rein Houthooft, Prafulla Dhariwal, Szymon Sidor, Richard Y. Chen, Xi Chen, Tamim Asfour, Pieter Abbeel, Marcin Andrychowicz.
  ***Parameter Space Noise for Exploration***. [arXiv:1706.01905](https://arxiv.org/abs/1706.01905).
 
-- **[7]**  Justin Fu and Irving Hsu. ***Model-Based Reinforcement Learning for Playing Atari Games***.
+- **[5]**  Justin Fu and Irving Hsu. ***Model-Based Reinforcement Learning for Playing Atari Games***.
  [Stanford Report](http://cs231n.stanford.edu/reports/2016/pdfs/116_Report.pdf).
  
--  **[8]**  ***ATARI VCS/2600 Scoreboard***. [Atari compendium](http://www.ataricompendium.com/game_library/high_scores/high_scores.html), 2018.
+- **[6]**  ***ATARI VCS/2600 Scoreboard***. [Atari compendium](http://www.ataricompendium.com/game_library/high_scores/high_scores.html), 2018.
 
--  **[9]** Shane Legg ***Machine Super Intelligence***. [Doctoral Dissertation ](http://www.vetta.org/documents/Machine_Super_Intelligence.pdf), 2008.
+- **[7]**  Sergio Hernández, Guillem Duran, José M. Amigó. ***General Algorithmic Search***. [arXiv:1705.08691](https://arxiv.org/abs/1705.08691), 2017.
+
+- **[8]**  Alexander Wissner-Gross. ***Causal entropic forces*** . [Physical Review Letters](http://alexwg.org/publications/PhysRevLett_110-168702.pdf), 2013.
+
+- **[9]** Shane Legg ***Machine Super Intelligence***. [Doctoral Dissertation ](http://www.vetta.org/documents/Machine_Super_Intelligence.pdf), 2008.
