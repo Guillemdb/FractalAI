@@ -34,28 +34,28 @@
 ## Abstract
 
 
-[Fractal AI]( https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing) is a theoretical framework for general artificial intelligence. 
-It allows to derive new mathematical toolsthat constitute the foundations for a new kind of stochastic calculus, by modelling information using cellular automaton-like
- structures instead of smooth functions.
+[Fractal AI](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing) 
+is a **theoretical framework for general artificial intelligence**. It allows to derive new mathematical
+ tools that constitute the foundations for a **new kind of stochastic calculus**, by modelling
+  information **using cellular automaton-like structures** instead of smooth functions.
 
-In this repository we are presenting a new Agent, derived from the first principles of the theory,
- which is capable of solving Atari games several orders of magnitude more efficiently than other 
- similar techniques, like Monte Carlo Tree Search. 
+In this repository **we are presenting a new Agent**, derived from the first principles of the theory,
+ which is capable of **solving Atari games several orders of magnitude more efficiently than** other 
+ similar techniques, like **Monte Carlo Tree Search**. 
 
-The code provided shows how it is now viable to beat some of the current state of the art benchmarks on Atari games,
-
-using less than 1000 samples to calculate each one of the actions. Among other things, Fractal AI makes it possible to generate a huge database of
- top performing examples with very little amount of computation required, transforming Reinforcement Learning into a 
- supervised problem.
+The code provided shows how it is now possible to **beat** some of the **current state of the art
+ benchmarks on Atari games, using less than 1000 samples to calculate each one of the actions**.
+  Among other things, Fractal AI makes it possible to generate a huge database of
+ top performing examples with very little amount of computation required, **transforming 
+ Reinforcement Learning into a supervised problem**.
  
- The algorithm presented is capable of solving the exploration vs exploitation dilemma, while
- maintaining control over any aspect of the behavior of the Agent. From a general approach, 
- new techniques presented here have direct applications to other areas such as:
-  Non-equilibrium thermodynamics, chemistry, quantum physics, economics, information theory, and non-linear control theory.
+ The algorithm presented is capable of **solving the exploration vs exploitation dilemma, while
+ maintaining control over** any aspect of **the behavior of the Agent**. From a general approach, 
+ new techniques presented here have direct applications to other areas such as: Non-equilibrium
+ thermodynamics, chemistry, quantum physics, economics, information theory, and non-linear
+ control theory.
   
   
-
-
 ## Installation
 
 This code release aims for simplicity and self-explainability. 
