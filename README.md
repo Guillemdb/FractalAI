@@ -1,10 +1,11 @@
 # Fractal AI: A fragile theory of intelligence
+### Sergio Hernández Cerezo and Guillem Duran Ballester
 
 ![Boxing-v0](assets/boxing.gif "Boxing-v0 76 samples per action") ![MsPacman-v0](assets/mspacman.gif "MsPacman-v0 154 samples per action") ![Tennis-v0](assets/tennis.gif "Tennis-v0 1250 samples per action")   ![Centipede-v0](assets/centipede.png
   "Centipede-v0 1960 samples per action") ![MontezumaRevenge-v0](assets/montezuma.gif
- "MontezumaRevenge-v0 5175 samples per action") ![IceHockey-v0](assets/icehockey.png "IceHockey-v0 12158 samples per action")
+ "MontezumaRevenge-v0 5175 samples per action")
 
-### Sergio Hernández Cerezo and Guillem Duran Ballester
+
 
 >“Once you start doubting, just like you’re supposed to doubt, you ask me if the science is true.
  You say no, we don’t know what’s true, we’re trying to find out and everything is possibly wrong.”
