@@ -379,7 +379,7 @@ Any comment on how to explain things more clearly will be welcome.
  
 ### YouTube
 
-[Sergio's YouTube channel](https://www.youtube.com/user/finaysergio/videos)
+[Fractal AI playlist](https://www.youtube.com/playlist?list=PLEXwXLT-a6beFPzal3OznPQC0pieccAle)
 Here you can find some videos of what we accomplished over the years. Among other things, you can find videos 
 recorded using a custom library, which can be used to create different task in continuous control environments,
   and visualizations of how the Agent samples the state space.
@@ -398,7 +398,7 @@ it gets really non-intuitive.
 The fundamental concepts behind this paper inspired our research. We develop our theory aiming to calculate future entropy faster,
  and being able to leverage the information contained in the Entropy of any state space, together with any potential function.
  
-### Other tasks solved
+## Other tasks solved
 
 Besides Atari games, we have also used our theory to solve different continuous control environments involving task such as:
 
@@ -438,7 +438,7 @@ Given that our algorithm is surprisingly good at path finding, we wonder how wel
   If you try this in a properly scaled implementation without *perfect understanding*, a long term disaster is guaranteed.
 
 - **Economics**: Our theory allow us to quantify and model the *personality* and *irrationality* of an agent, 
-and it has non-equilibrium risk-control mechanisms, I bet someone will think of an interesting application.
+and it has non-equilibrium risk-control mechanisms, we bet someone will think of an interesting application.
 
 - **Looks like Alien Math**: It is so weird that it almost qualifies as *"alien math"*. If you only knew this algorithm,
  you could pretty much arrive at the same conclusions as our current scientific knowledge arrives. 
@@ -458,7 +458,7 @@ We cannot provide any formal proof about this algorithm, because we don't know a
  
 - ***It is possible to prove that this algorithm is unprovable with any known mathematical tools.***
 
-  Maybe someone can proof that FAI is unprovable.
+  Maybe someone can proof that FAI is unprovable **[[9](#bibliography)]**.
  
 ![Improvable](assets/improvable.png)   
  
@@ -552,3 +552,5 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
  [Stanford Report](http://cs231n.stanford.edu/reports/2016/pdfs/116_Report.pdf).
  
 -  **[8]**  ***ATARI VCS/2600 Scoreboard***. [Atari compendium](http://www.ataricompendium.com/game_library/high_scores/high_scores.html), 2018.
+
+-  **[9]** Shane Legg ***Machine Super Intelligence***. [Doctoral Dissertation ](http://www.vetta.org/documents/Machine_Super_Intelligence.pdf), 2008.
