@@ -1,5 +1,9 @@
 # Fractal AI: A fragile theory of intelligence
 
+![Tennis-v0](assets/tennis.gif "Tennis-v0 1250 samples per action")  ![MontezumaRevenge-v0](assets/montezuma.gif
+ "MontezumaRevenge-v0 5175 samples per action") ![Centipede-v0](assets/centipede.png
+  "Centipede-v0 5175 samples per action") ![IceHockey-v0](assets/icehockey.png "IceHockey-v0 12158 samples per action")
+
 ### Sergio Hernández Cerezo and Guillem Duran Ballester
 
 >“Once you start doubting, just like you’re supposed to doubt, you ask me if the science is true.
@@ -87,12 +91,6 @@ what you end up installing on your platform.
 
 
 ## Benchmarks
-
-|| |   | |
-| :-------------: |:-------------:| -----:|
-|![Tennis-v0](assets/tennis.gif "Tennis-v0 1250 samples per action") | ![MontezumaRevenge-v0](assets/montezuma.gif
- "MontezumaRevenge-v0 5175 samples per action")| ![Centipede-v0](assets/centipede.png
-  "Centipede-v0 5175 samples per action") | ![IceHockey-v0](assets/icehockey.png "IceHockey-v0 12158 samples per action") |
 
 >It doesn't matter how beautiful your theory is, it doesn't matter how smart you are. 
 >
