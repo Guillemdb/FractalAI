@@ -460,7 +460,7 @@ We cannot provide any formal proof about this algorithm, because we don't know a
 
   Maybe someone can proof that FAI is unprovable **[[9](#bibliography)]**.
  
-![Improvable](assets/improvable.png)   
+![Unprovable](assets/improvable.png)   
  
 - ***A State Swarm can leverage efficiently both the information contained in the physical structure of a given State Space (Entropy/Exploration), and the potential field associated with each state.***
 
