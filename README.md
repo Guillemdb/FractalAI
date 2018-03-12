@@ -116,10 +116,11 @@ We show performance with respect to benchmarks widely accepted in the reinforcem
       <th>Game</th>
       <th>Mean samples per action</th>
       <th>FAI Score</th>
-      <th>% Best AI</th>
-      <th>% Human 2H</th>
-      <th>% Absolute Record</th>
-      <th>% MCTS 3M samples</th>
+      <th>SoTA</th>
+      <th>Human after training 2H</th>
+      <th>MCTS 3M samples</th>
+      <th>Absolute Record</th>
+      <th>% vs SoTA</th>
     </tr>
   </thead>
   <tbody>
@@ -128,129 +129,142 @@ We show performance with respect to benchmarks widely accepted in the reinforcem
       <td>alien</td>
       <td>1,190</td>
       <td>19,380</td>
+      <td>5899</td>
+      <td>7,128</td>
+      <td>nan</td>
+      <td>251916</td>
       <td>328.53%</td>
-      <td>271.89%</td>
-      <td>7.69%</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <th>1</th>
       <td>amidar</td>
       <td>1,222</td>
       <td>4,306</td>
+      <td>2215</td>
+      <td>1,720</td>
+      <td>nan</td>
+      <td>155339</td>
       <td>194.40%</td>
-      <td>250.35%</td>
-      <td>2.77%</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <th>2</th>
       <td>assault</td>
       <td>1,317</td>
       <td>1,280</td>
+      <td>7502</td>
+      <td>1,496</td>
+      <td>nan</td>
+      <td>NaN</td>
       <td>17.06%</td>
-      <td>85.56%</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <th>3</th>
       <td>asteroids</td>
       <td>2,733</td>
       <td>76,270</td>
+      <td>26380</td>
+      <td>47,389</td>
+      <td>nan</td>
+      <td>10004100</td>
       <td>289.12%</td>
-      <td>160.94%</td>
-      <td>0.76%</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <th>4</th>
       <td>beam rider</td>
       <td>4,052</td>
       <td>2,160</td>
+      <td>17092</td>
+      <td>16,926</td>
+      <td>7,233</td>
+      <td>999999</td>
       <td>12.64%</td>
-      <td>12.76%</td>
-      <td>0.22%</td>
-      <td>29.86%</td>
     </tr>
     <tr>
       <th>5</th>
       <td>boxing</td>
       <td>2,027</td>
       <td>100</td>
+      <td>96</td>
+      <td>12</td>
+      <td>nan</td>
+      <td>99</td>
       <td>104.17%</td>
-      <td>833.33%</td>
-      <td>101.01%</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <th>6</th>
       <td>breakout</td>
       <td>5,309</td>
       <td>36</td>
-      <td>7.98%</td>
-      <td>113.21%</td>
+      <td>451</td>
+      <td>32</td>
+      <td>406</td>
       <td>NaN</td>
-      <td>8.87%</td>
+      <td>7.98%</td>
     </tr>
     <tr>
       <th>7</th>
       <td>centipede</td>
       <td>1,960</td>
-      <td>1,024,000</td>
-      <td>11,764.71%</td>
-      <td>8,521.26%</td>
-      <td>78.67%</td>
-      <td>NaN</td>
+      <td>1,052,000</td>
+      <td>8704</td>
+      <td>12,017</td>
+      <td>nan</td>
+      <td>1301709</td>
+      <td>12,086.40%</td>
     </tr>
     <tr>
       <th>8</th>
       <td>crazy climber</td>
-      <td>1,243</td>
-      <td>217,900</td>
-      <td>163.75%</td>
-      <td>608.17%</td>
-      <td>48.75%</td>
-      <td>NaN</td>
+      <td>1,207</td>
+      <td>238,300</td>
+      <td>133065</td>
+      <td>35,829</td>
+      <td>nan</td>
+      <td>447000</td>
+      <td>179.09%</td>
     </tr>
     <tr>
       <th>9</th>
       <td>double dunk</td>
       <td>5,327</td>
       <td>20</td>
+      <td>5</td>
+      <td>-16</td>
+      <td>nan</td>
+      <td>NaN</td>
       <td>400.00%</td>
-      <td>-129.03%</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <th>10</th>
       <td>enduro</td>
       <td>826</td>
-      <td>476</td>
-      <td>28.35%</td>
-      <td>55.35%</td>
-      <td>13.16%</td>
-      <td>60.41%</td>
+      <td>500</td>
+      <td>1679</td>
+      <td>860</td>
+      <td>788</td>
+      <td>3,618</td>
+      <td>29.78%</td>
     </tr>
     <tr>
       <th>11</th>
       <td>freeway</td>
       <td>807</td>
       <td>10</td>
+      <td>33</td>
+      <td>30</td>
+      <td>nan</td>
+      <td>NaN</td>
       <td>30.30%</td>
-      <td>33.33%</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <th>12</th>
       <td>ice hockey</td>
       <td>12,158</td>
       <td>52</td>
-      <td>NaN</td>
-      <td>5,200.00%</td>
-      <td>144.44%</td>
+      <td>0</td>
+      <td>1</td>
+      <td>nan</td>
+      <td>36</td>
       <td>NaN</td>
     </tr>
     <tr>
@@ -258,39 +272,43 @@ We show performance with respect to benchmarks widely accepted in the reinforcem
       <td>montezuma</td>
       <td>5,175</td>
       <td>2,500</td>
+      <td>15</td>
+      <td>4,753</td>
+      <td>nan</td>
+      <td>NaN</td>
       <td>16,666.67%</td>
-      <td>52.60%</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <th>14</th>
       <td>ms pacman</td>
       <td>5,129</td>
       <td>58,521</td>
+      <td>4209</td>
+      <td>15,693</td>
+      <td>nan</td>
+      <td>290090</td>
       <td>1,390.38%</td>
-      <td>372.91%</td>
-      <td>20.17%</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <th>15</th>
       <td>phoenix</td>
       <td>1,289</td>
       <td>11,930</td>
+      <td>36839</td>
+      <td>7,243</td>
+      <td>nan</td>
+      <td>4014440</td>
       <td>32.38%</td>
-      <td>164.71%</td>
-      <td>0.30%</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <th>16</th>
       <td>qbert</td>
       <td>2,728</td>
       <td>35,750</td>
-      <td>189.66%</td>
-      <td>265.70%</td>
-      <td>1.49%</td>
+      <td>18850</td>
+      <td>13,455</td>
+      <td>18,850</td>
+      <td>2400000</td>
       <td>189.66%</td>
     </tr>
     <tr>
@@ -298,60 +316,66 @@ We show performance with respect to benchmarks widely accepted in the reinforcem
       <td>seaquest</td>
       <td>6,149</td>
       <td>5,220</td>
+      <td>12534</td>
+      <td>42,055</td>
+      <td>3,257</td>
+      <td>527160</td>
       <td>41.65%</td>
-      <td>12.41%</td>
-      <td>0.99%</td>
-      <td>160.27%</td>
     </tr>
     <tr>
       <th>18</th>
       <td>space invaders</td>
       <td>4,261</td>
       <td>3,605</td>
+      <td>4490</td>
+      <td>1,669</td>
+      <td>2,354</td>
+      <td>621535</td>
       <td>80.29%</td>
-      <td>216.00%</td>
-      <td>0.58%</td>
-      <td>153.14%</td>
     </tr>
     <tr>
       <th>19</th>
       <td>tennis</td>
       <td>1,242</td>
       <td>24</td>
+      <td>9</td>
+      <td>-8</td>
+      <td>nan</td>
+      <td>NaN</td>
       <td>266.67%</td>
-      <td>-300.00%</td>
-      <td>NaN</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <th>20</th>
       <td>tutankham</td>
       <td>3,023</td>
       <td>223</td>
+      <td>321</td>
+      <td>168</td>
+      <td>nan</td>
+      <td>3493</td>
       <td>69.47%</td>
-      <td>132.74%</td>
-      <td>6.38%</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <th>21</th>
       <td>video pinball</td>
       <td>1,083</td>
       <td>604,043</td>
+      <td>768419</td>
+      <td>17,668</td>
+      <td>nan</td>
+      <td>91862206</td>
       <td>78.61%</td>
-      <td>3,418.85%</td>
-      <td>0.66%</td>
-      <td>NaN</td>
     </tr>
     <tr>
       <th>22</th>
       <td>wizard of wor</td>
       <td>2,229</td>
       <td>93,090</td>
+      <td>11852</td>
+      <td>4,756</td>
+      <td>nan</td>
+      <td>233700</td>
       <td>785.44%</td>
-      <td>1,957.32%</td>
-      <td>39.83%</td>
-      <td>NaN</td>
     </tr>
   </tbody>
 </table>
@@ -516,9 +540,10 @@ If there are any questions regarding our methods, we will be answering them here
 ## About
 
 We have developed this theory for the pleasure of finding thing out as a hobby, while I was at
- college, and Sergio worked as a programmer. We had almost no financial support, nor access to a 
- proper technical infrastructure, besides the 6 months [Source{d}](https://sourced.tech/) kindly
- sponsored us. 
+ college, and Sergio worked as a programmer. Besides the 6 months [Source{d}](https://sourced.tech/) kindly
+ sponsored us, we dedicated our personal time to this project making the most efficient use possible
+  no
+  of the resources we had available.
  
  We are not part of academia, we have no affiliation and no track record.
  
