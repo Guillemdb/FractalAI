@@ -28,7 +28,7 @@
 
 ## Abstract
 
-Fractal AI is a theoretical framework for general artificial intelligence. It allows to derive new mathematical tools
+[Fractal AI]( https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing) is a theoretical framework for general artificial intelligence. It allows to derive new mathematical tools
 that constitute the foundations for a new kind of stochastic calculus, by modelling information using cellular automaton-like
  structures instead of smooth functions.
 
@@ -215,8 +215,9 @@ We cannot provide any formal proof about this algorithm, because we don't know a
   If we fix all the states in the Swarm to share time, states distribution in each slice of the causal cone  will be proportional to its reward density distribution in the limit.
  If we do not fix the time, a Swarm will automatically adjust to also distribute the states symmetrically with respect to the time horizon.
   
-- ***Given a uniform prior, this algorithm will never perform worse than random. And it will only perform randomly when no information is available in the sampled Swarm of states that
- we can leverage to build a more efficient causal cone.*** 
+- ***Given a uniform prior, this algorithm will never perform worse than random. And it will only perform randomly when no
+ information can be extracted from the different states in the Swarm. Changing the prior will allow for worse than random games, but
+ it will increase the performance in other problems.*** 
 
     Yes, we have read about the No Free Lunch Theorem, and we think this is an exception.
 
@@ -290,13 +291,13 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
 **Special thanks**: We want to thank all the people who has believed in us during this years.
  Their patience, understanding, and support made possible this work.
  
- - Our families, HCSoft, Guillem's parents, [Eulàlia](https://twitter.com/linguistsmatter) and Fina. 
+ - Our families, HCSoft, Guillem's parents: Joan and Francisca, [Eulàlia Veny](https://twitter.com/linguistsmatter) and Fina. 
  
- - The people at sourced, specially [Eiso](https://twitter.com/eisokant), [Waren](https://twitter.com/warenlg), [Vadim](https://twitter.com/tmarkhor),
-  [Marcelo](https://twitter.com/marnovo), and [Egor](https://twitter.com/egor_bu).
+ - The people at sourced, specially [Eiso Kant](https://twitter.com/eisokant), [Waren Long](https://twitter.com/warenlg), [Vadim Markovtsev](https://twitter.com/tmarkhor),
+  [Marcelo Novaes](https://twitter.com/marnovo), and [Egor Bulychev](https://twitter.com/egor_bu).
  
  - Everyone who believed in our Alien math since Guillem was in college, specially [Antoni Elias](https://twitter.com/eliasfuste),
- [Jose Berengueres](https://twitter.com/harriken) and [Javier Ozón](https://twitter.com/fjozon).
+ [Jose Berengueres](https://twitter.com/harriken), [Javier Ozón](https://twitter.com/fjozon), and [Samuel Graván](https://twitter.com/Samuel__GP).
  
  ## Bibliography
  
