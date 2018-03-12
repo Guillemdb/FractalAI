@@ -102,10 +102,11 @@ what you end up installing on your platform.
 > **Richard P. Feynman**
 
 The following benchmarks have been calculated in a laptop using a single thread implementation. 
-Some of them can be replicated in real time, and others require up to 20k samples per action, but anyone running this code
-should be able to get similar performance.
+Some of them can be replicated in real time, and others require up to 20k samples per action, but
+anyone running this code should be able to get similar performance.
 
-We show performance with respect to benchmarks widely accepted in the reinforcement learning community. **[[4](#bibliography)]**, **[[5](#bibliography)]**, **[[6](#bibliography)]**, **[[7](#bibliography)]**, **[[8](#bibliography)]**
+We show performance with respect to benchmarks widely accepted in the reinforcement learning community.
+ **[[4](#bibliography)]**, **[[5](#bibliography)]**, **[[6](#bibliography)]**, **[[7](#bibliography)]**, **[[8](#bibliography)]**
 
 
 <table border="1" class="dataframe">
@@ -402,11 +403,16 @@ The fundamental concepts behind this paper inspired our research. We develop our
 
 Besides Atari games, we have also used our theory to solve different continuous control environments involving task such as:
 
-- **Collecting rocks with a spaceship** ([Video](https://www.youtube.com/watch?v=HLbThk624jI) and [blog post](http://entropicai.blogspot.com.es/2016/04/understanding-mining-example.html)): 
-    This agent can catch rocks using a hook that behaves like an elastic band. We are capable of sampling low  probability trajectories in such chaotic space state.
+- **Collecting rocks with a spaceship** ([Video](https://www.youtube.com/watch?v=HLbThk624jI) and
+ [blog post](http://entropicai.blogspot.com.es/2016/04/understanding-mining-example.html)): 
+    This agent can catch rocks using a hook that behaves like an elastic band. We are capable of
+     sampling low  probability trajectories in such chaotic space state.
        
        
-- **Multi agent environments**: It is aso possible to control multi agent environments, like [Maintaining a formation](https://www.youtube.com/watch?v=J9kW1lhT06A), [cooperating to achieve a shared goal](https://www.youtube.com/watch?v=DsvSH3cNhnE), or [fighting](http://entropicai.blogspot.com.es/2015/05/tonight-four-of-my-new-fractal-minded.html) against each other.
+- **Multi agent environments**: It is aso possible to control multi agent environments, like
+ [Maintaining a formation](https://www.youtube.com/watch?v=J9kW1lhT06A),
+ [cooperating to achieve a shared goal](https://www.youtube.com/watch?v=DsvSH3cNhnE),
+  or [fighting](http://entropicai.blogspot.com.es/2015/05/tonight-four-of-my-new-fractal-minded.html) against each other.
  A nice property of our methods is that their computational cost scales linearly with the number of agents. 
        
 
@@ -414,10 +420,12 @@ Besides Atari games, we have also used our theory to solve different continuous 
 You can also check this on Atari games by setting the clone_seeds parameter of the agent to False.
 
 
-- **Multi objective and multi agent path finding**: We can solve multi objective path finding in nearly real time.  [Video 1](https://www.youtube.com/watch?v=AoiGseO7g1I) [Video 2](https://www.youtube.com/watch?v=R61FRUf-F6M) [Blog Post](http://entropicai.blogspot.com.es/search/label/Path%20finding)
+- **Multi objective and multi agent path finding**: We can solve multi objective path finding in nearly real time. [Video 1](https://www.youtube.com/watch?v=AoiGseO7g1I),
+ [Video 2](https://www.youtube.com/watch?v=R61FRUf-F6M), [Blog Post](http://entropicai.blogspot.com.es/search/label/Path%20finding).
 
 
-- **General optimization**: Here you can find a [visual representation](http://entropicai.blogspot.com.es/2016/02/serious-fractal-optimizing.html?m=0) of how our algorithm explores the state space.
+- **General optimization**: Here you can find a [visual representation](http://entropicai.blogspot.com.es/2016/02/serious-fractal-optimizing.html?m=0)
+ of how our algorithm explores the state space.
 
 
 ## Other applications
@@ -428,8 +436,9 @@ Given that our algorithm is surprisingly good at path finding, we wonder how wel
  If you used something similar to our agent to move around the gaussian packets that are used when sampling integrals, 
  maybe it would be easier to focus on regions with a meaningful contribution to the sum.
  
-- **Neural nets**: It is possible to use our theory to make Deep Learning more efficient, but this code release does not focus on models.
-                    For now, it should be pretty clear that using FAI instead of MCTS is worth trying.
+- **Deep Learning**: It is possible to use our theory to make Deep Learning more efficient, but
+this code release does not focus on models. For now, it should be pretty clear that using FAI 
+instead of MCTS is worth trying.
                     
 - **Evolutionary strategies**: The principles of the theory also allow to design evolutionary strategies for training DNN,
  using something conceptually similar to what [Uber](https://eng.uber.com/deep-neuroevolution/) did.
@@ -438,7 +447,7 @@ Given that our algorithm is surprisingly good at path finding, we wonder how wel
   If you try this in a properly scaled implementation without *perfect understanding*, a long term disaster is guaranteed.
 
 - **Economics**: Our theory allow us to quantify and model the *personality* and *irrationality* of an agent, 
-and it has non-equilibrium risk-control mechanisms, we bet someone will think of an interesting application.
+and it has non-equilibrium risk-control mechanisms. We bet someone will think of an interesting application.
 
 - **Looks like Alien Math**: It is so weird that it almost qualifies as *"alien math"*. If you only knew this algorithm,
  you could pretty much arrive at the same conclusions as our current scientific knowledge arrives. 
@@ -506,14 +515,15 @@ If there are any questions regarding our methods, we will be answering them here
  
 ## About
 
-We have developed this theory for the pleasure of finding thing out as a hobby, while I was at college, and Sergio worked as a programmer.
- We had almost no financial support, nor access to a proper technical infrastructure, besides the 6 months [Source{d}](https://sourced.tech/) sponsored us. 
+We have developed this theory for the pleasure of finding thing out as a hobby, while I was at
+ college, and Sergio worked as a programmer. We had almost no financial support, nor access to a 
+ proper technical infrastructure, besides the 6 months [Source{d}](https://sourced.tech/) kindly
+ sponsored us. 
  
  We are not part of academia, we have no affiliation and no track record.
  
  We don't have the resources to carry on further our research, but we will gladly accept any contribution or
   sponsorship that allows us to continue working in our passion.
-
 
 - **[Sergio Hernández Cerezo](https://twitter.com/EntropyFarmer)**: Studied mathematics, works as programmer, dreams about physics.
 
@@ -522,7 +532,7 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
 **Special thanks**: We want to thank all the people who has believed in us during this years.
  Their patience, understanding, and support made possible this work.
  
- - Our families, HCSoft, Guillem's parents: Joan and Francisca, [Eulàlia Veny](https://twitter.com/linguistsmatter) and Fina. 
+ - Our families, [HCSoft](hcsoft.net), Guillem's parents: Joan and Francisca, [Eulàlia Veny](https://twitter.com/linguistsmatter), and Fina. 
  
  - The people at sourced, specially [Eiso Kant](https://twitter.com/eisokant), [Waren Long](https://twitter.com/warenlg), [Vadim Markovtsev](https://twitter.com/tmarkhor),
   [Marcelo Novaes](https://twitter.com/marnovo), and [Egor Bulychev](https://twitter.com/egor_bu).
