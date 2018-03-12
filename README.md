@@ -108,7 +108,7 @@ The following benchmarks have been calculated in a laptop using a single thread 
 Some of them can be replicated in real time, and others require up to 20k samples per action, but anyone running this code
 should be able to get similar performance.
 
-We show performance with respect to benchmarks widely accepted in the reinforcement learning community.
+We show performance with respect to benchmarks widely accepted in the reinforcement learning community.**[[4](#bibliography)]**, **[[5](#bibliography)]**, **[[6](#bibliography)]**, **[[7](#bibliography)]**, **[[8](#bibliography)]**
 
 
 |Game          |FAI Score|% vs Best AI|% vs MCTS|Mean samples per action|N repeat action|Time horizon|Max samples per action|Max states|
@@ -163,7 +163,7 @@ recorded using a custom library, which can be used to create different task in c
 
 ### Related Papers
 
-[GAS Paper](https://arxiv.org/abs/1705.08691):
+[GAS Paper](https://arxiv.org/abs/1705.08691)**[[3](#bibliography)]**:
  We tried to publish a paper describing an application of our theory to general optimization,
 but it was not published because our method "lacked scientific relevance", and there was no need for more algorithms that were not proven to work at a huge scale.
 As we lack the resources to deploy our methods at a bigger scale, we were unable to meet the requirements for publishing. 
@@ -171,7 +171,7 @@ As we lack the resources to deploy our methods at a bigger scale, we were unable
 There are better ways to apply our theory to general optimization, but it is a nice example of why code is better than math to explain our theory. When you try to formalize it, 
 it gets really non-intuitive.
 
-[Causal Entropic Forces by Alexander Wissner-Gross](http://alexwg.org/publications/PhysRevLett_110-168702.pdf): 
+[Causal Entropic Forces by Alexander Wissner-Gross](http://alexwg.org/publications/PhysRevLett_110-168702.pdf)**[[2](#bibliography)]**: 
 The fundamental concepts behind this paper inspired our research. We develop our theory aiming to calculate future entropy faster,
  and being able to leverage the information contained in the Entropy of any state space, together with any potential function.
  
@@ -311,4 +311,21 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
  ## Bibliography
  
  -  **[1]**  Greg Brockman and Vicki Cheung and Ludwig Pettersson and Jonas Schneider and John Schulman and Jie Tang and Wojciech Zaremba.
-*OpenAI Gym* . [arXiv:1606.01540](https://arxiv.org/pdf/1606.01540.pdf), 2016.
+***OpenAI Gym*** . [arXiv:1606.01540](https://arxiv.org/pdf/1606.01540.pdf), 2016.
+
+- **[2]**  Alexander Wissner-Gross. ***Causal entropic forces*** . [Physical Review Letters](http://alexwg.org/publications/PhysRevLett_110-168702.pdf), 2013.
+
+- **[3]**  Sergio Hernández, Guillem Duran, José M. Amigó. ***General Algorithmic Search***. [arXiv:1705.08691](https://arxiv.org/abs/1705.08691), 2017.
+
+- **[4]**  Volodymyr Mnih & others. ***Human-level control through deep reinforcement learning***. [doi:10.1038/nature14236](http://www.davidqiu.com:8888/research/nature14236.pdf), 2015.
+
+- **[5]**  Guo, Xiaoxiao and Singh, Satinder and Lee, Honglak and Lewis, Richard L and Wang, Xiaoshi. 
+***Deep Learning for Real-Time Atari Game Play Using Offline Monte-Carlo Tree Search Planning***. [NIPS2014_5421](http://papers.nips.cc/paper/5421-deep-learning-for-real-time-atari-game-play-using-offline-monte-carlo-tree-search-planning.pdf), 2014.
+
+- **[6]**  Matthias Plappert, Rein Houthooft, Prafulla Dhariwal, Szymon Sidor, Richard Y. Chen, Xi Chen, Tamim Asfour, Pieter Abbeel, Marcin Andrychowicz.
+ ***Parameter Space Noise for Exploration***. [arXiv:1706.01905](https://arxiv.org/abs/1706.01905).
+
+- **[7]**  Justin Fu and Irving Hsu. ***Model-Based Reinforcement Learning for Playing Atari Games***.
+ [Stanford Report](http://cs231n.stanford.edu/reports/2016/pdfs/116_Report.pdf).
+ 
+-  **[8]**  ***ATARI VCS/2600 Scoreboard***. [Atari compendium](http://www.ataricompendium.com/game_library/high_scores/high_scores.html), 2018.
