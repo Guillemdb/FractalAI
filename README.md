@@ -1,8 +1,8 @@
 # Fractal AI: A fragile theory of intelligence
 
-![Tennis-v0](assets/tennis.gif "Tennis-v0 1250 samples per action")  ![MontezumaRevenge-v0](assets/montezuma.gif
- "MontezumaRevenge-v0 5175 samples per action") ![Centipede-v0](assets/centipede.png
-  "Centipede-v0 5175 samples per action") ![IceHockey-v0](assets/icehockey.png "IceHockey-v0 12158 samples per action")
+![Boxing-v0](assets/boxing.gif "Boxing-v0 76 samples per action") ![Tennis-v0](assets/tennis.gif "Tennis-v0 1250 samples per action")   ![Centipede-v0](assets/centipede.png
+  "Centipede-v0 1960 samples per action") ![MontezumaRevenge-v0](assets/montezuma.gif
+ "MontezumaRevenge-v0 5175 samples per action") ![IceHockey-v0](assets/icehockey.png "IceHockey-v0 12158 samples per action")
 
 ### Sergio Hernández Cerezo and Guillem Duran Ballester
 
