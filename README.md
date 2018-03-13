@@ -105,7 +105,8 @@ what you end up installing on your platform.
 
 The following benchmarks have been calculated on a single machine 
 ([Razer Blade laptop](https://www.razerzone.com/gaming-laptops/razer-blade-pro)) using the
- implementation we provide in this repository.
+ implementation we provide in this repository. The parameters used were chosen using first principles
+ of the theory, and the performance observed corresponds with the expected values.
 
 ### FAI Performance table
 
@@ -113,17 +114,18 @@ In the following table we show performance with respect to benchmarks widely acc
  learning community. For each game we tried, it displays the following information:
  
 - **FAI Score**: This is the maximum scored we achieved in the games we have documented. The number
- of runs for each game may vary from one game to another. Some games have only been tried one time,
-  so we would really appreciate your feedback.
+ of runs for each game, and the parameters used may vary from one game to another.
 
 - **SoTa**: It stands for "State of The Art", and it represents the maximum score achieved by any of
  the following algorithms: Random, DQN, C51 DQN, NoisyNet-DQN, Dueling, NoisyNet-Dueling, A3C,
-  NoisyNet-A3C, A2C, HyperNEAT, ES FF, and  MCTS.
- **[[1](#bibliography)]**, **[[3](#bibliography)]**,  **[[4](#bibliography)]**, **[[5](#bibliography)]**, **[[6](#bibliography)]**, **[[7](#bibliography)]**. A detailed source for each score can be 
+  NoisyNet-A3C, A2C, HyperNEAT, ES FF, and  MCTS. Some scores are reported as an average across multiple runs (at most 100),
+  and it is important to take that into account when interpreting the benchmark.
+ **[[1](#bibliography)]**, **[[3](#bibliography)]**, **[[4](#bibliography)]**, **[[5](#bibliography)]**,
+  **[[6](#bibliography)]**, **[[7](#bibliography)]**. A detailed source for each score can be 
  found in the performance sheet. 
 
-- **Human**: According to **[[5](#bibliography)]**, this is the mean score achieved by *a professional human games
- tester playing under controlled conditions*.
+- **Human**: According to **[[5](#bibliography)]**, this is the mean score achieved by *a
+ professional human games tester playing under controlled conditions*.
   
 - **Absolute record**: It is the maximum score achieved by a human player as reported in **[[8](#bibliography)]**.
 
@@ -152,8 +154,8 @@ open an issue and we will update the document.
 [Fractal AI: A Fragile Theory of Intelligence](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing):
 This document explains the fundamental principles of the Fractal AI theory in which our Agent is based. 
 We tried very hard to build our own solution, so we worked all the fundamental principles completely from scratch.
-This means that it should contain anything you need to understand the theory without further reading required.
-Any comment on how to explain things more clearly will be welcome.
+We try to be consistent with existing terminology, but this document should contain anything you need to understand the theory,
+ without further reading required. Any comment on how to explain things more clearly will be welcome.
 
 ### Blog
  [Sergio's blog: EntropicAI](http://entropicai.blogspot.com.es/):
@@ -337,16 +339,16 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
 - **[5]**  Volodymyr Mnih & others. ***Human-level control through deep reinforcement learning***. [doi:10.1038/nature14236](http://www.davidqiu.com:8888/research/nature14236.pdf), 2015.
  
 - **[6]**  Matthias Plappert, Rein Houthooft, Prafulla Dhariwal, Szymon Sidor, Richard Y. Chen, Xi Chen, Tamim Asfour, Pieter Abbeel, Marcin Andrychowicz.
-***Parameter Space Noise for Exploration*** . [arXiv:1706.01905](https://arxiv.org/abs/1706.01905), 2017.
+***Parameter Space Noise for Exploration***. [arXiv:1706.01905](https://arxiv.org/abs/1706.01905), 2017.
 
 - **[7]**  Tim Salimans, Jonathan Ho, Xi Chen, Szymon Sidor, Ilya Sutskever.
-***Evolution Strategies as a Scalable Alternative to Reinforcement Learning*** . [arXiv:1706.01905](https://arxiv.org/abs/1706.01905), 2017.
+***Evolution Strategies as a Scalable Alternative to Reinforcement Learning***. [arXiv:1703.03864](https://arxiv.org/abs/1703.03864), 2017.
 
 - **[8]**  ***ATARI VCS/2600 Scoreboard***. [Atari compendium](http://www.ataricompendium.com/game_library/high_scores/high_scores.html), 2018.
 
 - **[9]**  Sergio Hernández, Guillem Duran, José M. Amigó. ***General Algorithmic Search***. [arXiv:1705.08691](https://arxiv.org/abs/1705.08691), 2017.
 
-- **[10]**  Alexander Wissner-Gross. ***Causal entropic forces*** . [Physical Review Letters](http://alexwg.org/publications/PhysRevLett_110-168702.pdf), 2013.
+- **[10]**  Alexander Wissner-Gross. ***Causal entropic forces***. [Physical Review Letters](http://alexwg.org/publications/PhysRevLett_110-168702.pdf), 2013.
 
 - **[11]**  Shane Legg ***Machine Super Intelligence***. [Doctoral Dissertation ](http://www.vetta.org/documents/Machine_Super_Intelligence.pdf), 2008.
 
