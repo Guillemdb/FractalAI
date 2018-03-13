@@ -101,31 +101,35 @@ what you end up installing on your platform.
 >
 > **Richard P. Feynman**
 
-The following benchmarks have been calculated in a laptop using the implementation we provide in this repository. 
-Some of them can be replicated in real time, and others require up to 20k samples per action, but
-anyone running this code should be able to get similar performance.
+***This section is still work in progress, and it will be updated during the day.***
 
-### FAI Performance tablw
+The following benchmarks have been calculated on a single machine 
+([Razer Blade laptop](https://www.razerzone.com/gaming-laptops/razer-blade-pro)) using the
+ implementation we provide in this repository.
 
-In the following table show performance with respect to benchmarks widely accepted in the reinforcement
+### FAI Performance table
+
+In the following table we show performance with respect to benchmarks widely accepted in the reinforcement
  learning community. For each game we tried, it displays the following information:
  
-- **FAI Score**: This is the maximum scored we achieved ins the games we have documented. The number of runs for each game my vary
-from one game to another. Some games have only been tried one time as logged on the Google Sheet, so we would really appreciate 
-your feedback.
+- **FAI Score**: This is the maximum scored we achieved in the games we have documented. The number
+ of runs for each game may vary from one game to another. Some games have only been tried one time,
+  so we would really appreciate your feedback.
 
-- **SoTa**: It stands for "State of The Art", and it represents the maximum score value that we could
-find for a given game in both  **[[3](#bibliography)]** and **[[4](#bibliography)]**. A detailed 
-source for each score can be found in the performance sheet.
+- **SoTa**: It stands for "State of The Art", and it represents the maximum score achieved by any of
+ the following algorithms: DQN, NoisyNet-DQN, A3C, NoisyNet-A3C, Dueling, NoisyNet-Dueling
+ **[[3](#bibliography)]** and **[[4](#bibliography)]**. A detailed source for each score can be 
+ found in the performance sheet. 
 
-- **Human**: According to **[[6](#bibliography)]**, this is the mean scored achieved by *a professional human games
+- **Human**: According to **[[5](#bibliography)]**, this is the mean score achieved by *a professional human games
  tester playing under controlled conditions*.
  
 - **N samples**: This is the mean number of samples that have been used in calculating each action.
- We used an small amount of computation per action in order to make this benchmarks easy to replicate.
- With a proper implementation, it is possible to greatly improve performance by increasing the maximum
-  number of samples per action allowed, the maximum size of the swarm, and the time horizon. When comparing
-   against MCTS, it is important to take into account that MCTS used 3 Million samples per action.
+ This is, the number of times we called step() on the environment.
+ 
+- **Absolute record**: It is the maximum score achieved by a human player as reported in **[[6](#bibliography)]**.
+
+- **MCTS**: Scores achieved using Monte Carlo Tree Search with 3 Million samples per action**[[1](#bibliography)]**.
    
 ![Benchmarks](assets/benchmarks.png)  
 
