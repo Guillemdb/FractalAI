@@ -101,18 +101,39 @@ what you end up installing on your platform.
 >
 > **Richard P. Feynman**
 
-The following benchmarks have been calculated in a laptop using a single thread implementation. 
+The following benchmarks have been calculated in a laptop using the implementation we provide in this repository. 
 Some of them can be replicated in real time, and others require up to 20k samples per action, but
 anyone running this code should be able to get similar performance.
 
-We show performance with respect to benchmarks widely accepted in the reinforcement learning community.
+### FAI Performance tablw
 
-**SoTa**: It stands for "State of The Art", and it represents the maximum score value that we could
-find for a given game in both  **[[3](#bibliography)]** and **[[4](#bibliography)]**.
+In the following table show performance with respect to benchmarks widely accepted in the reinforcement
+ learning community. For each game we tried, it displays the following information:
+ 
+- **FAI Score**: This is the maximum scored we achieved ins the games we have documented. The number of runs for each game my vary
+from one game to another. Some games have only been tried one time as logged on the Google Sheet, so we would really appreciate 
+your feedback.
 
-![Benchmarks](assets/benchmarks.png)   
+- **SoTa**: It stands for "State of The Art", and it represents the maximum score value that we could
+find for a given game in both  **[[3](#bibliography)]** and **[[4](#bibliography)]**. A detailed 
+source for each score can be found in the performance sheet.
+
+- **Human**: According to **[[6](#bibliography)]**, this is the mean scored achieved by *a professional human games
+ tester playing under controlled conditions*.
+ 
+- **N samples**: This is the mean number of samples that have been used in calculating each action.
+ We used an small amount of computation per action in order to make this benchmarks easy to replicate.
+ With a proper implementation, it is possible to greatly improve performance by increasing the maximum
+  number of samples per action allowed, the maximum size of the swarm, and the time horizon. When comparing
+   against MCTS, it is important to take into account that MCTS used 3 Million samples per action.
+   
+![Benchmarks](assets/benchmarks.png)  
+
+#### Detailed Google Sheet
 
 In the following Google Sheet we are logging the performance of our Agent relative to the current alternatives.
+You can also find all the parameters we used in each of the runs.
+
 If you find that some benchmark is outdated, or you are not capable of replicating some of our results, please
 open an issue and we will update the document.
 
@@ -303,17 +324,17 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
 - **[2]**  Greg Brockman and Vicki Cheung and Ludwig Pettersson and Jonas Schneider and John Schulman and Jie Tang and Wojciech Zaremba.
 ***OpenAI Gym*** . [arXiv:1606.01540](https://arxiv.org/pdf/1606.01540.pdf), 2016.
 
-- **[4]**  Marc G. Bellemare, Will Dabney Rémi Munos. ***A Distributional Perspective on Reinforcement Learning***. [arXiv:1707.06887](https://arxiv.org/pdf/1707.06887.pdf), 2017.
+- **[3]**  Marc G. Bellemare, Will Dabney Rémi Munos. ***A Distributional Perspective on Reinforcement Learning***. [arXiv:1707.06887](https://arxiv.org/pdf/1707.06887.pdf), 2017.
 
-- **[5]**  Meire Fortunato, Mohammad Gheshlaghi Azar, Bilal Piot, Jacob Menick, Matteo Hessel, Ian Osband, Alex Graves, Vlad Mnih, Remi Munos, Demis Hassabis,
+- **[4]**  Meire Fortunato, Mohammad Gheshlaghi Azar, Bilal Piot, Jacob Menick, Matteo Hessel, Ian Osband, Alex Graves, Vlad Mnih, Remi Munos, Demis Hassabis,
  Olivier Pietquin, Charles Blundell, Shane Legg. ***Noisy networks for exploration***. [arXiv:1706.10295](https://arxiv.org/pdf/1706.10295.pdf), 2018.
  
-- **[6]**  Volodymyr Mnih & others. ***Human-level control through deep reinforcement learning***. [doi:10.1038/nature14236](http://www.davidqiu.com:8888/research/nature14236.pdf), 2015.
+- **[5]**  Volodymyr Mnih & others. ***Human-level control through deep reinforcement learning***. [doi:10.1038/nature14236](http://www.davidqiu.com:8888/research/nature14236.pdf), 2015.
  
-- **[7]**  ***ATARI VCS/2600 Scoreboard***. [Atari compendium](http://www.ataricompendium.com/game_library/high_scores/high_scores.html), 2018.
+- **[6]**  ***ATARI VCS/2600 Scoreboard***. [Atari compendium](http://www.ataricompendium.com/game_library/high_scores/high_scores.html), 2018.
 
-- **[8]**  Sergio Hernández, Guillem Duran, José M. Amigó. ***General Algorithmic Search***. [arXiv:1705.08691](https://arxiv.org/abs/1705.08691), 2017.
+- **[7]**  Sergio Hernández, Guillem Duran, José M. Amigó. ***General Algorithmic Search***. [arXiv:1705.08691](https://arxiv.org/abs/1705.08691), 2017.
 
-- **[9]**  Alexander Wissner-Gross. ***Causal entropic forces*** . [Physical Review Letters](http://alexwg.org/publications/PhysRevLett_110-168702.pdf), 2013.
+- **[8]**  Alexander Wissner-Gross. ***Causal entropic forces*** . [Physical Review Letters](http://alexwg.org/publications/PhysRevLett_110-168702.pdf), 2013.
 
-- **[10]**  Shane Legg ***Machine Super Intelligence***. [Doctoral Dissertation ](http://www.vetta.org/documents/Machine_Super_Intelligence.pdf), 2008.
+- **[9]**  Shane Legg ***Machine Super Intelligence***. [Doctoral Dissertation ](http://www.vetta.org/documents/Machine_Super_Intelligence.pdf), 2008.
