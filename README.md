@@ -146,7 +146,18 @@ open an issue and we will update the document.
 
 > [Fractal AI performance sheet](https://docs.google.com/spreadsheets/d/1JcNw2L0YL_I2iGZPJ0bNKJshlTaqMuEl5CP2W5zie6M/edit?usp=sharing)
 
-#### Or just run the example and check by yourself!
+### Please help us running the example, and check by yourself!
+
+Want to help? Once you have a recorded video, please write down the parameters you used and the
+ mean time displayed as output in the notebook, and share them with us. You can do that in two ways:
+
+- Upload the mp4 generated to YouTube and post it on Twitter. Write the parameters you used and the mean time
+ in the same tweet as the video, and use the hashtag **#Fractal_ATARI**. 
+  
+- Open an issue in this repository and share the data with us.
+ 
+ Thanks!
+
 
 ## Additional Resources
 
