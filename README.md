@@ -118,8 +118,8 @@ In the following table we show performance with respect to benchmarks widely acc
 
 - **SoTa**: It stands for "State of The Art", and it represents the maximum score achieved by any of
  the following algorithms: Random, DQN, C51 DQN, NoisyNet-DQN, Dueling, NoisyNet-Dueling, A3C,
-  NoisyNet-A3C, A2C, HyperNEAT, ES FF, and  MCTS. Some scores are reported as an average across multiple runs (at most 100),
-  and it is important to take that into account when interpreting the benchmark.
+  NoisyNet-A3C, A2C, HyperNEAT, ES FF, and  MCTS. Some scores are reported as an average across
+   multiple runs (at most 100), and it is important to take that into account when interpreting the benchmark.
  **[[1](#bibliography)]**, **[[3](#bibliography)]**, **[[4](#bibliography)]**, **[[5](#bibliography)]**,
   **[[6](#bibliography)]**, **[[7](#bibliography)]**. A detailed source for each score can be 
  found in the performance sheet. 
@@ -154,8 +154,8 @@ open an issue and we will update the document.
 [Fractal AI: A Fragile Theory of Intelligence](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing):
 This document explains the fundamental principles of the Fractal AI theory in which our Agent is based. 
 We tried very hard to build our own solution, so we worked all the fundamental principles completely from scratch.
-We try to be consistent with existing terminology, but this document should contain anything you need to understand the theory,
- without further reading required. Any comment on how to explain things more clearly will be welcome.
+We try to be consistent with existing terminology, and this document should contain everything
+ you need to understand the theory. Any comment on how to explain things more clearly will be welcome.
 
 ### Blog
  [Sergio's blog: EntropicAI](http://entropicai.blogspot.com.es/):
@@ -250,22 +250,28 @@ We cannot provide any formal proof about this algorithm, because we don't know a
  The agent uses a Swarm to build a causal cone used to approximate the Q values of each action.
  
 - ***It is possible to prove that this algorithm is unprovable with any known mathematical tools.***
-  Maybe someone can proof that FAI is unprovable **[[11](#bibliography)]**.
- 
-![Unprovable](assets/unprovable.png)   
- 
-- ***A State Swarm can leverage efficiently both the information contained in the physical structure of a given State Space (Entropy/Exploration), and the potential field associated with each state.***
-
-  This means that we are not taking only into account "how good an state is", but also "how different an state is with respect to the others", effectively solving the exploration vs exploitation problem.
- 
-- ***This algorithm tends to achieve symmetry. In the limit, a swarm of states will be distributed proportionally to the space-time reward distribution of the space state.*** 
-
-  If we fix all the states in the Swarm to share time, states distribution in each slice of the causal cone  will be proportional to its reward density distribution in the limit.
- If we do not fix the time, a Swarm will automatically adjust to also distribute the states symmetrically with respect to the time horizon.
   
-- ***Given a uniform prior, this algorithm will never perform worse than random. And it will only perform randomly when no
- information can be extracted from the different states in the Swarm. Changing the prior will allow for worse than random games, but
- it will increase the performance in other problems.*** 
+    Maybe someone can proof that FAI is unprovable **[[11](#bibliography)]**.![Unprovable](assets/unprovable.png)   
+ 
+- ***A State Swarm can leverage efficiently both the information contained in the physical
+ structure of a given State Space (Entropy/Exploration), and the potential field associated
+  with each state.***
+
+  This means that we are not taking only into account "how good an state is",
+   but also "how different an state is with respect to the others", effectively solving
+    the exploration vs exploitation problem.
+ 
+- ***This algorithm tends to achieve symmetry. In the limit, a swarm of states will be
+ distributed proportionally to the space-time reward distribution of the space state.*** 
+
+  If we fix all the states in the Swarm to share time, states distribution in each slice of
+   the causal cone  will be proportional to its reward density distribution in the limit.
+ If we do not fix the time, a Swarm will automatically adjust to also distribute the states
+  symmetrically with respect to the time horizon.
+  
+- ***Given a uniform prior, this algorithm will never perform worse than random. And it 
+will only perform randomly when the Swarm'shape is symmetric. Changing the prior will allow
+ for worse than random games, but it will increase the performance in other problems.*** 
 
     Yes, we have read about the No Free Lunch Theorem, and we think this is an exception.
 
@@ -274,14 +280,18 @@ We cannot provide any formal proof about this algorithm, because we don't know a
   If we happen to be right, and complexity is better measured using our methods, there would be NP hard problems which should be possible to solve in polynomial time. 
   Our complexity measure can classify some P and NP problems in the same category.
 
-- ***There exits an arbitrary good approximation to [Density Functional Theory](https://en.wikipedia.org/wiki/Density_functional_theory) that scales linearly with the number of particles, and which uncertainty depends on the amount of computational resources used to calculate the approximation.*** 
+- ***There exits an arbitrary good approximation to 
+[Density Functional Theory](https://en.wikipedia.org/wiki/Density_functional_theory) 
+that scales almost linearly with the number of particles, and which uncertainty depends on the 
+amount of computational resources used to calculate the approximation.*** 
 
   If you treat electrons as agents, you can use the minimum action principle to formulate a proper approximation of the potential
    function in almost any known physical problem. Then you can move the particles around as if you were solving a multi-agent environment. 
- Our method  scales linearly with the number of particles, so it gives a new approach to complex problems.
+ Our method scales almost linearly with the number of particles, so it gives a new approach to complex problems.
  
 - ***Is it possible to create a functional AGI using only fractal methods***.
- With proper funding, a lot of effort, and very large amounts of computer power we think we can build an AGI within 10 years.
+    
+     With proper funding, a lot of effort, and very large amounts of computer power we think we can build an AGI within 10 years.
 
 
 ## Cite us
