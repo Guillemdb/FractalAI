@@ -106,276 +106,277 @@ Some of them can be replicated in real time, and others require up to 20k sample
 anyone running this code should be able to get similar performance.
 
 We show performance with respect to benchmarks widely accepted in the reinforcement learning community.
- **[[1](#bibliography)]**, **[[3](#bibliography)]**, **[[4](#bibliography)]**, **[[5](#bibliography)]**, **[[6](#bibliography)]**
 
+**SoTa**: It stands for "State of The Art", and it represents the maximum score value that we could
+find for a given game in both  **[[3](#bibliography)]** and **[[4](#bibliography)]**.
 
 <table border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th></th>
       <th>Game</th>
-      <th>Mean samples per action</th>
       <th>FAI Score</th>
-      <th>SoTA</th>
-      <th>Human after training 2H</th>
-      <th>MCTS 3M samples</th>
-      <th>Absolute Record</th>
+      <th>SoTA*</th>
       <th>% vs SoTA</th>
+      <th>Human after training 2H [5]</th>
+      <th>Absolute Record [7]</th>
+      <th>MCTS 3M samples [1]</th>
+      <th>FAI mean samples per action</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
       <td>alien</td>
-      <td>1,190</td>
       <td>19,380</td>
-      <td>5899</td>
-      <td>7,128</td>
-      <td>nan</td>
-      <td>251916</td>
+      <td>5,899</td>
       <td>328.53%</td>
+      <td>7,128</td>
+      <td>251,916</td>
+      <td>nan</td>
+      <td>1,190</td>
     </tr>
     <tr>
       <th>1</th>
       <td>amidar</td>
-      <td>1,222</td>
       <td>4,306</td>
-      <td>2215</td>
-      <td>1,720</td>
-      <td>nan</td>
-      <td>155339</td>
+      <td>2,215</td>
       <td>194.40%</td>
+      <td>1,720</td>
+      <td>155,339</td>
+      <td>nan</td>
+      <td>1,222</td>
     </tr>
     <tr>
       <th>2</th>
       <td>assault</td>
-      <td>1,317</td>
       <td>1,280</td>
-      <td>7502</td>
+      <td>7,502</td>
+      <td>17.06%</td>
       <td>1,496</td>
       <td>nan</td>
-      <td>NaN</td>
-      <td>17.06%</td>
+      <td>nan</td>
+      <td>1,317</td>
     </tr>
     <tr>
       <th>3</th>
       <td>asteroids</td>
-      <td>2,733</td>
       <td>76,270</td>
-      <td>26380</td>
-      <td>47,389</td>
-      <td>nan</td>
-      <td>10004100</td>
+      <td>26,380</td>
       <td>289.12%</td>
+      <td>47,389</td>
+      <td>10,004,100</td>
+      <td>nan</td>
+      <td>2,733</td>
     </tr>
     <tr>
       <th>4</th>
       <td>beam rider</td>
-      <td>4,052</td>
       <td>2,160</td>
-      <td>17092</td>
-      <td>16,926</td>
-      <td>7,233</td>
-      <td>999999</td>
+      <td>17,092</td>
       <td>12.64%</td>
+      <td>16,926</td>
+      <td>999,999</td>
+      <td>7,233</td>
+      <td>4,052</td>
     </tr>
     <tr>
       <th>5</th>
       <td>boxing</td>
-      <td>2,027</td>
       <td>100</td>
       <td>96</td>
-      <td>12</td>
-      <td>nan</td>
-      <td>99</td>
       <td>104.17%</td>
+      <td>12</td>
+      <td>99</td>
+      <td>nan</td>
+      <td>2,027</td>
     </tr>
     <tr>
       <th>6</th>
       <td>breakout</td>
-      <td>5,309</td>
       <td>36</td>
       <td>451</td>
-      <td>32</td>
-      <td>406</td>
-      <td>NaN</td>
       <td>7.98%</td>
+      <td>32</td>
+      <td>nan</td>
+      <td>406</td>
+      <td>5,309</td>
     </tr>
     <tr>
       <th>7</th>
       <td>centipede</td>
-      <td>1,960</td>
-      <td>1,052,000</td>
-      <td>8704</td>
+      <td>1,153,000</td>
+      <td>8,704</td>
+      <td>13,246.78%</td>
       <td>12,017</td>
+      <td>1,301,709</td>
       <td>nan</td>
-      <td>1301709</td>
-      <td>12,086.40%</td>
+      <td>1,960</td>
     </tr>
     <tr>
       <th>8</th>
       <td>crazy climber</td>
-      <td>1,207</td>
       <td>238,300</td>
-      <td>133065</td>
-      <td>35,829</td>
-      <td>nan</td>
-      <td>447000</td>
+      <td>133,065</td>
       <td>179.09%</td>
+      <td>35,829</td>
+      <td>447,000</td>
+      <td>nan</td>
+      <td>1,207</td>
     </tr>
     <tr>
       <th>9</th>
       <td>double dunk</td>
-      <td>5,327</td>
       <td>20</td>
       <td>5</td>
+      <td>400.00%</td>
       <td>-16</td>
       <td>nan</td>
-      <td>NaN</td>
-      <td>400.00%</td>
+      <td>nan</td>
+      <td>5,327</td>
     </tr>
     <tr>
       <th>10</th>
       <td>enduro</td>
-      <td>826</td>
-      <td>500</td>
-      <td>1679</td>
+      <td>759</td>
+      <td>1,679</td>
+      <td>45.21%</td>
       <td>860</td>
-      <td>788</td>
       <td>3,618</td>
-      <td>29.78%</td>
+      <td>788</td>
+      <td>826</td>
     </tr>
     <tr>
       <th>11</th>
       <td>freeway</td>
-      <td>807</td>
       <td>10</td>
       <td>33</td>
+      <td>30.30%</td>
       <td>30</td>
       <td>nan</td>
-      <td>NaN</td>
-      <td>30.30%</td>
+      <td>nan</td>
+      <td>807</td>
     </tr>
     <tr>
       <th>12</th>
       <td>ice hockey</td>
-      <td>12,158</td>
-      <td>52</td>
+      <td>61</td>
       <td>0</td>
+      <td>99,999.00%</td>
       <td>1</td>
-      <td>nan</td>
       <td>36</td>
-      <td>NaN</td>
+      <td>nan</td>
+      <td>12,158</td>
     </tr>
     <tr>
       <th>13</th>
       <td>montezuma</td>
-      <td>5,175</td>
       <td>2,500</td>
       <td>15</td>
+      <td>16,666.67%</td>
       <td>4,753</td>
       <td>nan</td>
-      <td>NaN</td>
-      <td>16,666.67%</td>
+      <td>nan</td>
+      <td>5,175</td>
     </tr>
     <tr>
       <th>14</th>
       <td>ms pacman</td>
-      <td>5,129</td>
       <td>58,521</td>
-      <td>4209</td>
-      <td>15,693</td>
-      <td>nan</td>
-      <td>290090</td>
+      <td>4,209</td>
       <td>1,390.38%</td>
+      <td>15,693</td>
+      <td>290,090</td>
+      <td>nan</td>
+      <td>5,129</td>
     </tr>
     <tr>
       <th>15</th>
       <td>phoenix</td>
-      <td>1,289</td>
       <td>11,930</td>
-      <td>36839</td>
-      <td>7,243</td>
-      <td>nan</td>
-      <td>4014440</td>
+      <td>36,839</td>
       <td>32.38%</td>
+      <td>7,243</td>
+      <td>4,014,440</td>
+      <td>nan</td>
+      <td>1,289</td>
     </tr>
     <tr>
       <th>16</th>
       <td>qbert</td>
-      <td>2,728</td>
       <td>35,750</td>
-      <td>18850</td>
-      <td>13,455</td>
       <td>18,850</td>
-      <td>2400000</td>
       <td>189.66%</td>
+      <td>13,455</td>
+      <td>2,400,000</td>
+      <td>18,850</td>
+      <td>2,728</td>
     </tr>
     <tr>
       <th>17</th>
       <td>seaquest</td>
-      <td>6,149</td>
       <td>5,220</td>
-      <td>12534</td>
-      <td>42,055</td>
-      <td>3,257</td>
-      <td>527160</td>
+      <td>12,534</td>
       <td>41.65%</td>
+      <td>42,055</td>
+      <td>527,160</td>
+      <td>3,257</td>
+      <td>6,149</td>
     </tr>
     <tr>
       <th>18</th>
       <td>space invaders</td>
-      <td>4,261</td>
       <td>3,605</td>
-      <td>4490</td>
-      <td>1,669</td>
-      <td>2,354</td>
-      <td>621535</td>
+      <td>4,490</td>
       <td>80.29%</td>
+      <td>1,669</td>
+      <td>621,535</td>
+      <td>2,354</td>
+      <td>4,261</td>
     </tr>
     <tr>
       <th>19</th>
       <td>tennis</td>
-      <td>1,242</td>
       <td>24</td>
       <td>9</td>
+      <td>266.67%</td>
       <td>-8</td>
       <td>nan</td>
-      <td>NaN</td>
-      <td>266.67%</td>
+      <td>nan</td>
+      <td>1,242</td>
     </tr>
     <tr>
       <th>20</th>
       <td>tutankham</td>
-      <td>3,023</td>
       <td>223</td>
       <td>321</td>
-      <td>168</td>
-      <td>nan</td>
-      <td>3493</td>
       <td>69.47%</td>
+      <td>168</td>
+      <td>3,493</td>
+      <td>nan</td>
+      <td>3,023</td>
     </tr>
     <tr>
       <th>21</th>
       <td>video pinball</td>
-      <td>1,083</td>
       <td>604,043</td>
-      <td>768419</td>
-      <td>17,668</td>
-      <td>nan</td>
-      <td>91862206</td>
+      <td>768,419</td>
       <td>78.61%</td>
+      <td>17,668</td>
+      <td>91,862,206</td>
+      <td>nan</td>
+      <td>1,083</td>
     </tr>
     <tr>
       <th>22</th>
       <td>wizard of wor</td>
-      <td>2,229</td>
       <td>93,090</td>
-      <td>11852</td>
-      <td>4,756</td>
-      <td>nan</td>
-      <td>233700</td>
+      <td>11,852</td>
       <td>785.44%</td>
+      <td>4,756</td>
+      <td>233,700</td>
+      <td>nan</td>
+      <td>2,229</td>
     </tr>
   </tbody>
 </table>
@@ -572,18 +573,17 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
 - **[2]**  Greg Brockman and Vicki Cheung and Ludwig Pettersson and Jonas Schneider and John Schulman and Jie Tang and Wojciech Zaremba.
 ***OpenAI Gym*** . [arXiv:1606.01540](https://arxiv.org/pdf/1606.01540.pdf), 2016.
 
-- **[3]**  Volodymyr Mnih & others. ***Human-level control through deep reinforcement learning***. [doi:10.1038/nature14236](http://www.davidqiu.com:8888/research/nature14236.pdf), 2015.
+- **[4]**  Marc G. Bellemare, Will Dabney Rémi Munos. ***A Distributional Perspective on Reinforcement Learning***. [arXiv:1707.06887](https://arxiv.org/pdf/1707.06887.pdf), 2017.
 
-- **[4]**  Matthias Plappert, Rein Houthooft, Prafulla Dhariwal, Szymon Sidor, Richard Y. Chen, Xi Chen, Tamim Asfour, Pieter Abbeel, Marcin Andrychowicz.
- ***Parameter Space Noise for Exploration***. [arXiv:1706.01905](https://arxiv.org/abs/1706.01905).
-
-- **[5]**  Justin Fu and Irving Hsu. ***Model-Based Reinforcement Learning for Playing Atari Games***.
- [Stanford Report](http://cs231n.stanford.edu/reports/2016/pdfs/116_Report.pdf).
+- **[5]**  Meire Fortunato, Mohammad Gheshlaghi Azar, Bilal Piot, Jacob Menick, Matteo Hessel, Ian Osband, Alex Graves, Vlad Mnih, Remi Munos, Demis Hassabis,
+ Olivier Pietquin, Charles Blundell, Shane Legg. ***Noisy networks for exploration***. [arXiv:1706.10295](https://arxiv.org/pdf/1706.10295.pdf), 2018.
  
-- **[6]**  ***ATARI VCS/2600 Scoreboard***. [Atari compendium](http://www.ataricompendium.com/game_library/high_scores/high_scores.html), 2018.
+- **[6]**  Volodymyr Mnih & others. ***Human-level control through deep reinforcement learning***. [doi:10.1038/nature14236](http://www.davidqiu.com:8888/research/nature14236.pdf), 2015.
+ 
+- **[7]**  ***ATARI VCS/2600 Scoreboard***. [Atari compendium](http://www.ataricompendium.com/game_library/high_scores/high_scores.html), 2018.
 
-- **[7]**  Sergio Hernández, Guillem Duran, José M. Amigó. ***General Algorithmic Search***. [arXiv:1705.08691](https://arxiv.org/abs/1705.08691), 2017.
+- **[8]**  Sergio Hernández, Guillem Duran, José M. Amigó. ***General Algorithmic Search***. [arXiv:1705.08691](https://arxiv.org/abs/1705.08691), 2017.
 
-- **[8]**  Alexander Wissner-Gross. ***Causal entropic forces*** . [Physical Review Letters](http://alexwg.org/publications/PhysRevLett_110-168702.pdf), 2013.
+- **[9]**  Alexander Wissner-Gross. ***Causal entropic forces*** . [Physical Review Letters](http://alexwg.org/publications/PhysRevLett_110-168702.pdf), 2013.
 
-- **[9]** Shane Legg ***Machine Super Intelligence***. [Doctoral Dissertation ](http://www.vetta.org/documents/Machine_Super_Intelligence.pdf), 2008.
+- **[10]**  Shane Legg ***Machine Super Intelligence***. [Doctoral Dissertation ](http://www.vetta.org/documents/Machine_Super_Intelligence.pdf), 2008.
