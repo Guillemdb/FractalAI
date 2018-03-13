@@ -117,19 +117,20 @@ In the following table we show performance with respect to benchmarks widely acc
   so we would really appreciate your feedback.
 
 - **SoTa**: It stands for "State of The Art", and it represents the maximum score achieved by any of
- the following algorithms: DQN, NoisyNet-DQN, A3C, NoisyNet-A3C, Dueling, NoisyNet-Dueling
- **[[3](#bibliography)]** and **[[4](#bibliography)]**. A detailed source for each score can be 
+ the following algorithms: Random, DQN, C51 DQN, NoisyNet-DQN, Dueling, NoisyNet-Dueling, A3C,
+  NoisyNet-A3C, A2C, HyperNEAT, ES FF, and  MCTS.
+ **[[1](#bibliography)]**, **[[3](#bibliography)]**,  **[[4](#bibliography)]**, **[[5](#bibliography)]**, **[[6](#bibliography)]**, **[[7](#bibliography)]**. A detailed source for each score can be 
  found in the performance sheet. 
 
 - **Human**: According to **[[5](#bibliography)]**, this is the mean score achieved by *a professional human games
  tester playing under controlled conditions*.
   
-- **Absolute record**: It is the maximum score achieved by a human player as reported in **[[6](#bibliography)]**.
+- **Absolute record**: It is the maximum score achieved by a human player as reported in **[[8](#bibliography)]**.
 
-- **MCTS**: Scores achieved using Monte Carlo Tree Search with 3 Million samples per action **[[1](#bibliography)]**.
+- **MCTS**: Scores achieved using UCT Monte Carlo Tree Search with 3 Million samples per action **[[1](#bibliography)]**.
 
 - **N samples**: This is the mean number of samples that have been used in calculating each action.
- This is, the number of times we called step() on the environment.
+ This is, the number of times we called step() on the environment per action.
    
 ![Benchmarks](assets/benchmarks.png)  
 
@@ -168,7 +169,7 @@ recorded using a custom library, which can be used to create different task in c
 
 ### Related Papers
 
-[GAS paper](https://arxiv.org/abs/1705.08691) **[[7](#bibliography)]**:
+[GAS paper](https://arxiv.org/abs/1705.08691) **[[9](#bibliography)]**:
  We tried to publish a paper describing an application of our theory to general optimization,
 but it was not published because our method "lacked scientific relevance", and there was no need for more algorithms that were not proven to work at a huge scale.
 As we lack the resources to deploy our methods at a bigger scale, we were unable to meet the requirements for publishing. 
@@ -176,7 +177,7 @@ As we lack the resources to deploy our methods at a bigger scale, we were unable
 There are better ways to apply our theory to general optimization, but it is a nice example of why code is better than math to explain our theory. When you try to formalize it, 
 it gets really non-intuitive.
 
-[Causal Entropic Forces by Alexander Wissner-Gross](http://alexwg.org/publications/PhysRevLett_110-168702.pdf) **[[8](#bibliography)]**: 
+[Causal Entropic Forces by Alexander Wissner-Gross](http://alexwg.org/publications/PhysRevLett_110-168702.pdf) **[[10](#bibliography)]**: 
 The fundamental concepts behind this paper inspired our research. We develop our theory aiming to calculate future entropy faster,
  and being able to leverage the information contained in the Entropy of any state space, together with any potential function.
  
@@ -247,7 +248,7 @@ We cannot provide any formal proof about this algorithm, because we don't know a
  The agent uses a Swarm to build a causal cone used to approximate the Q values of each action.
  
 - ***It is possible to prove that this algorithm is unprovable with any known mathematical tools.***
-  Maybe someone can proof that FAI is unprovable **[[9](#bibliography)]**.
+  Maybe someone can proof that FAI is unprovable **[[11](#bibliography)]**.
  
 ![Unprovable](assets/unprovable.png)   
  
@@ -335,10 +336,18 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
  
 - **[5]**  Volodymyr Mnih & others. ***Human-level control through deep reinforcement learning***. [doi:10.1038/nature14236](http://www.davidqiu.com:8888/research/nature14236.pdf), 2015.
  
-- **[6]**  ***ATARI VCS/2600 Scoreboard***. [Atari compendium](http://www.ataricompendium.com/game_library/high_scores/high_scores.html), 2018.
+- **[6]**  Matthias Plappert, Rein Houthooft, Prafulla Dhariwal, Szymon Sidor, Richard Y. Chen, Xi Chen, Tamim Asfour, Pieter Abbeel, Marcin Andrychowicz.
+***Parameter Space Noise for Exploration*** . [arXiv:1706.01905](https://arxiv.org/abs/1706.01905), 2017.
 
-- **[7]**  Sergio Hernández, Guillem Duran, José M. Amigó. ***General Algorithmic Search***. [arXiv:1705.08691](https://arxiv.org/abs/1705.08691), 2017.
+- **[7]**  Tim Salimans, Jonathan Ho, Xi Chen, Szymon Sidor, Ilya Sutskever.
+***Evolution Strategies as a Scalable Alternative to Reinforcement Learning*** . [arXiv:1706.01905](https://arxiv.org/abs/1706.01905), 2017.
 
-- **[8]**  Alexander Wissner-Gross. ***Causal entropic forces*** . [Physical Review Letters](http://alexwg.org/publications/PhysRevLett_110-168702.pdf), 2013.
+- **[8]**  ***ATARI VCS/2600 Scoreboard***. [Atari compendium](http://www.ataricompendium.com/game_library/high_scores/high_scores.html), 2018.
 
-- **[9]**  Shane Legg ***Machine Super Intelligence***. [Doctoral Dissertation ](http://www.vetta.org/documents/Machine_Super_Intelligence.pdf), 2008.
+- **[9]**  Sergio Hernández, Guillem Duran, José M. Amigó. ***General Algorithmic Search***. [arXiv:1705.08691](https://arxiv.org/abs/1705.08691), 2017.
+
+- **[10]**  Alexander Wissner-Gross. ***Causal entropic forces*** . [Physical Review Letters](http://alexwg.org/publications/PhysRevLett_110-168702.pdf), 2013.
+
+- **[11]**  Shane Legg ***Machine Super Intelligence***. [Doctoral Dissertation ](http://www.vetta.org/documents/Machine_Super_Intelligence.pdf), 2008.
+
+
