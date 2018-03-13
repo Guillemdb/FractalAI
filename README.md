@@ -123,13 +123,13 @@ In the following table we show performance with respect to benchmarks widely acc
 
 - **Human**: According to **[[5](#bibliography)]**, this is the mean score achieved by *a professional human games
  tester playing under controlled conditions*.
- 
-- **N samples**: This is the mean number of samples that have been used in calculating each action.
- This is, the number of times we called step() on the environment.
- 
+  
 - **Absolute record**: It is the maximum score achieved by a human player as reported in **[[6](#bibliography)]**.
 
-- **MCTS**: Scores achieved using Monte Carlo Tree Search with 3 Million samples per action**[[1](#bibliography)]**.
+- **MCTS**: Scores achieved using Monte Carlo Tree Search with 3 Million samples per action **[[1](#bibliography)]**.
+
+- **N samples**: This is the mean number of samples that have been used in calculating each action.
+ This is, the number of times we called step() on the environment.
    
 ![Benchmarks](assets/benchmarks.png)  
 
