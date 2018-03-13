@@ -105,7 +105,8 @@ what you end up installing on your platform.
 
 The following benchmarks have been calculated on a single machine 
 ([Razer Blade laptop](https://www.razerzone.com/gaming-laptops/razer-blade-pro)) using the
- implementation we provide in this repository.
+ implementation we provide in this repository. The parameters used were chosen using first principles
+ of the theory, and the performance observed corresponds with the expected values.
 
 ### FAI Performance table
 
@@ -113,23 +114,25 @@ In the following table we show performance with respect to benchmarks widely acc
  learning community. For each game we tried, it displays the following information:
  
 - **FAI Score**: This is the maximum scored we achieved in the games we have documented. The number
- of runs for each game may vary from one game to another. Some games have only been tried one time,
-  so we would really appreciate your feedback.
+ of runs for each game, and the parameters used may vary from one game to another.
 
 - **SoTa**: It stands for "State of The Art", and it represents the maximum score achieved by any of
- the following algorithms: DQN, NoisyNet-DQN, A3C, NoisyNet-A3C, Dueling, NoisyNet-Dueling
- **[[3](#bibliography)]** and **[[4](#bibliography)]**. A detailed source for each score can be 
+ the following algorithms: Random, DQN, C51 DQN, NoisyNet-DQN, Dueling, NoisyNet-Dueling, A3C,
+  NoisyNet-A3C, A2C, HyperNEAT, ES FF, and  MCTS. Some scores are reported as an average across
+   multiple runs (at most 100), and it is important to take that into account when interpreting the benchmark.
+ **[[1](#bibliography)]**, **[[3](#bibliography)]**, **[[4](#bibliography)]**, **[[5](#bibliography)]**,
+  **[[6](#bibliography)]**, **[[7](#bibliography)]**. A detailed source for each score can be 
  found in the performance sheet. 
 
-- **Human**: According to **[[5](#bibliography)]**, this is the mean score achieved by *a professional human games
- tester playing under controlled conditions*.
- 
-- **N samples**: This is the mean number of samples that have been used in calculating each action.
- This is, the number of times we called step() on the environment.
- 
-- **Absolute record**: It is the maximum score achieved by a human player as reported in **[[6](#bibliography)]**.
+- **Human**: According to **[[5](#bibliography)]**, this is the mean score achieved by *a
+ professional human games tester playing under controlled conditions*.
+  
+- **Absolute record**: It is the maximum score achieved by a human player as reported in **[[8](#bibliography)]**.
 
-- **MCTS**: Scores achieved using Monte Carlo Tree Search with 3 Million samples per action**[[1](#bibliography)]**.
+- **MCTS**: Scores achieved using UCT Monte Carlo Tree Search with 3 Million samples per action **[[1](#bibliography)]**.
+
+- **N samples**: This is the mean number of samples that have been used in calculating each action.
+ This is, the number of times we called step() on the environment per action.
    
 ![Benchmarks](assets/benchmarks.png)  
 
@@ -151,8 +154,8 @@ open an issue and we will update the document.
 [Fractal AI: A Fragile Theory of Intelligence](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing):
 This document explains the fundamental principles of the Fractal AI theory in which our Agent is based. 
 We tried very hard to build our own solution, so we worked all the fundamental principles completely from scratch.
-This means that it should contain anything you need to understand the theory without further reading required.
-Any comment on how to explain things more clearly will be welcome.
+We try to be consistent with existing terminology, and this document should contain everything
+ you need to understand the theory. Any comment on how to explain things more clearly will be welcome.
 
 ### Blog
  [Sergio's blog: EntropicAI](http://entropicai.blogspot.com.es/):
@@ -168,7 +171,7 @@ recorded using a custom library, which can be used to create different task in c
 
 ### Related Papers
 
-[GAS paper](https://arxiv.org/abs/1705.08691) **[[7](#bibliography)]**:
+[GAS paper](https://arxiv.org/abs/1705.08691) **[[9](#bibliography)]**:
  We tried to publish a paper describing an application of our theory to general optimization,
 but it was not published because our method "lacked scientific relevance", and there was no need for more algorithms that were not proven to work at a huge scale.
 As we lack the resources to deploy our methods at a bigger scale, we were unable to meet the requirements for publishing. 
@@ -176,7 +179,7 @@ As we lack the resources to deploy our methods at a bigger scale, we were unable
 There are better ways to apply our theory to general optimization, but it is a nice example of why code is better than math to explain our theory. When you try to formalize it, 
 it gets really non-intuitive.
 
-[Causal Entropic Forces by Alexander Wissner-Gross](http://alexwg.org/publications/PhysRevLett_110-168702.pdf) **[[8](#bibliography)]**: 
+[Causal Entropic Forces by Alexander Wissner-Gross](http://alexwg.org/publications/PhysRevLett_110-168702.pdf) **[[10](#bibliography)]**: 
 The fundamental concepts behind this paper inspired our research. We develop our theory aiming to calculate future entropy faster,
  and being able to leverage the information contained in the Entropy of any state space, together with any potential function.
  
@@ -247,22 +250,28 @@ We cannot provide any formal proof about this algorithm, because we don't know a
  The agent uses a Swarm to build a causal cone used to approximate the Q values of each action.
  
 - ***It is possible to prove that this algorithm is unprovable with any known mathematical tools.***
-  Maybe someone can proof that FAI is unprovable **[[9](#bibliography)]**.
- 
-![Unprovable](assets/unprovable.png)   
- 
-- ***A State Swarm can leverage efficiently both the information contained in the physical structure of a given State Space (Entropy/Exploration), and the potential field associated with each state.***
-
-  This means that we are not taking only into account "how good an state is", but also "how different an state is with respect to the others", effectively solving the exploration vs exploitation problem.
- 
-- ***This algorithm tends to achieve symmetry. In the limit, a swarm of states will be distributed proportionally to the space-time reward distribution of the space state.*** 
-
-  If we fix all the states in the Swarm to share time, states distribution in each slice of the causal cone  will be proportional to its reward density distribution in the limit.
- If we do not fix the time, a Swarm will automatically adjust to also distribute the states symmetrically with respect to the time horizon.
   
-- ***Given a uniform prior, this algorithm will never perform worse than random. And it will only perform randomly when no
- information can be extracted from the different states in the Swarm. Changing the prior will allow for worse than random games, but
- it will increase the performance in other problems.*** 
+    Maybe someone can proof that FAI is unprovable **[[11](#bibliography)]**.![Unprovable](assets/unprovable.png)   
+ 
+- ***A State Swarm can leverage efficiently both the information contained in the physical
+ structure of a given State Space (Entropy/Exploration), and the potential field associated
+  with each state.***
+
+  This means that we are not taking only into account "how good an state is",
+   but also "how different an state is with respect to the others", effectively solving
+    the exploration vs exploitation problem.
+ 
+- ***This algorithm tends to achieve symmetry. In the limit, a swarm of states will be
+ distributed proportionally to the space-time reward distribution of the space state.*** 
+
+  If we fix all the states in the Swarm to share time, states distribution in each slice of
+   the causal cone  will be proportional to its reward density distribution in the limit.
+ If we do not fix the time, a Swarm will automatically adjust to also distribute the states
+  symmetrically with respect to the time horizon.
+  
+- ***Given a uniform prior, this algorithm will never perform worse than random. And it 
+will only perform randomly when the Swarm'shape is symmetric. Changing the prior will allow
+ for worse than random games, but it will increase the performance in other problems.*** 
 
     Yes, we have read about the No Free Lunch Theorem, and we think this is an exception.
 
@@ -271,14 +280,18 @@ We cannot provide any formal proof about this algorithm, because we don't know a
   If we happen to be right, and complexity is better measured using our methods, there would be NP hard problems which should be possible to solve in polynomial time. 
   Our complexity measure can classify some P and NP problems in the same category.
 
-- ***There exits an arbitrary good approximation to [Density Functional Theory](https://en.wikipedia.org/wiki/Density_functional_theory) that scales linearly with the number of particles, and which uncertainty depends on the amount of computational resources used to calculate the approximation.*** 
+- ***There exits an arbitrary good approximation to 
+[Density Functional Theory](https://en.wikipedia.org/wiki/Density_functional_theory) 
+that scales almost linearly with the number of particles, and which uncertainty depends on the 
+amount of computational resources used to calculate the approximation.*** 
 
   If you treat electrons as agents, you can use the minimum action principle to formulate a proper approximation of the potential
    function in almost any known physical problem. Then you can move the particles around as if you were solving a multi-agent environment. 
- Our method  scales linearly with the number of particles, so it gives a new approach to complex problems.
+ Our method scales almost linearly with the number of particles, so it gives a new approach to complex problems.
  
 - ***Is it possible to create a functional AGI using only fractal methods***.
- With proper funding, a lot of effort, and very large amounts of computer power we think we can build an AGI within 10 years.
+    
+     With proper funding, a lot of effort, and very large amounts of computer power we think we can build an AGI within 10 years.
 
 
 ## Cite us
@@ -335,10 +348,18 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
  
 - **[5]**  Volodymyr Mnih & others. ***Human-level control through deep reinforcement learning***. [doi:10.1038/nature14236](http://www.davidqiu.com:8888/research/nature14236.pdf), 2015.
  
-- **[6]**  ***ATARI VCS/2600 Scoreboard***. [Atari compendium](http://www.ataricompendium.com/game_library/high_scores/high_scores.html), 2018.
+- **[6]**  Matthias Plappert, Rein Houthooft, Prafulla Dhariwal, Szymon Sidor, Richard Y. Chen, Xi Chen, Tamim Asfour, Pieter Abbeel, Marcin Andrychowicz.
+***Parameter Space Noise for Exploration***. [arXiv:1706.01905](https://arxiv.org/abs/1706.01905), 2017.
 
-- **[7]**  Sergio Hernández, Guillem Duran, José M. Amigó. ***General Algorithmic Search***. [arXiv:1705.08691](https://arxiv.org/abs/1705.08691), 2017.
+- **[7]**  Tim Salimans, Jonathan Ho, Xi Chen, Szymon Sidor, Ilya Sutskever.
+***Evolution Strategies as a Scalable Alternative to Reinforcement Learning***. [arXiv:1703.03864](https://arxiv.org/abs/1703.03864), 2017.
 
-- **[8]**  Alexander Wissner-Gross. ***Causal entropic forces*** . [Physical Review Letters](http://alexwg.org/publications/PhysRevLett_110-168702.pdf), 2013.
+- **[8]**  ***ATARI VCS/2600 Scoreboard***. [Atari compendium](http://www.ataricompendium.com/game_library/high_scores/high_scores.html), 2018.
 
-- **[9]**  Shane Legg ***Machine Super Intelligence***. [Doctoral Dissertation ](http://www.vetta.org/documents/Machine_Super_Intelligence.pdf), 2008.
+- **[9]**  Sergio Hernández, Guillem Duran, José M. Amigó. ***General Algorithmic Search***. [arXiv:1705.08691](https://arxiv.org/abs/1705.08691), 2017.
+
+- **[10]**  Alexander Wissner-Gross. ***Causal entropic forces***. [Physical Review Letters](http://alexwg.org/publications/PhysRevLett_110-168702.pdf), 2013.
+
+- **[11]**  Shane Legg ***Machine Super Intelligence***. [Doctoral Dissertation ](http://www.vetta.org/documents/Machine_Super_Intelligence.pdf), 2008.
+
+
