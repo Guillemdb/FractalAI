@@ -86,7 +86,7 @@ what you end up installing on your platform.
 
 #### Cloning and installing the repository
 
-``git clone git@github.com:Guillem-db/FractalAI.git``
+``git clone git@github.com:FragileTheory/FractalAI.git``
 
 ``cd FractalAI``
 
