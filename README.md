@@ -14,6 +14,8 @@
 
 ## Table of Contents
 
+**This README is still under active development.***
+
 - [Abstract](#abstract)
 - [Running the code](#installation)
 - [Benchmarks](#benchmarks)
@@ -126,6 +128,9 @@ source for each score can be found in the performance sheet.
  With a proper implementation, it is possible to greatly improve performance by increasing the maximum
   number of samples per action allowed, the maximum size of the swarm, and the time horizon. When comparing
    against MCTS, it is important to take into account that MCTS used 3 Million samples per action.
+   
+- **% vs SoTa**: Relative performance of FAI vs the State of The Art, according to the formula
+ (FAI Score / SoTa) * 100.
    
 ![Benchmarks](assets/benchmarks.png)  
 
@@ -278,6 +283,8 @@ We cannot provide any formal proof about this algorithm, because we don't know a
 
 
 ## Cite us
+
+We will include a link to to arXiv in a few days, once it gets published.
 
     @misc{HERE-ARXIV-ID,
         Author = {Sergio Hernández Cerezo and Guillem Duran Ballester},
