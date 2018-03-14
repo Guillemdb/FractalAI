@@ -14,6 +14,8 @@
 
 ## Table of Contents
 
+**This README is under active development.**
+
 - [Abstract](#abstract)
 - [Running the code](#installation)
 - [Benchmarks](#benchmarks)
@@ -133,6 +135,9 @@ In the following table we show performance with respect to benchmarks widely acc
 
 - **N samples**: This is the mean number of samples that have been used in calculating each action.
  This is, the number of times we called step() on the environment per action.
+ 
+- **% vs SoTa**: Relative performance of FAI vs the State of The Art, according to the formula
+ (FAI Score / SoTa) * 100.
    
 ![Benchmarks](assets/benchmarks.png)  
 
@@ -306,6 +311,8 @@ amount of computational resources used to calculate the approximation.***
 
 
 ## Cite us
+
+We will include a link to to arXiv in a few days, once it gets published.
 
     @misc{HERE-ARXIV-ID,
         Author = {Sergio Hernández Cerezo and Guillem Duran Ballester},
