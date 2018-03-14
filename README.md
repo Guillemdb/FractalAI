@@ -64,7 +64,8 @@ This code release aims for simplicity and self-explainability.
 It should be pretty straightforward to run in Python 3. Python 2 is not supported.
 
 It only needs numpy and [gym["atari"]](https://github.com/openai/gym) **[[2](#bibliography)]**, although we also recommend
- installing the Jupyter Notebook for running the example.
+ installing the Jupyter Notebook for running the [Example.ipynb](https://github.com/FragileTheory/FractalAI/blob/master/Example.ipynb).
+notebook.
 
 #### Installing dependencies
  
@@ -153,7 +154,8 @@ open an issue and we will update the document.
 
 ### Please help us running the example, and check by yourself!
 
-Want to help? Once you have a recorded video, please write down the parameters you used and the
+Want to help? Once you have a [recorded video](https://github.com/FragileTheory/FractalAI/blob/master/Example.ipynb),
+ please write down the parameters you used and the
  mean time displayed as output in the notebook, and share them with us. You can do that in two ways:
 
 - Upload the mp4 generated to YouTube and post it on Twitter. Write the parameters you used and the mean time
