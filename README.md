@@ -65,7 +65,7 @@ The code provided shows how it is now possible to beat some of the current state
 This code release aims for simplicity and self-explainability. 
 It should be pretty straightforward to run in Python 3. Python 2 is not supported.
 
-It only needs numpy and [gym["atari"]](https://github.com/openai/gym) **[[2](#bibliography)]**, although we also recommend
+It only needs numpy and [gym[atari]](https://github.com/openai/gym) **[[2](#bibliography)]**, although we also recommend
  installing the Jupyter Notebook for running the [Example.ipynb](https://github.com/FragileTheory/FractalAI/blob/master/Example.ipynb).
 notebook.
 
@@ -142,9 +142,6 @@ In the following table we show performance with respect to benchmarks widely acc
 - **% vs SoTa**: Relative performance of FAI vs the State of The Art, according to the formula
  (FAI Score / SoTa) * 100.
    
-- **% vs SoTa**: Relative performance of FAI vs the State of The Art, according to the formula
- (FAI Score / SoTa) * 100.
-   
 ![Benchmarks](assets/benchmarks.png)  
 
 #### Detailed Google Sheet
@@ -170,6 +167,10 @@ Want to help? Once you have a [recorded video](https://github.com/FragileTheory/
  
  Thanks!
 
+### Benchmarking tool
+
+We are building a tool that will allow for testing our theory at a bigger scale. We want to provide
+confidence intervals using different parameter combinations, and we are working on it.
 
 ## Additional Resources
 
