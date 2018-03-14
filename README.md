@@ -27,8 +27,6 @@
   * [YouTube](#youtube)
   * [Related papers](#related-papers)
 - [Other tasks solved](#other-tasks-solved)
-- [Other applications](#other-applications)
-- [Conjectures on some of its properties](#conjectures-on-some-of-its-properties)
 - [Cite us](#cite-us)
 - [FAQ](#faq)
 - [About](#about)
@@ -40,10 +38,12 @@
 
 [Fractal AI](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing) 
 is a theory for general artificial intelligence. It allows to derive new mathematical
- tools that constitute the foundations for a new kind of stochastic calculus, by modelling
-  information using cellular automaton-like structures instead of smooth functions.
+ tools that may be useful for modelling information using cellular automaton-like structures
+  instead of smooth functions.
 
-In this repository we are presenting a new Agent, derived from the first principles of the theory,
+In this repository we are presenting a new 
+[Agent](https://github.com/FragileTheory/FractalAI/blob/master/fractalai/fractalai.py), derived
+from the first principles of the theory,
  which is capable of solving Atari games several orders of magnitude more efficiently than other 
  similar techniques, like Monte Carlo Tree Search **[[1](#bibliography)]**. 
 
@@ -233,20 +233,6 @@ You can also check this on Atari games by setting the clone_seeds parameter of t
 
 - **General optimization**: Here you can find a [visual representation](http://entropicai.blogspot.com.es/2016/02/serious-fractal-optimizing.html?m=0)
  of how the GAS algorithm explores the state space.
-
-
-## Other applications
-
-We believe the techniques we present could be of help in the following areas.
- 
-- **Deep Learning**: It could be possible to use our theory to make Deep Learning more efficient, but
-this code release does not focus on models. 
-                    
-- **Evolutionary strategies**: The principles of the theory also allow to design evolutionary strategies for training DNN,
- using something conceptually similar to what [Uber](https://eng.uber.com/deep-neuroevolution/) did.
-
-- **Economics**: Our theory allow us to quantify and model the *personality* and *irrationality* of an agent, 
-and it has non-equilibrium risk-control mechanisms. We bet someone will think of an interesting application.
 
 ## Cite us
 
