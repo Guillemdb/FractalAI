@@ -52,7 +52,7 @@ The code provided shows how it is now possible to beat some of the current state
  top performing examples with very little amount of computation required, transforming 
  Reinforcement Learning into a supervised problem.
  
- The algorithm presented is capable of solving the exploration vs exploitation dilemma, while
+ The algorithm proposes a new approach to model the exploration vs exploitation dilemma, while
  maintaining control over any aspect of the behavior of the Agent. 
  
  
