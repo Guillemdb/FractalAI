@@ -221,7 +221,7 @@ Besides Atari games, we have also used our theory to solve different continuous 
  [Maintaining a formation](https://www.youtube.com/watch?v=J9kW1lhT06A),
  [cooperating to achieve a shared goal](https://www.youtube.com/watch?v=DsvSH3cNhnE),
   or [fighting](http://entropicai.blogspot.com.es/2015/05/tonight-four-of-my-new-fractal-minded.html) against each other.
- A nice property of our methods is that their computational cost scales linearly with the number of agents. 
+ A nice property of our methods is that their computational cost scales near linearly with the number of agents. 
        
 
 - **Stochastic simulations**: It can even [handle uncertainty in a continuous domain](http://entropicai.blogspot.com.es/2015/06/passing-asteroids-test.html?m=0).
@@ -233,7 +233,7 @@ You can also check this on Atari games by setting the clone_seeds parameter of t
 
 
 - **General optimization**: Here you can find a [visual representation](http://entropicai.blogspot.com.es/2016/02/serious-fractal-optimizing.html?m=0)
- of how our algorithm explores the state space.
+ of how the GAS algorithm explores the state space.
 
 
 ## Other applications
