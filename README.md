@@ -19,6 +19,7 @@
 
 
 - [Abstract](#abstract)
+- [Quick Start](quick-start)
 - [Running the code](#installation)
 - [Benchmarks](#benchmarks)
 - [Additional Resources](#additional-resources)
@@ -35,9 +36,8 @@
 
 ## Abstract
 
-
 [Fractal AI](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing) 
-is a theory for general artificial intelligence. It allows to derive new mathematical
+is a theory for efficiently sampling state spaces. It allows to derive new mathematical
  tools that may be useful for modelling information using cellular automaton-like structures
   instead of smooth functions.
 
@@ -57,9 +57,9 @@ The code provided shows how it is now possible to beat some of the current state
  maintaining control over any aspect of the behavior of the Agent. 
  
  
-## How to get started
+## Quick start
 
-We are currently working on a 
+***Work in progress***.
   
 ## Installation
 
