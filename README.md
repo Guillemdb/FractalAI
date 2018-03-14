@@ -5,8 +5,6 @@
   "Centipede-v0 1960 samples per action") ![MontezumaRevenge-v0](assets/montezuma.gif
  "MontezumaRevenge-v0 5175 samples per action")
 
-
-
 >“Once you start doubting, just like you’re supposed to doubt, you ask me if the science is true.
  You say no, we don’t know what’s true, we’re trying to find out and everything is possibly wrong.”
 >
@@ -36,7 +34,7 @@
 
 ## Abstract
 
-[Fractal AI](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing) 
+[Fractal Monte Carlo](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing) 
 is a theory for efficiently sampling state spaces. It allows to derive new mathematical
  tools that may be useful for modelling information using cellular automaton-like structures
   instead of smooth functions.
@@ -114,12 +112,12 @@ The following benchmarks have been calculated on a single machine
  implementation we provide in this repository. The parameters used were chosen using first principles
  of the theory, and the performance observed corresponds with the expected values.
 
-### FAI Performance table
+### FMC Performance table
 
 In the following table we show performance with respect to benchmarks widely accepted in the reinforcement
  learning community. For each game we tried, it displays the following information:
  
-- **FAI Score**: This is the maximum scored we achieved in the games we have documented. The number
+- **FMC Score**: This is the maximum scored we achieved in the games we have documented. The number
  of runs for each game, and the parameters used may vary from one game to another.
 
 - **SoTa**: It stands for "State of The Art", and it represents the maximum score achieved by any of
@@ -140,8 +138,8 @@ In the following table we show performance with respect to benchmarks widely acc
 - **N samples**: This is the mean number of samples that have been used in calculating each action.
  This is, the number of times we called step() on the environment per action.
  
-- **% vs SoTa**: Relative performance of FAI vs the State of The Art, according to the formula
- (FAI Score / SoTa) * 100.
+- **% vs SoTa**: Relative performance of FMC vs the State of The Art, according to the formula
+ (FMC Score / SoTa) * 100.
    
 ![Benchmarks](assets/benchmarks.png)  
 
