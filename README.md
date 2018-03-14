@@ -5,8 +5,6 @@
   "Centipede-v0 1960 samples per action") ![MontezumaRevenge-v0](assets/montezuma.gif
  "MontezumaRevenge-v0 5175 samples per action")
 
-
-
 >“Once you start doubting, just like you’re supposed to doubt, you ask me if the science is true.
  You say no, we don’t know what’s true, we’re trying to find out and everything is possibly wrong.”
 >
@@ -31,12 +29,13 @@
 - [Cite us](#cite-us)
 - [FAQ](#faq)
 - [About](#about)
+- [Todo](#todo)
 - [Bibliography](#bibliography)
 
 
 ## Abstract
 
-[Fractal AI](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing) 
+[Fractal Monte Carlo](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing) 
 is a theory for efficiently sampling state spaces. It allows to derive new mathematical
  tools that may be useful for modelling information using cellular automaton-like structures
   instead of smooth functions.
@@ -59,7 +58,14 @@ The code provided shows how it is now possible to beat some of the current state
  
 ## Quick start
 
-***Work in progress***.
+You can refer to the [Example.ipynb](https://github.com/FragileTheory/FractalAI/blob/master/Example.ipynb) to 
+see how the agent performs on any Atari game, either using RAM, or pixels as input. 
+
+To get an idea on how the Agent works, you can refer to the 
+[code](https://github.com/FragileTheory/FractalAI/blob/master/fractalai/fractalai.py), where every
+ important aspect of the algorithm is commented. There is also a
+ [blog post](https://entropicai.blogspot.com.es/2018/03/fractal-ai-recipe.html) where the
+ fundamental aspects of the algorithm are explained.
   
 ## Installation
 
@@ -114,12 +120,12 @@ The following benchmarks have been calculated on a single machine
  implementation we provide in this repository. The parameters used were chosen using first principles
  of the theory, and the performance observed corresponds with the expected values.
 
-### FAI Performance table
+### FMC Performance table
 
 In the following table we show performance with respect to benchmarks widely accepted in the reinforcement
  learning community. For each game we tried, it displays the following information:
  
-- **FAI Score**: This is the maximum scored we achieved in the games we have documented. The number
+- **FMC Score**: This is the maximum scored we achieved in the games we have documented. The number
  of runs for each game, and the parameters used may vary from one game to another.
 
 - **SoTa**: It stands for "State of The Art", and it represents the maximum score achieved by any of
@@ -140,8 +146,8 @@ In the following table we show performance with respect to benchmarks widely acc
 - **N samples**: This is the mean number of samples that have been used in calculating each action.
  This is, the number of times we called step() on the environment per action.
  
-- **% vs SoTa**: Relative performance of FAI vs the State of The Art, according to the formula
- (FAI Score / SoTa) * 100.
+- **% vs SoTa**: Relative performance of FMC vs the State of The Art, according to the formula
+ (FMC Score / SoTa) * 100.
    
 ![Benchmarks](assets/benchmarks.png)  
 
@@ -279,7 +285,22 @@ our ideas since the very beginning.
  - Everyone who believed in our Alien math since Guillem was in college, specially [José M. Amigó](http://www.umh.es/contenido/pdi/:persona_5536/datos_es.html), [Antoni Elias](https://twitter.com/eliasfuste),
  [Jose Berengueres](https://twitter.com/harriken), [Javier Ozón](https://twitter.com/fjozon), and [Samuel Graván](https://twitter.com/Samuel__GP).
  
- ## Bibliography
+
+## TODO
+
+We are currently working in many improvements to the project, and we will welcome any contribution.
+
+- Improve docstrings and code clarity.
+
+- Add command line interface.
+
+- Upload to pip and Conda.
+
+- Create a Docker container.
+
+- Write an 8 pages paper that details the implementation presented in the repository.
+ 
+## Bibliography
  - **[1]**  Guo, Xiaoxiao and Singh, Satinder and Lee, Honglak and Lewis, Richard L and Wang, Xiaoshi. 
 ***Deep Learning for Real-Time Atari Game Play Using Offline Monte-Carlo Tree Search Planning***. [NIPS2014_5421](http://papers.nips.cc/paper/5421-deep-learning-for-real-time-atari-game-play-using-offline-monte-carlo-tree-search-planning.pdf), 2014.
 
@@ -306,5 +327,4 @@ our ideas since the very beginning.
 - **[10]**  Alexander Wissner-Gross. ***Causal entropic forces***. [Physical Review Letters](http://alexwg.org/publications/PhysRevLett_110-168702.pdf), 2013.
 
 - **[11]**  Shane Legg ***Machine Super Intelligence***. [Doctoral Dissertation ](http://www.vetta.org/documents/Machine_Super_Intelligence.pdf), 2008.
-
 
