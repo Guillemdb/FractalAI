@@ -54,11 +54,12 @@ The code provided shows how it is now possible to beat some of the current state
  Reinforcement Learning into a supervised problem.
  
  The algorithm presented is capable of solving the exploration vs exploitation dilemma, while
- maintaining control over any aspect of the behavior of the Agent. From a general approach, 
- new techniques presented here have direct applications to other areas such as: Non-equilibrium
- thermodynamics, chemistry, quantum physics, economics, information theory, and non-linear
- control theory.
-  
+ maintaining control over any aspect of the behavior of the Agent. 
+ 
+ 
+## How to get started
+
+We are currently working on a 
   
 ## Installation
 
@@ -196,9 +197,7 @@ recorded using a custom library, which can be used to create different task in c
 ### Related Papers
 
 [GAS paper](https://arxiv.org/abs/1705.08691) **[[9](#bibliography)]**:
- We tried to publish a paper describing an application of our theory to general optimization,
-but it was not published because our method "lacked scientific relevance", and there was no need for more algorithms that were not proven to work at a huge scale.
-As we lack the resources to deploy our methods at a bigger scale, we were unable to meet the requirements for publishing. 
+ A manuscript describing an application of our theory to general optimization. 
 
 There are better ways to apply our theory to general optimization, but it is a nice example of why code is better than math to explain our theory. When you try to formalize it, 
 it gets really non-intuitive.
@@ -228,7 +227,7 @@ Besides Atari games, we have also used our theory to solve different continuous 
 You can also check this on Atari games by setting the clone_seeds parameter of the agent to False.
 
 
-- **Multi objective and multi agent path finding**: We can solve multi objective path finding in nearly real time. [Video 1](https://www.youtube.com/watch?v=AoiGseO7g1I),
+- **Multi objective and multi agent path finding**: This technique can also be applied to path finding problems. [Video 1](https://www.youtube.com/watch?v=AoiGseO7g1I),
  [Video 2](https://www.youtube.com/watch?v=R61FRUf-F6M), [Blog Post](http://entropicai.blogspot.com.es/search/label/Path%20finding).
 
 
@@ -238,85 +237,16 @@ You can also check this on Atari games by setting the clone_seeds parameter of t
 
 ## Other applications
 
-- **Physics**: Physics is basically a path finding problem, so our theory can be thought as a sort of non-equilibrium statistical mechanics. 
-Given that our algorithm is surprisingly good at path finding, we wonder how well it can be applied to solve Feynman path integrals.
- Conceptually, it is relatively simple to map some properties of a Swarm, to the properties of a wave function.
- If you used something similar to our agent to move around the gaussian packets that are used when sampling integrals, 
- maybe it would be easier to focus on regions with a meaningful contribution to the sum.
+We believe the techniques we present could be of help in the following areas.
  
-- **Deep Learning**: It is possible to use our theory to make Deep Learning more efficient, but
-this code release does not focus on models. For now, it should be pretty clear that using FAI 
-instead of MCTS is worth trying.
+- **Deep Learning**: It could be possible to use our theory to make Deep Learning more efficient, but
+this code release does not focus on models. 
                     
 - **Evolutionary strategies**: The principles of the theory also allow to design evolutionary strategies for training DNN,
  using something conceptually similar to what [Uber](https://eng.uber.com/deep-neuroevolution/) did.
-  This is the way to go in case you want to solve Starcraft quickly without understanding the theory.
-  Using this method, guarantees that you will end up with something you cannot control.
-  If you try this in a properly scaled implementation without *perfect understanding*, a long term disaster is guaranteed.
 
 - **Economics**: Our theory allow us to quantify and model the *personality* and *irrationality* of an agent, 
 and it has non-equilibrium risk-control mechanisms. We bet someone will think of an interesting application.
-
-- **Looks like Alien Math**: It is so weird that it almost qualifies as *"alien math"*. If you only knew this algorithm,
- you could pretty much arrive at the same conclusions as our current scientific knowledge arrives. 
- It is funny to think that Science without gradients is also possible.
- 
-
-## Conjectures on some of its properties
-
-
-We cannot provide any formal proof about this algorithm, because we don't know any tool suitable for analyzing
- the far-from-equilibrium regime in which the Agent operates. These are just conjectures and they could be wrong.
- 
- Any suggestion about how to prove our conjectures will be welcome. This list is non-exhaustive and it will be updated.
- 
- **State Swarm**: Structure consisting of different states that interact with each other in order to build a causal cone. 
- The agent uses a Swarm to build a causal cone used to approximate the Q values of each action.
- 
-- ***It is possible to prove that this algorithm is unprovable with any known mathematical tools.***
-  
-    Maybe someone can proof that FAI is unprovable **[[11](#bibliography)]**.![Unprovable](assets/unprovable.png)   
- 
-- ***A State Swarm can leverage efficiently both the information contained in the physical
- structure of a given State Space (Entropy/Exploration), and the potential field associated
-  with each state.***
-
-  This means that we are not taking only into account "how good an state is",
-   but also "how different an state is with respect to the others", effectively solving
-    the exploration vs exploitation problem.
- 
-- ***This algorithm tends to achieve symmetry. In the limit, a swarm of states will be
- distributed proportionally to the space-time reward distribution of the space state.*** 
-
-  If we fix all the states in the Swarm to share time, states distribution in each slice of
-   the causal cone  will be proportional to its reward density distribution in the limit.
- If we do not fix the time, a Swarm will automatically adjust to also distribute the states
-  symmetrically with respect to the time horizon.
-  
-- ***Given a uniform prior, this algorithm will never perform worse than random. And it 
-will only perform randomly when the Swarm'shape is symmetric. Changing the prior will allow
- for worse than random games, but it will increase the performance in other problems.*** 
-
-    Yes, we have read about the No Free Lunch Theorem, and we think this is an exception.
-
-- ***P vs NP is not the right question to ask***. 
- 
-  If we happen to be right, and complexity is better measured using our methods, there would be NP hard problems which should be possible to solve in polynomial time. 
-  Our complexity measure can classify some P and NP problems in the same category.
-
-- ***There exits an arbitrary good approximation to 
-[Density Functional Theory](https://en.wikipedia.org/wiki/Density_functional_theory) 
-that scales almost linearly with the number of particles, and which uncertainty depends on the 
-amount of computational resources used to calculate the approximation.*** 
-
-  If you treat electrons as agents, you can use the minimum action principle to formulate a proper approximation of the potential
-   function in almost any known physical problem. Then you can move the particles around as if you were solving a multi-agent environment. 
- Our method scales almost linearly with the number of particles, so it gives a new approach to complex problems.
- 
-- ***Is it possible to create a functional AGI using only fractal methods***.
-    
-     With proper funding, a lot of effort, and very large amounts of computer power we think we can build an AGI within 10 years.
-
 
 ## Cite us
 
