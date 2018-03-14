@@ -319,7 +319,8 @@ amount of computational resources used to calculate the approximation.***
 
 ## Cite us
 
-We will include a link to to arXiv in a few days, once it gets published.
+We will include a link to to arXiv in a few days, once it gets published. For now, the 
+[pdf file](assets/FractalAI V1.0.pdf) is inside the assets folder.
 
     @misc{HERE-ARXIV-ID,
         Author = {Sergio Hernández Cerezo and Guillem Duran Ballester},
@@ -339,8 +340,8 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
  sponsored us, we dedicated our personal time to this project making the most efficient use possible
  of the resources we had available.
  
- We are not part of academia, we have no affiliation and no track record.This could not have been
-possible without the support of [HCSoft](hcsoft.net), that supported our research, and believed in
+ We are not part of academia, we have no affiliation and no track record. This could not have been
+possible without [HCSoft](hcsoft.net), that supported our research, and believed in
 our ideas since the very beginning.
  
  We don't have the resources to carry on further our research, but we will gladly accept any contribution or
