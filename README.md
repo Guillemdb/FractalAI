@@ -14,7 +14,9 @@
 
 ## Table of Contents
 
-**This README is still under active development.***
+
+**This README is still under active development.**
+
 
 - [Abstract](#abstract)
 - [Running the code](#installation)
@@ -64,7 +66,8 @@ This code release aims for simplicity and self-explainability.
 It should be pretty straightforward to run in Python 3. Python 2 is not supported.
 
 It only needs numpy and [gym["atari"]](https://github.com/openai/gym) **[[2](#bibliography)]**, although we also recommend
- installing the Jupyter Notebook for running the example.
+ installing the Jupyter Notebook for running the [Example.ipynb](https://github.com/FragileTheory/FractalAI/blob/master/Example.ipynb).
+notebook.
 
 #### Installing dependencies
  
@@ -135,6 +138,9 @@ In the following table we show performance with respect to benchmarks widely acc
 
 - **N samples**: This is the mean number of samples that have been used in calculating each action.
  This is, the number of times we called step() on the environment per action.
+ 
+- **% vs SoTa**: Relative performance of FAI vs the State of The Art, according to the formula
+ (FAI Score / SoTa) * 100.
    
 - **% vs SoTa**: Relative performance of FAI vs the State of The Art, according to the formula
  (FAI Score / SoTa) * 100.
@@ -153,7 +159,8 @@ open an issue and we will update the document.
 
 ### Please help us running the example, and check by yourself!
 
-Want to help? Once you have a recorded video, please write down the parameters you used and the
+Want to help? Once you have a [recorded video](https://github.com/FragileTheory/FractalAI/blob/master/Example.ipynb),
+ please write down the parameters you used and the
  mean time displayed as output in the notebook, and share them with us. You can do that in two ways:
 
 - Upload the mp4 generated to YouTube and post it on Twitter. Write the parameters you used and the mean time
@@ -332,7 +339,9 @@ We have developed this theory for the pleasure of finding thing out as a hobby, 
  sponsored us, we dedicated our personal time to this project making the most efficient use possible
  of the resources we had available.
  
- We are not part of academia, we have no affiliation and no track record.
+ We are not part of academia, we have no affiliation and no track record.This could not have been
+possible without the support of [HCSoft](hcsoft.net), that supported our research, and believed in
+our ideas since the very beginning.
  
  We don't have the resources to carry on further our research, but we will gladly accept any contribution or
   sponsorship that allows us to continue working in our passion.
