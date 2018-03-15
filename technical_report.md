@@ -2,7 +2,7 @@
 
 **This project is still under active development.**
 
-1. [Abstract](#abstract)
+1. [Introduction](#introduction)
 2. [How it works](#how-it-works)
 3. [Definitions](#definitions)
     1. [Reinforcement Learning](#inherited-from-rl)
@@ -23,7 +23,7 @@
 8. [Bibliography](#bibliography)
 
 
-# Abstract
+# Introduction
 
 Fractal Monte Carlo (FMC) is a new model-free reinforcement learning (MFRL)[#Citation Needed]()
 agent derived from first principles of the Fractal AI theory[#CN](). FMC calculates an approximation
@@ -58,14 +58,33 @@ Swarm to another randomly chosen state. An state will clone or not depending on 
 of entropic rewards between itself and the chosen state.
 
 - After calculating an action, the algorithm updates most of its internal parameters to adjust
-itself dynamically to changes in the sampled state space. The corrections to the parameters needed,
+itself dynamically to changes in the environment. The corrections to the parameters needed,
 are calculated based on how asymmetric the shape of the swarm is. The asymmetry is measured with
 respect to the spatial distribution of the states, their reward distribution, and their distribution
 across time.
 
-- It can discard arbitrary large portions of the search space by manually adding boundary conditions.
-These boundary conditions are modeled defining a dead flag for each state, that allows to modify the
-clone probability.
+- It can discard arbitrary large sections of the search space by manually adding boundary conditions.
+These boundary conditions are modeled defining a [dead flag]() for each state, that allows to modify the
+cloning probability.
+
+- FMC avoids getting stuck in local optima thanks to weighting not only the reward, but also the
+spatial distribution of the states in the swarm.
+
+- The algorithm is parallelizable and could scale almost linearly with the maximum number of
+samples allowed. All the internal operations (distances, entropic reward calculations, cloning,
+etc...) involve only one state, or a given state and another randomly chosen state. 
+They all have a computational complexity that is lower than quadratic, although the specific
+scalability will depend on the implementation.
 
 
 # Definitions
+
+- **Swarm**:
+
+- **Entropic reward**:
+
+- **Cloning**:
+
+- **Dead**:
+
+- **Distance**:
