@@ -50,14 +50,16 @@ The code provided shows how it is now possible to beat some of the current state
  top performing examples with very little amount of computation required, transforming 
  Reinforcement Learning into a supervised problem.
  
- The algorithm proposes a new approach to model the exploration vs exploitation dilemma, while
+ The algorithm proposes a new approach to model the decision space, while
 maintaining control over any aspect of the behavior of the Agent. This algorithm can be applied
  to sampling both discrete and continuous state spaces.
  
 ## Quick start
 
 If you are a researcher, and you prefer reading a paper than commented Python code, please come
- back in a few hours. 
+ back in a few hours when the [technical report](/technical_report.md) is finished. Meanwhile [I will
+  be happy to discuss the ideas presented](https://twitter.com/Miau_DB) using the conceptual
+   framework of RL, and standard terminology.
 
 You can refer to the [Example.ipynb](https://github.com/FragileTheory/FractalAI/blob/master/Example.ipynb) to 
 see how the agent performs on any Atari game, either using RAM, or pixels as input. 
@@ -243,14 +245,11 @@ You can also check this on Atari games by setting the clone_seeds parameter of t
 
 ## Cite us
 
-We will include a link to to arXiv in a few days, once it gets published. For now, the 
-[pdf file](assets/FractalAI V1.0.pdf) is inside the assets folder.
-
-    @misc{HERE-ARXIV-ID,
+    @misc{1803.05049,
         Author = {Sergio Hernández Cerezo and Guillem Duran Ballester},
         Title = {Fractal AI: A fragile theory of intelligence},
         Year = {2018},
-        Eprint = {arXiv:HERE-ARXIV-ID},
+        Eprint = {arXiv:1803.05049},
       }
 
 ## FAQ
