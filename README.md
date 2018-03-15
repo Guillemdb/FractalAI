@@ -35,16 +35,16 @@
 
 ## Abstract
 
-[Fractal Monte Carlo](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing) 
-is a theory for efficiently sampling state spaces. It allows to derive new mathematical
- tools that may be useful for modelling information using cellular automaton-like structures
-  instead of smooth functions.
+[Fractal AI](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing) 
+is a theory for efficiently sampling state spaces. It allows to derive
+new mathematical tools that may be useful for modelling information using cellular automaton-like 
+structures instead of smooth functions.
 
-In this repository we are presenting a new 
-[Agent](https://github.com/FragileTheory/FractalAI/blob/master/fractalai/fractalai.py), derived
-from the first principles of the theory,
- which is capable of solving Atari games several orders of magnitude more efficiently than other 
- similar techniques, like Monte Carlo Tree Search **[[1](#bibliography)]**. 
+In this repository we are presenting a new agent called
+[Fractal Monte Carlo](https://github.com/FragileTheory/FractalAI/blob/master/fractalai/fractalai.py), derived
+from the first principles of the theory, which is capable of solving Atari games several
+ orders of magnitude more efficiently than other similar techniques, like Monte Carlo Tree Search
+  **[[1](#bibliography)]**. 
 
 The code provided shows how it is now possible to beat some of the current state of the art
  benchmarks on Atari games, using less than 1000 samples to calculate each one of the actions when 
@@ -53,8 +53,8 @@ The code provided shows how it is now possible to beat some of the current state
  Reinforcement Learning into a supervised problem.
  
  The algorithm proposes a new approach to model the exploration vs exploitation dilemma, while
- maintaining control over any aspect of the behavior of the Agent. 
- 
+maintaining control over any aspect of the behavior of the Agent. This algorithm can be applied
+ to sampling both discrete and continuous state spaces.
  
 ## Quick start
 
@@ -203,9 +203,9 @@ recorded using a custom library, which can be used to create different task in c
 ### Related Papers
 
 [GAS paper](https://arxiv.org/abs/1705.08691) **[[9](#bibliography)]**:
- A manuscript describing an application of our theory to general optimization. 
-
-There are better ways to apply our theory to general optimization, but it is a nice example of why code is better than math to explain our theory. When you try to formalize it, 
+ A manuscript describing an application of our theory to general optimization. There are better
+  ways to apply our theory to general optimization, but it is a nice example of why code is better
+   than math to explain our theory. When you try to formalize it, 
 it gets really non-intuitive.
 
 [Causal Entropic Forces by Alexander Wissner-Gross](http://alexwg.org/publications/PhysRevLett_110-168702.pdf) **[[10](#bibliography)]**: 
