@@ -12,9 +12,7 @@
 
 ## Table of Contents
 
-
-**This README is still under active development.**
-
+**This project is still under active development.**
 
 - [Abstract](#abstract)
 - [Quick Start](quick-start)
@@ -57,6 +55,9 @@ maintaining control over any aspect of the behavior of the Agent. This algorithm
  to sampling both discrete and continuous state spaces.
  
 ## Quick start
+
+If you are a researcher, and you prefer reading a paper than commented Python code, please come
+ back in a few hours. 
 
 You can refer to the [Example.ipynb](https://github.com/FragileTheory/FractalAI/blob/master/Example.ipynb) to 
 see how the agent performs on any Atari game, either using RAM, or pixels as input. 
@@ -290,7 +291,11 @@ our ideas since the very beginning.
 
 We are currently working in many improvements to the project, and we will welcome any contribution.
 
+- Making the repo more researcher friendly.
+
 - Improve docstrings and code clarity.
+
+- Update Benchmarks with new records.
 
 - Add command line interface.
 
@@ -298,7 +303,7 @@ We are currently working in many improvements to the project, and we will welcom
 
 - Create a Docker container.
 
-- Write an 8 pages paper that details the implementation presented in the repository.
+- Write an 8 pages paper that details the implementation presented using formal math.
  
 ## Bibliography
  - **[1]**  Guo, Xiaoxiao and Singh, Satinder and Lee, Honglak and Lewis, Richard L and Wang, Xiaoshi. 
