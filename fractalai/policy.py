@@ -144,7 +144,7 @@ class Policy:
 
     def skip_frames(self, n_frames: int=0, render=False) -> State:
         """
-        Skip the next n states. Play actions at random for `n_frames` frames.
+        Skip the next n swarm. Play actions at random for `n_frames` frames.
         It is useful at the beginning of the environment to save some time.
         :param n_frames: Number of frames to be skipped by taking random actions.
         :param render: Render the environment while taking random actions.

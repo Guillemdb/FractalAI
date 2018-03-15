@@ -19,9 +19,9 @@ class BaseModel:
 
     def _predict(self, state: [State, list, np.ndarray]=None) -> [np.ndarray, float, int]:
         """
-        Returns one action available from a given state or a vector of states.
+        Returns one action available from a given state or a vector of swarm.
 
-        :param state: **State** or vector of states.
+        :param state: **State** or vector of swarm.
         :return: An scalar in case ``state`` represents a single state, or a numpy array otherwise.
         """
         raise NotImplementedError
@@ -29,9 +29,9 @@ class BaseModel:
     def predict(self, state: [State, Iterable]=None) -> np.ndarray:
         """
         Returns one action chosen at random from the policy's action space
-        :param state: State or list of states to sample a random action from. It handles both a
-        single state and a vector of states.
-        :return: int representing the action to be taken in case there is a single state. If states
+        :param state: State or list of swarm to sample a random action from. It handles both a
+        single state and a vector of swarm.
+        :return: int representing the action to be taken in case there is a single state. If swarm
         is an iterable returns a numpy array containing the action for each state.
         """
         if not isinstance(state, Iterable):
@@ -60,8 +60,8 @@ class DiscreteModel(BaseModel):
 
     def _predict(self, state: [State, list, np.ndarray]=None) -> int:
         """
-        Returns one action available from a given state or a vector of states.
-        :param state: State or vector of states.
+        Returns one action available from a given state or a vector of swarm.
+        :param state: State or vector of swarm.
         :return: An scalar in case ``state`` represents a single state, or a numpy array otherwise.
         """
         raise NotImplementedError
@@ -78,9 +78,9 @@ class RandomDiscreteModel(DiscreteModel):
     def _predict(self, state: State) -> [int, np.ndarray]:
         """
         Returns one action chosen at random from the policy's action space
-        :param state: State or list of states to sample a random action from. It handles both a
-        single state and a vector of states.
-        :return: int representing the action to be taken in case there is a single state. If states
+        :param state: State or list of swarm to sample a random action from. It handles both a
+        single state and a vector of swarm.
+        :return: int representing the action to be taken in case there is a single state. If swarm
         is an iterable returns a numpy array containing the action for each state.
         """
         pred = np.random.randint(0, self.n_actions)
@@ -98,9 +98,9 @@ class RandomPongModel(DiscreteModel):
     def _predict(self, state: State) -> [int, np.ndarray]:
         """
         Returns one action chosen at random from the policy's action space
-        :param state: State or list of states to sample a random action from. It handles both a
-        single state and a vector of states.
-        :return: int representing the action to be taken in case there is a single state. If states
+        :param state: State or list of swarm to sample a random action from. It handles both a
+        single state and a vector of swarm.
+        :return: int representing the action to be taken in case there is a single state. If swarm
         is an iterable returns a numpy array containing the action for each state.
         """
         pred = np.random.choice([3, 4])
@@ -146,8 +146,8 @@ class ContinuousModel(BaseModel):
 
     def _predict(self, state: State=None) -> np.ndarray:
         """
-        Returns one action available from a given state or a vector of states.
-        :param state: State or vector of states.
+        Returns one action available from a given state or a vector of swarm.
+        :param state: State or vector of swarm.
         :return: An scalar in case ``state`` represents a single state, or a numpy array otherwise.
         """
         raise NotImplementedError
@@ -160,8 +160,8 @@ class RandomContinuousModel(ContinuousModel):
 
     def _predict(self, state: State=None) -> np.ndarray:
         """
-        Returns one action available from a given state or a vector of states.
-        :param state: State or vector of states.
+        Returns one action available from a given state or a vector of swarm.
+        :param state: State or vector of swarm.
         :return: An scalar in case ``state`` represents a single state, or a numpy array otherwise.
         """
         return np.random.uniform(self.minimum,
@@ -178,8 +178,8 @@ class RandomMomentumModel(ContinuousModel):
 
     def _predict(self, state: State=None) -> np.ndarray:
         """
-        Returns one action available from a given state or a vector of states.
-        :param state: State or vector of states.
+        Returns one action available from a given state or a vector of swarm.
+        :param state: State or vector of swarm.
         :return: An scalar in case ``state`` represents a single state, or a numpy array otherwise.
         """
         old_action = state.model_data if state.model_data is not None else np.zeros(self.shape)
@@ -219,8 +219,8 @@ class ContinuousDiscretizedModel(RandomContinuousModel):
 
     def _predict(self, state: State=None) -> np.ndarray:
         """
-        Returns one action available from a given state or a vector of states.
-        :param state: State or vector of states.
+        Returns one action available from a given state or a vector of swarm.
+        :param state: State or vector of swarm.
         :return: An scalar in case ``state`` represents a single state, or a numpy array otherwise.
         """
         perturbation = np.random.uniform(self.minimum, self.maximum, size=self.shape)
