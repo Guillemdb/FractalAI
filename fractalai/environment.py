@@ -144,6 +144,11 @@ class OpenAIEnvironment(Environment):
         """Access to the openai environment."""
         return self._env
 
+    @property
+    def num_actions(self):
+        """Number of actions."""
+        return self.env.action_space.n
+
     def set_seed(self, seed):
         np.random.seed(seed)
         self.env.seed(seed)
@@ -254,6 +259,11 @@ class AtariEnvironment(Environment):
     @property
     def env(self):
         return self._env
+
+    @property
+    def num_actions(self):
+        """Number of actions."""
+        return self.env.action_space.n
 
     @property
     def gym_env(self):

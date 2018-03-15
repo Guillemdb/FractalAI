@@ -106,3 +106,9 @@ class AtariMonitorPolicy(PolicyWrapper):
             if moni_state.terminal:
                 break
         self.monitor.env.close()
+
+    def run(self, skip_frames: int=0):
+        try:
+            self.record_video(skip_frames)
+        except KeyboardInterrupt:
+            self.monitor.env.close()
