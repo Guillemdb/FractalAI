@@ -118,7 +118,9 @@ class FractalAI(PolicyWrapper):
 
     @property
     def init_actions(self):
-        """The actions taken at the root state. They are used for approximating the Q values."""
+        """The actions taken by each walker at the root state. They are used for
+         approximating the Q values.
+         """
         return np.array([s.policy_action for s in self.swarm])
 
     def _action_probabilities(self) -> np.ndarray:

@@ -37,59 +37,63 @@ using either pixels or RAM as input.
 
 # How it works
 
-*TODO: Add links to specific line of code where each concept is used, so the definitions sections is
-no longer needed*
+*We provide links to the specific lines of the code where the described parts of the algorithm take
+place. For example, [(L45)]() will be a reference to the line 45 of the file 
+[fractalmc.py](fractalai/fractalmc.py)*
 
 When calculating an action, FMC will construct a tree that consists of potential trajectories that
-describe the future evolution of the system. This tree, called causal cone, is expanded by a swarm
-of walkers that populates its leaf nodes. The swarm will undergo an iterative process in order 
-to make the tree grow efficiently.
+describe the future evolution of the system. This tree, called causal cone, is expanded by a
+swarm [(L58, 105)]() of walkers that populates its leaf nodes. 
+The swarm will undergo an iterative process[(L322)]() in order to make the tree grow efficiently.
 When a maximum amount of computation has been reached, the utility of an action will be considered
 proportional to the number of walkers that populate leaf nodes originating
-from the same action.
+from the same action[(120, 126)]().
 
 The causal cone, unlike MCTS is not a static tree of all possible actions that will be explored.
 Instead the causal cone is a tree data structure that changes at every time step by applying random
-perturbations, and letting the swarm move freely among different leaf nodes of the tree.
+perturbations[(L142)](), and letting the swarm move freely among different leaf nodes of the tree.
+[(L199)]()
 
-[Here goes description of the iterative process]
+In order to evolve the swarm, first initialize the walkers at the root state, perturb them and store
+the action chosen[(L136)](). Then use the following algorithm to make it evolve until the maximum
+number of samples allowed is reached:
+
+1. Measure the euclidean distance between all the observations of all the walkers, and the observation of
+another walker chosen at random.[(L164)]() This will create an stochastic measure of diversity, that
+when incorporated into the virtual reward formula, will favor the diversity among the states in
+the swarm.
+
+2. Normalize the values so all the walkers' distances fall into the [0, 1] range.[(L175)](). 
+Normalize the rewards tobe in range [1, 2]. [(L184)](). This allows us to get rid of problems with
+the scale of both distances and rewards, and assures that the value of the virtual distance will be
+bounded.
+
+3. Calculate the virtual reward for each walker. [(L177)](). This value represents an stochastic
+measure of the importance of a given walker with respect to the whole swarm. It combines both an
+exploration term (distance), with an exploitation term reward that is weighted by the balance
+coefficient, which represents the current trade-off between exploration and exploitation, and helps
+modeling risk.[(L304)]()
+
+4. Each walker of the swarm compares itself to another walker chosen at random[(L215)](),
+ and gets assigned a probability of moving to the leaf node where the other walker is located[(L219)]().
+ 
+5. Determine if a walker is dead[(L209-212](). Then decide if the walker will clone or not
+depending on its death condition and clone probability.[(L220-223]()
+
+6. Move the walkers that are cloning to the target leaf node. [(L224-228]()
+
+6. Perturb the walkers that did not clone. This will make the cone evolve.[(L142)]()
+
+7. GOTO 1. until the maximum number of samples is reached.
+
+8. Approximate the utility for each action according to [(120, 126)](). Take the action with more
+utility.
 
 After deciding an action, the swarm will update its parameters: the number of walkers, and the
 number of times it will sample the state space to build the next causal cone. This update will be
 adjusted by a non linear feedback loop, with the objective of keeping the mean depth of the cone
-as close as possible to a desired time horizon.
+as close as possible to a desired time horizon.[(L262, 280, 290]()
 
-
-This is accomplished thanks to the following properties of the algorithm:
-
-- FMC uses an scalar called [virtual reward](#virtual-reward)[Line 175]() to weight both the physical
-distribution of the swarm across the state space, and the reward of the different states.
-
-- The algorithm recycles useless trajectories in the cone by [cloning](#cloning) any state of the
-swarm to another randomly chosen state. An state will clone or not depending on the relationship 
-of virtual rewards between itself and the chosen state.
-
-- After calculating an action, the algorithm updates most of its internal parameters to adjust
-itself dynamically to changes in the environment. The corrections to the parameters needed,
-are calculated based on how asymmetric the shape of the swarm is. The asymmetry is measured with
-respect to the spatial distribution of the states, their reward distribution, and their distribution
-across time.
-
-- It can discard arbitrary large sections of the search space by manually adding boundary conditions.
-These boundary conditions are modeled defining a [dead flag]() for each state, that allows to modify the
-cloning probability.
-
-- FMC avoids getting stuck in local optima thanks to weighting not only the reward, but also the
-spatial distribution of the states in the swarm.
-
-- The algorithm is parallelizable and could scale almost linearly with the maximum number of
-samples allowed. All the internal operations (distances, virtual reward calculations, cloning,
-etc...) involve only one state, or a given state and another randomly chosen state. 
-They all have a computational complexity that is lower than quadratic with respect of the area
-of the causal cone (), although the specific scalability will depend on the implementation.
-
-- It is tolerant to rewards and distances that are unbounded, or vary widely in scale thanks to a 
-[normalization]() process that takes place before the virtual reward is calculated.
 
 # Definitions
 This can be used as a reference section for the concepts in which the algorithm is based. When
