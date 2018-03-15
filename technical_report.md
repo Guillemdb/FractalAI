@@ -32,10 +32,10 @@ report, we will show how our method outperforms equivalent approaches based on d
 rewards[#CN]() to construct a policy.
    
 FMC has been extensively tested in a wide range of environments, in both continuous and discrete 
-action spaces, and using either pixels or RAM as input. This report will focus on the performance
+action spaces. This report will focus on the performance
 of the Agent in Atari games, as provided by the Python library OpenAI Gym[#CN](), under heavily
 bounded computational resources. The agent presented outperforms the current state of the art
-and shows to be significantly more efficient than similar methods.
+and shows to be significantly more efficient than similar methods, using either pixels or RAM as input.
 
 # How it works
 
