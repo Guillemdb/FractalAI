@@ -76,10 +76,13 @@ etc...) involve only one state, or a given state and another randomly chosen sta
 They all have a computational complexity that is lower than quadratic, although the specific
 scalability will depend on the implementation.
 
+- It is tolerant to rewards and distances that are unbounded, or vary widely in scale thanks to a 
+[renormalization process]() that takes place before the entropic reward is calculated.
+
 
 # Definitions
 
-- **Swarm**:
+- **Swarm**: 
 
 - **Entropic reward**:
 
