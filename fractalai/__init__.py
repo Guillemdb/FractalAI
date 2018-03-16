@@ -1,6 +1,6 @@
 from .environment import Environment, OpenAIEnvironment, AtariEnvironment, \
                          DMControlEnv
-from .fractalai import FractalAI
+from .fractalmc import FractalAI
 from .model import RandomDiscreteModel, RandomPongModel, \
                    RandomContinuousModel, RandomMomentumModel, \
                    ContinuousDiscretizedModel

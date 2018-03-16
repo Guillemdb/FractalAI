@@ -56,10 +56,12 @@ maintaining control over any aspect of the behavior of the Agent. This algorithm
  
 ## Quick start
 
-If you are a researcher, and you prefer reading a paper than commented Python code, please come
- back in a few hours when the [technical report](/technical_report.md) is finished. Meanwhile [I will
-  be happy to discuss the ideas presented](https://twitter.com/Miau_DB) using the conceptual
-   framework of RL, and standard terminology.
+If you are a researcher, please refer to the [technical report](/technical_report.md). Although it
+is still under development, it offers a summary of the main features of the algorithm, and references
+to the specific lines of the file [fractalmc.py]() where the concepts explained can be found.
+
+[I will be happy to discuss the ideas presented](https://twitter.com/Miau_DB) using the
+conceptual framework of RL, and standard terminology.
 
 You can refer to the [Example.ipynb](https://github.com/FragileTheory/FractalAI/blob/master/Example.ipynb) to 
 see how the agent performs on any Atari game, either using RAM, or pixels as input. 

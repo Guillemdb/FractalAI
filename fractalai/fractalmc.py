@@ -31,7 +31,7 @@ class FractalAI(PolicyWrapper):
         :param policy: Policy that will be used as a prior when calculating an action.
         :param max_samples: Max number of times that we can step the environment to calculate an
          action for a given state.
-        :param max_states: Maximum number of states that will be used to build a swarm.
+        :param max_states: Maximum number of swarm that will be used to build a swarm.
         :param time_horizon: Desired time horizon of the swarm
         :param n_fixed_steps:
         """
@@ -54,9 +54,9 @@ class FractalAI(PolicyWrapper):
 
         self._root_state = policy.reset()
         self.root_state.update_policy_data(0)  # Init time step w.r. to the present state
-        # This is the states pool where max_states states are stored.
-        self._states = np.array([self.root_state.create_clone()
-                                 for _ in range(self.max_states)], dtype=type(self.root_state))
+        # This is the swarm pool where max_states swarm are stored.
+        self._swarm = np.array([self.root_state.create_clone()
+                                for _ in range(self.max_states)], dtype=type(self.root_state))
 
         self._will_clone = np.zeros(self.n_states, dtype=np.bool)
         self._dead_mask = np.zeros(self.n_states, dtype=np.bool)
@@ -73,24 +73,24 @@ class FractalAI(PolicyWrapper):
         std_time = times.std()
 
         # Death stats
-        dead = np.array([s.dead for s in self.states]).sum()
-        death_pct = dead / len(self.states) * 100
+        dead = np.array([s.dead for s in self.swarm]).sum()
+        death_pct = dead / len(self.swarm) * 100
 
         # Worker stats
-        cloned = self._will_clone.sum() / len(self.states) * 100
-        step = self._will_step.sum() / len(self.states) * 100
+        cloned = self._will_clone.sum() / len(self.swarm) * 100
+        step = self._will_step.sum() / len(self.swarm) * 100
 
-        text = "Fractal with {} states.\n" \
+        text = "Fractal with {} swarm.\n" \
                "Balance Coef {:.4f} | Mean Samples {:.2f} | Current sample limit {}\n" \
                "Algorithm last iter:\n" \
                "- Deaths: \n" \
-               "    {} states: {:.2f}%\n" \
+               "    {} swarm: {:.2f}%\n" \
                "- Time: \n" \
                "    Mean: {:.2f} | Std: {:.2f}\n" \
                "- Worker: \n" \
                "    Step: {:.2f}% {} steps | Clone: {:.2f}% {} clones\n"
 
-        return text.format(len(self.states),
+        return text.format(len(self.swarm),
                            self.balance, np.mean(self._save_steps), self._n_limit_samples,
                            dead, death_pct,
                            mean_time, std_time,
@@ -102,9 +102,9 @@ class FractalAI(PolicyWrapper):
         return self._root_state
 
     @property
-    def states(self) -> np.ndarray:
-        """Return the states that are currently used."""
-        return self._states[:self.n_states]
+    def swarm(self) -> np.ndarray:
+        """Return the swarm that are currently used."""
+        return self._swarm[:self.n_states]
 
     @property
     def state_times(self) -> np.ndarray:
@@ -114,12 +114,14 @@ class FractalAI(PolicyWrapper):
     @property
     def deaths(self) -> np.ndarray:
         """Contains booleans indicating whether an state meets the death condition or not."""
-        return np.array([s.dead for s in self.states])
+        return np.array([s.dead for s in self.swarm])
 
     @property
     def init_actions(self):
-        """The actions taken at the root state. They are used for approximating the Q values."""
-        return np.array([s.policy_action for s in self.states])
+        """The actions taken by each walker at the root state. They are used for
+         approximating the Q values.
+         """
+        return np.array([s.policy_action for s in self.swarm])
 
     def _action_probabilities(self) -> np.ndarray:
         """Gets an approximation of the Q value function for a given state.
@@ -132,8 +134,8 @@ class FractalAI(PolicyWrapper):
         return vals / self.n_states
 
     def _init_step(self):
-        """Sync all the states so they become a copy of the root state"""
-        self.states[:] = [self.root_state.create_clone() for _ in range(self.n_states)]
+        """Sync all the swarm so they become a copy of the root state"""
+        self.swarm[:] = [self.root_state.create_clone() for _ in range(self.n_states)]
         self._will_clone = np.zeros(self.n_states, dtype=np.bool)
         self._state_times = np.ones(self.n_states)
 
@@ -145,15 +147,15 @@ class FractalAI(PolicyWrapper):
         :return: None.
         """
         # Only step an state if it has not cloned
-        step_ix = np.logical_not(self._will_clone) if not init_step else np.ones(len(self.states),
+        step_ix = np.logical_not(self._will_clone) if not init_step else np.ones(len(self.swarm),
                                                                                  dtype=bool)
 
-        actions = self.policy.predict(self.states[step_ix])
-        self.states[step_ix] = self.step(self.states[step_ix], actions,
-                                         fixed_steps=n_fixed_steps)
+        actions = self.policy.predict(self.swarm[step_ix])
+        self.swarm[step_ix] = self.step(self.swarm[step_ix], actions,
+                                        fixed_steps=n_fixed_steps)
         # Save action taken from root state inside
         if init_step:
-            for ix, state in enumerate(self.states[step_ix]):
+            for ix, state in enumerate(self.swarm[step_ix]):
                 state.update_policy_action(actions[ix])  # Save init action
                 state.update_policy_data(0)  # Set simulation time to zero.
         self._n_samples_done += step_ix.sum()
@@ -161,24 +163,24 @@ class FractalAI(PolicyWrapper):
 
     def _evaluate_distance(self) -> np.ndarray:
         """Calculates the euclidean distance between pixels of two different images
-        on a vector of states, and normalizes the relative distances between 1 and 2.
+        on a vector of swarm, and normalizes the relative distances between 1 and 2.
         In a more general scenario, any function that quantifies the notion of "how different two
-        states are" could work, even though it is not a proper distance.
+        swarm are" could work, even though it is not a proper distance.
         """
         # Get random companion
-        idx = np.random.permutation(np.arange(len(self.states)))
-        obs = np.array([state.observed for state in self.states])
+        idx = np.random.permutation(np.arange(len(self.swarm)))
+        obs = np.array([state.observed for state in self.swarm])
         # Euclidean distance between pixels
         dist = np.sqrt(np.sum((obs[idx] - obs) ** 2, axis=tuple(range(1, len(obs.shape)))))
         return normalize_vector(dist)
 
-    def _entropic_reward(self) -> np.ndarray:
+    def _virtual_reward(self) -> np.ndarray:
         """Calculate the entropic reward of the walkers. This quantity is used for determining
         the chance a given state has of cloning. This scalar gives us a measure of how well an
         state is solving the exploration vs exploitation problem.
         """
         dist = self._evaluate_distance()  # goes between 0 and 1
-        rewards = np.array([state.reward for state in self.states])
+        rewards = np.array([state.reward for state in self.swarm])
         scores = normalize_vector(rewards) + 1  # Goes between 1 and 2
         # The balance sets how much preference we are giving exploitation over exploration.
         ent_reward = dist * scores ** self.balance
@@ -188,26 +190,26 @@ class FractalAI(PolicyWrapper):
         """Keep track of the time of each state in the cone, with respect to the present state.
         In case the state has been stepped, increase time by 1.
         """
-        for state in self.states[self._will_step]:
+        for state in self.swarm[self._will_step]:
             # The current simulation time is stored inside the policy_data attribute of each state.
             current_ts = state.policy_data if state.policy_data is not None else 0
             state.update_policy_data(current_ts + 1)
-        self._state_times = np.array([s.policy_data for s in self.states])
+        self._state_times = np.array([s.policy_data for s in self.swarm])
 
     def _clone(self):
         """The clone phase aims to change the distribution of walkers in the state space, by
-         cloning some states to a randomly chosen companion. After cloning, the distribution of
+         cloning some swarm to a randomly chosen companion. After cloning, the distribution of
          walkers will be closer to the reward distribution of the state space.
         1 - Choose a random companion who is alive.
         2 - Calculate the probability of cloning.
         3 - Clone if True or the walker is dead.
         """
-        ent_rew = self._entropic_reward()
+        ent_rew = self._virtual_reward()
 
         # Besides the death condition, zero entropic reward also counts as death when cloning
-        deaths = np.array([s.dead or ent_rew[i] == 0 for i, s in enumerate(self.states)])
+        deaths = np.array([s.dead or ent_rew[i] == 0 for i, s in enumerate(self.swarm)])
         # The following line is tailored to atari games. Beware when using in a general case.
-        deaths = np.logical_or(deaths, [s.reward < self.root_state.reward for s in self.states])
+        deaths = np.logical_or(deaths, [s.reward < self.root_state.reward for s in self.swarm])
         self._dead_mask = deaths
 
         idx = self._get_companions()
@@ -223,7 +225,7 @@ class FractalAI(PolicyWrapper):
         self._will_clone = clone
         for i, clo in enumerate(clone):
             if clo:
-                self.states[i] = self.states[idx][i].create_clone()
+                self.swarm[i] = self.swarm[idx][i].create_clone()
 
     def _act(self, state: State=None, render: bool = False, *args, **kwargs) -> State:
         """ Given an arbitrary state, acts on the environment and return the
@@ -267,11 +269,11 @@ class FractalAI(PolicyWrapper):
             if self.n_states == self.max_states:
                 self._update_n_samples()  # Decrease the samples so we can be faster.
             else:
-                self._update_n_states()  # Thi will increase the number of states
+                self._update_n_states()  # Thi will increase the number of swarm
 
         else:  # We are not arriving at the desired time horizon.
             if self._n_limit_samples == self.max_samples:
-                self._update_n_states()  # Reduce the number of states to avoid useless clones.
+                self._update_n_states()  # Reduce the number of swarm to avoid useless clones.
             else:
                 self._update_n_samples()  # Increase the amount of computation.
 
@@ -287,16 +289,16 @@ class FractalAI(PolicyWrapper):
 
     def _update_n_states(self):
         """The number of parallel trajectories used changes every step. It tries to use enough
-         states to make the mean time of the swarm tend to the minimum mean time selected.
+         swarm to make the mean time of the swarm tend to the minimum mean time selected.
          """
         old_n = int(self.n_states)
         new_n = self.n_states * self.balance
         new_n = int(np.clip(np.ceil(new_n), 2, self.max_states))
         self.n_states = new_n
-        # New states start as a copy of already existing states.
+        # New swarm start as a copy of already existing swarm.
         if new_n > old_n:
-            self._states[old_n:new_n] = [x.create_clone() for x
-                                         in np.random.choice(self.states, int(new_n - old_n))]
+            self._swarm[old_n:new_n] = [x.create_clone() for x
+                                        in np.random.choice(self.swarm, int(new_n - old_n))]
         self.n_states = int(new_n)
 
     def _update_balance(self):

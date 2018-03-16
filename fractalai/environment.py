@@ -9,7 +9,7 @@ from fractalai.state import Microstate, State, AtariState
 
 class Environment:
     """This class handles the simulation of the environment in the FAI algorithm. It act as a
-    transfer function between states. Given a pair of State, Action it should be able to compute
+    transfer function between swarm. Given a pair of State, Action it should be able to compute
     the next state of the environment.
 
     We have not implemented the get_environment_state because we only need to read its initial
@@ -23,7 +23,7 @@ class Environment:
 
     def __init__(self, name: str, state: State=None, fixed_steps: int=1):
         """This class handles the simulation of the environment in the FAI algorithm. It acts as a
-        transfer function between states. Given a pair of State, Action it should compute the next
+        transfer function between swarm. Given a pair of State, Action it should compute the next
          state of the environment.
 
         Parameters
@@ -67,12 +67,12 @@ class Environment:
                                                                                          list]:
         """
         Step either a State or a batch of States.
-        :param state: State or vector of states to be stepped.
-        :param action: Action that will be taken in each one of the states.
+        :param state: State or vector of swarm to be stepped.
+        :param action: Action that will be taken in each one of the swarm.
         :param fixed_steps: The number of consecutive times that the action will be applied. This
                             allows us to set the frequency at which the policy will play.
         :return: The State of the environment after taking the desired number of steps.
-                 If the input provided was a batch of states, return the stepped batch.
+                 If the input provided was a batch of swarm, return the stepped batch.
         """
         if not isinstance(state, Iterable):
             return self._step(state, action, fixed_steps=fixed_steps)
