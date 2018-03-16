@@ -1,5 +1,4 @@
 # Fractal AI: A Fragile Theory of Intelligence
-### Sergio Hernández Cerezo and Guillem Duran Ballester
 
 ![Boxing-v0](assets/boxing.gif "Boxing-v0 76 samples per action") ![MsPacman-v0](assets/mspacman.gif "MsPacman-v0 154 samples per action") ![Tennis-v0](assets/tennis.gif "Tennis-v0 1250 samples per action")   ![Centipede-v0](assets/centipede.png
   "Centipede-v0 1960 samples per action") ![MontezumaRevenge-v0](assets/montezuma.gif
@@ -285,7 +284,8 @@ our ideas since the very beginning.
   [Marcelo Novaes](https://twitter.com/marnovo), and [Egor Bulychev](https://twitter.com/egor_bu).
  
  - Everyone who believed in our Alien math since Guillem was in college, specially [José M. Amigó](http://www.umh.es/contenido/pdi/:persona_5536/datos_es.html), [Antoni Elias](https://twitter.com/eliasfuste),
- [Jose Berengueres](https://twitter.com/harriken), [Javier Ozón](https://twitter.com/fjozon), and [Samuel Graván](https://twitter.com/Samuel__GP).
+ [Jose Berengueres](https://twitter.com/harriken), [Javier Ozón](https://twitter.com/fjozon),
+ [Samuel Graván](https://twitter.com/Samuel__GP), and [Marc Garcia](https://twitter.com/datapythonista).
  
 
 ## TODO
@@ -293,6 +293,8 @@ our ideas since the very beginning.
 We are currently working in many improvements to the project, and we will welcome any contribution.
 
 - Making the repo more researcher friendly.
+
+- Writing a technical report on the inner workings of the algorithm.
 
 - Improve docstrings and code clarity.
 
@@ -304,7 +306,7 @@ We are currently working in many improvements to the project, and we will welcom
 
 - Create a Docker container.
 
-- Write an 8 pages paper that details the implementation presented using formal math.
+
  
 ## Bibliography
  - **[1]**  Guo, Xiaoxiao and Singh, Satinder and Lee, Honglak and Lewis, Richard L and Wang, Xiaoshi. 
