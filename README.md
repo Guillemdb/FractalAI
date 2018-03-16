@@ -11,7 +11,7 @@
 
 ## Table of Contents
 
-**This project is still under active development.**
+**This project is still under active development. Please, think of it as an open beta.**
 
 - [Abstract](#abstract)
 - [Quick Start](quick-start)
@@ -116,8 +116,6 @@ what you end up installing on your platform.
 >If it doesn't agree with experiment, it's wrong.
 >
 > **Richard P. Feynman**
-
-***This section is still work in progress, and it will be updated during the day.***
 
 The following benchmarks have been calculated on a single machine 
 ([Razer Blade laptop](https://www.razerzone.com/gaming-laptops/razer-blade-pro)) using the
