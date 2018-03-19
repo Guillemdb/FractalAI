@@ -77,7 +77,7 @@ class DynamicTree:
         return [self.data.node[n]["obs"] for n in nx.shortest_path(self.data, 0, leaf_id)[1:]]
 
 
-class WaveSwarm:
+class SwarmWave:
     """This is a very silly example on how using FAI we can derive a new tool for solving a
      specific problem. Our objective will be sampling the game with the highest possible score,
      given a bound in computational resources. We are assuming a deterministic environment that we
@@ -156,7 +156,7 @@ class WaveSwarm:
             progress = max(progress, score_prog)
 
         text = "Environment: {}\n" \
-               "Samples done: {} Progress {:.2f}%\n" \
+               "Total samples: {} Progress {:.2f}%\n" \
                "Reward: mean {:.2f} std {:.2f} max {:.2f} min {:.2f}\n" \
                "Episode length: mean {:.2f} std {:.2f} max {:.2f} min {:.2f}\n" \
                "Efficiency {:.2f}%\n" \
@@ -336,8 +336,9 @@ class WaveSwarm:
                     clear_output(True)
             except KeyboardInterrupt:
                 break
-        print(self)
+
         clear_output(True)
+        print(self)
 
     def recover_game(self, index=None) -> list:
         """
