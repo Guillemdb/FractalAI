@@ -20,7 +20,10 @@ def normalize_vector(vector: np.ndarray) -> np.ndarray:
 
 
 class DynamicTree:
-
+    """This is a tree data structure that stores the paths followed by the walkers. It can be
+    pruned to delete paths that will no longer be needed. It uses a networkx Graph. If someone
+     wants to spend time building a proper data structure, please make a PR. I will be super happy!
+    """
     def __init__(self):
         self.data = nx.DiGraph()
         self.data.add_node(0)
@@ -35,16 +38,12 @@ class DynamicTree:
         :param obs: observation assigned to leaf_id state.
         :param action: action taken at leaf_id state.
         :param reward: reward assigned to the state represented by leaf_id.
-        :param end: bolean indicating if the state is terminal.
+        :param end: boolean indicating if the state is terminal.
         :return:
         """
         self.data.add_node(leaf_id, obs=obs, action=action, reward=reward, end=end)
         self.data.add_edge(parent_id, leaf_id)
         self._recently_added.append(leaf_id)
-        parent_id = list(self.data.in_edges(leaf_id))
-        if len(parent_id) == 0:
-            print("FAILORES")
-            raise ValueError
 
     def prune_branch(self, leaf, alive_leafs):
         """This recursively prunes a branch that only leads to an orphan leaf."""
@@ -72,7 +71,7 @@ class DynamicTree:
     def get_branch(self, leaf_id) -> list:
         """
         Get the observation from the game ended at leaf_id
-        :param leaf_id: id of the leaf node belonging to the branch that will be recovered.
+        :param leaf_id: id of the leaf nodei belonging to the branch that will be recovered.
         :return: Sequence of observations belonging to a given branch of the tree.
         """
         return [self.data.node[n]["obs"] for n in nx.shortest_path(self.data, 0, leaf_id)[1:]]
@@ -101,8 +100,7 @@ class WaveSwarm:
                  balance: int=1,
                  skip_frames: int=0,
                  render_every: int=0,
-                 until_score: int=None,
-                 prune_every: int=1):
+                 until_score: int=None):
         """
         :param env_name: The name of the Atari game to be sampled.
         :param n_samples: Maximum number of samples allowed.
@@ -110,15 +108,15 @@ class WaveSwarm:
         :param n_fixed_steps: The number of times that we will apply the same action.
         :param balance: Coefficient that balances exploration vs exploitation.
         :param render_every: Number of iterations to be performed before updating displayed
+        :param until_score: Maximum score that can be reached before stopping the sampling.
          statistics.
         """
-
+        self.env_name = env_name
         self.env = gym.make(env_name)
         self.root_state = self.env.unwrapped.clone_full_state().copy()
         self.balance = balance
         self.render_every = render_every
         self.until_score = until_score
-        self.prune_every = prune_every
 
         self.n_actions = self.env.action_space.n
         self.n_fixed_steps = n_fixed_steps
@@ -157,24 +155,20 @@ class WaveSwarm:
             score_prog = (self.rewards.max() / self.until_score) * 100
             progress = max(progress, score_prog)
 
-        text = "Samples done: {} Progress {:.2f}%\n" \
+        text = "Environment: {}\n" \
+               "Samples done: {} Progress {:.2f}%\n" \
                "Reward: mean {:.2f} std {:.2f} max {:.2f} min {:.2f}\n" \
-               "Time: mean {:.2f} std {:.2f} max {:.2f} min {:.2f}\n" \
+               "Episode length: mean {:.2f} std {:.2f} max {:.2f} min {:.2f}\n" \
                "Efficiency {:.2f}%\n" \
                "Generated {} Examples |" \
-               " {:.2f} samples per action.".format(self._n_samples_done,
-                                                    progress,
-                                                    self.rewards.mean(),
-                                                    self.rewards.std(),
-                                                    self.rewards.max(),
-                                                    self.rewards.min(),
-                                                    self.times.mean(),
-                                                    self.times.std(),
-                                                    self.times.max(),
-                                                    self.times.min(),
-                                                    efi,
-                                                    len(self.tree.data.nodes),
-                                                    sam_step)
+               " {:.2f} samples per example.".format(self.env_name, self._n_samples_done,
+                                                     progress,
+                                                     self.rewards.mean(), self.rewards.std(),
+                                                     self.rewards.max(), self.rewards.min(),
+                                                     self.times.mean(), self.times.std(),
+                                                     self.times.max(), self.times.min(),
+                                                     efi, len(self.tree.data.nodes),
+                                                     sam_step)
         return text
 
     def _init_swarm(self):
