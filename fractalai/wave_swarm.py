@@ -325,14 +325,19 @@ class WaveSwarm:
         """
         self._init_swarm()
         while not self._stop_condition():
-            if self._i_simulation > 1:
-                self._clone()
-            self._step_walkers()
-            self._i_simulation += 1
-            if self._i_simulation % self.render_every == 0:
-                from IPython.core.display import clear_output
-                print(self)
-                clear_output(True)
+            try:
+                if self._i_simulation > 1:
+                    self._clone()
+                self._step_walkers()
+                self._i_simulation += 1
+                if self._i_simulation % self.render_every == 0:
+                    from IPython.core.display import clear_output
+                    print(self)
+                    clear_output(True)
+            except KeyboardInterrupt:
+                break
+        print(self)
+        clear_output(True)
 
     def recover_game(self, index=None) -> list:
         """
