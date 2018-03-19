@@ -314,7 +314,7 @@ class WaveSwarm:
          or the target score reached.
          """
         stop_hard = self._n_samples_done > self._n_limit_samples
-        score = False if self.until_score is None else self.rewards.max() > self.until_score
+        score = False if self.until_score is None else self.rewards.max() >= self.until_score
         return stop_hard or score or self._terminal.all()
 
     def run_swarm(self):
