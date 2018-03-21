@@ -100,15 +100,14 @@ class SwarmWave:
                  balance: float=1.,
                  time_weight: int=0.5,
                  skip_frames: int=0,
-                 render_every: int=0,
+                 render_every: int=5,
                  score_limit: int=None,
                  save_tree: bool=True):
         """
 
-
         :param env_name: The name of the Atari game to be sampled.
-        :param n_samples: Maximum number of samples allowed.
-        :param n_walkers: Number of walkers that will use for exploring the space.
+        :param n_samples: Maximum number of samples allowed. None = unlimited (avoid save_tree).
+        :param n_walkers: Number of walkers that will use for exploring the space (avoid >2K).
         :param n_fixed_steps: The number of times that we will apply the same action.
         :param balance: Coefficient that balances exploration vs exploitation.
         :param time_weight: Coefficient that weights the time diversity of the swarm.
@@ -148,7 +147,7 @@ class SwarmWave:
             efi = 0.
             sam_step = 0.
             samples = 0.
-        progress = (self._n_samples_done / self.n_limit_samples) * 100
+        progress = 0 if self.n_limit_samples is None else (self._n_samples_done / self.n_limit_samples) * 100
         if self.score_limit is not None:
             score_prog = (self.rewards.max() / self.score_limit) * 100
             progress = max(progress, score_prog)
@@ -337,7 +336,7 @@ class SwarmWave:
         """This sets a hard limit on maximum samples. It also Finishes if all the walkers are dead,
          or the target score reached.
          """
-        stop_hard = self._n_samples_done > self.n_limit_samples
+        stop_hard = self._n_samples_done > self.n_limit_samples if self.save_tree else False
         stop_score = False if self.score_limit is None else self.rewards.max() >= self.score_limit
         stop_terminal = self._terminal.all()
         # Define game status so usr knows why game stoped
