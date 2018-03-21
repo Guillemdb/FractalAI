@@ -78,7 +78,7 @@ class DynamicTree:
 
 
 class SwarmWave:
-    """This is a very silly example on how using FAI we can derive a new tool for solving a
+    """This is a very simple example on how using FAI we can derive a new tool for solving a
      specific problem. Our objective will be sampling the game with the highest possible score,
      given a bound in computational resources. We are assuming a deterministic environment that we
      can model perfectly.
@@ -114,44 +114,29 @@ class SwarmWave:
         :param time_weight: Coefficient that weights the time diversity of the swarm.
         :param render_every: Number of iterations to be performed before updating displayed
         :param score_limit: Maximum score that can be reached before stopping the sampling.
-         statistics.
         :param save_tree: If false, the data generated is not stored.
         """
         self.env_name = env_name
-        self.env = gym.make(env_name)
-        self.root_state = self.env.unwrapped.clone_full_state().copy()
+        self.n_limit_samples = n_samples
+        self.n_walkers = n_walkers
+        self.n_fixed_steps = n_fixed_steps
         self.balance = balance
         self.time_weight = time_weight
-        self.save_tree = save_tree
+        self.skip_frames = skip_frames
         self.render_every = render_every
         self.score_limit = score_limit
+        self.save_tree = save_tree
 
+        self.env = gym.make(env_name)
         self.n_actions = self.env.action_space.n
-        self.n_fixed_steps = n_fixed_steps
-        self.n_walkers = n_walkers
-        self.skip_frames = skip_frames
-        self._i_simulation = 0
-        self._n_samples_done = 0
-
-        self._n_limit_samples = n_samples
-
-        self._death_cond = np.zeros(self.n_walkers, dtype=np.bool)
-        self._will_clone = np.zeros(self.n_walkers, dtype=np.bool)
-        self._dead_mask = np.zeros(self.n_walkers, dtype=np.bool)
-        self._will_step = np.zeros(self.n_walkers, dtype=np.bool)
-        self._terminal = np.zeros(self.n_walkers, dtype=np.bool)
-        self.times = np.zeros(self.n_walkers)
-        self._old_lives = - np.ones(self.n_walkers)
         self.obs = None
-        self.rewards = np.ones(self.n_walkers) * -1e5
+        self.walkers = None
+        self.tree = None
+
         # This is an overkill, but its fast anyway
         self.random_actions = np.random.randint(0, self.n_actions,
                                                 size=(int(1e6), n_walkers),
                                                 dtype=np.uint8)
-        self.walkers_id = np.zeros(self.n_walkers)
-        self.walkers = None
-        self._i_epoch = 0
-        self.tree = None
         self._init_swarm()
 
     def __str__(self):
@@ -163,7 +148,7 @@ class SwarmWave:
             efi = 0.
             sam_step = 0.
             samples = 0.
-        progress = (self._n_samples_done / self._n_limit_samples) * 100
+        progress = (self._n_samples_done / self.n_limit_samples) * 100
         if self.score_limit is not None:
             score_prog = (self.rewards.max() / self.score_limit) * 100
             progress = max(progress, score_prog)
@@ -173,9 +158,11 @@ class SwarmWave:
                "Reward: mean {:.2f} | dispersion {:.2f} | max {:.2f} | min {:.2f} | std {:.2f}\n" \
                "Episode length: mean {:.2f} | dispersion {:.2f} | max {:.2f} | min {:.2f} " \
                "| std {:.2f}\n" \
+               "Walkers: {} deads {}\n" \
                "Efficiency {:.2f}%\n" \
                "Generated {} Examples |" \
-               " {:.2f} samples per example.".format(self.env_name, self._n_samples_done,
+               " {:.2f} samples per example.\n"\
+               "Status: {}".format(self.env_name, self._n_samples_done,
                                                      progress,
                                                      self.rewards.mean(),
                                                      self.rewards.max() - self.rewards.min(),
@@ -185,15 +172,18 @@ class SwarmWave:
                                                      self.times.max() - self.times.min(),
                                                      self.times.max(), self.times.min(),
                                                      self.times.std(),
+                                                     self.n_walkers, self._dead_mask.sum(),
                                                      efi,
                                                      samples,
-                                                     sam_step)
+                                                     sam_step,
+                                                     self._game_status)
         return text
 
     def _init_swarm(self):
         """Sync all the swarm so they become a copy of the root state"""
         self._n_samples_done = 0
         self._i_epoch = 0
+        self._i_simulation = 0
         obs = self.env.reset()
         reward, lives = 0, 0
         # skip some frames
@@ -216,8 +206,13 @@ class SwarmWave:
         self._old_lives = np.ones(self.n_walkers) * lives
         self.obs = np.array([obs.copy() for _ in range(self.n_walkers)])
         self.rewards = np.ones(self.n_walkers) * reward
+        self._death_cond = np.zeros(self.n_walkers, dtype=np.bool)
+        self._will_step = np.zeros(self.n_walkers, dtype=np.bool)
+        self._not_frozen = np.zeros(self.n_walkers, dtype=np.bool)
+        self._terminal = np.zeros(self.n_walkers, dtype=np.bool)
         if self.save_tree:
             self.tree = DynamicTree()
+        self._game_status = ""
 
     def _step_walkers(self, init_step: bool = False):
         """Sample an action for each walker, and act on the system.
@@ -225,9 +220,9 @@ class SwarmWave:
         :param init_step: If it is the first step, keep track of the initial actions taken.
         :return: None.
         """
-        # Only step an state if it has not cloned
-        step_ix = np.logical_not(self._will_clone) if not init_step else np.ones(self.n_walkers,
-                                                                                 dtype=bool)
+        # Only step an state if it has not cloned and is not frozen
+        step_ix = np.logical_and(self._not_frozen, np.logical_not(self._will_clone)) if not init_step else np.ones(self.n_walkers, dtype=bool)
+
         for i, state in enumerate(self.walkers):
             if step_ix[i]:
                 self.env.unwrapped.restore_full_state(state)
@@ -236,31 +231,32 @@ class SwarmWave:
                 action = self.random_actions[self._i_epoch % self.random_actions.shape[0], i]
                 # We can choose to apply the same action several times
                 for _ in range(self.n_fixed_steps):
-                    obs, _reward, _end, info = self.env.step(action)
-                    self._n_samples_done += 1
-                    self.rewards[i] += _reward
-                    # Check boundary conditions
-                    end = end or _end
-                    self._death_cond[i] = end or info["ale.lives"] < old_lives
-                    old_lives = float(info["ale.lives"])
-                    # Update data
-                    self.times[i] += 1
-                    self.obs[i] = obs.copy()
-                    self._old_lives[i] = old_lives
-                    self._n_samples_done += 1
-                    # Keep track of the paths using the tree if needed
-                    new_state = self.env.unwrapped.clone_full_state().copy()
-                    new_id = self._n_samples_done
-                    if self.save_tree:
-                        old_id = self.walkers_id[i]
-                        self.tree.append_leaf(new_id, parent_id=old_id, obs=obs)
-                    self.walkers_id[i] = new_id
-                    self.walkers[i] = new_state
-                    # Reset if necessary
-                    if _end:
-                        self._terminal[i] = True
-                        self.env.reset()
-                        break
+                    if self.rewards[i]<self.score_limit:
+                        obs, _reward, _end, info = self.env.step(action)
+                        self._n_samples_done += 1
+                        self.rewards[i] += _reward
+                        # Check boundary conditions
+                        end = end or _end
+                        self._death_cond[i] = end or info["ale.lives"] < old_lives
+                        old_lives = float(info["ale.lives"])
+                        # Update data
+                        self.times[i] += 1
+                        self.obs[i] = obs.copy()
+                        self._old_lives[i] = old_lives
+                        self._n_samples_done += 1
+                        # Keep track of the paths using the tree if needed
+                        new_state = self.env.unwrapped.clone_full_state().copy()
+                        new_id = self._n_samples_done
+                        if self.save_tree:
+                            old_id = self.walkers_id[i]
+                            self.tree.append_leaf(new_id, parent_id=old_id, obs=obs)
+                        self.walkers_id[i] = new_id
+                        self.walkers[i] = new_state
+                        # Reset if necessary
+                        if _end and self.rewards[i]<self.score_limit:
+                            self._terminal[i] = True
+                            self.env.reset()
+                            break
         self._will_step = step_ix
 
     def _evaluate_distance(self) -> np.ndarray:
@@ -274,17 +270,17 @@ class SwarmWave:
         obs = np.array(self.obs)
         # Euclidean distance between pixels
         dist = np.sqrt(np.sum((obs[idx] - obs) ** 2, axis=tuple(range(1, len(obs.shape)))))
+
         # We want time diversity to detect deaths early and have some extra reaction time
         time_div = normalize_vector(np.linalg.norm(self.times.reshape((-1, 1)) -
                                                    self.times[idx].reshape((-1, 1)),
-                                    axis=0))
-
+                                                   axis=0))
         # This is a distance formula that I just invented that expands the swarm in time
         space_time_dist = normalize_vector(dist) * time_div ** self.time_weight
         return space_time_dist
 
     def _virtual_reward(self) -> np.ndarray:
-        """Calculate the entropic reward of the walkers. This quantity is used for determining
+        """Calculate the virtual reward of the walkers. This quantity is used for determining
         the chance a given state has of cloning. This scalar gives us a measure of how well an
         state is solving the exploration vs exploitation problem.
         """
@@ -292,8 +288,8 @@ class SwarmWave:
         rewards = np.array(self.rewards)
         scores = normalize_vector(rewards) + 1  # Goes between 1 and 2
         # The balance sets how much preference we are giving exploitation over exploration.
-        ent_reward = dist * scores ** self.balance
-        return ent_reward
+        vir_reward = dist * scores ** self.balance
+        return vir_reward
 
     def _clone(self):
         """The clone phase aims to change the distribution of walkers in the state space, by
@@ -303,23 +299,26 @@ class SwarmWave:
         2 - Calculate the probability of cloning.
         3 - Clone if True or the walker is dead.
         """
-        ent_rew = self._virtual_reward()
+        vir_rew = self._virtual_reward()
 
-        # Besides the death condition, zero entropic reward also counts as death when cloning
-        deaths = np.array([dead or ent_rew[i] == 0 for i, dead in enumerate(self._death_cond)])
+        # Besides the death condition, zero virtual reward also counts as death when cloning
+        deaths = np.array([dead or vir_rew[i] == 0 for i, dead in enumerate(self._death_cond)])
         self._dead_mask = deaths
 
         idx = np.random.permutation(np.arange(self.n_walkers, dtype=int))
 
-        # The probability of cloning depends on the relationship of entropic rewards
+        # The probability of cloning depends on the relationship of virtual rewards
         # with respect to a randomly chosen walker.
-        value = (ent_rew[idx] - ent_rew) / np.where(ent_rew > 0, ent_rew, 1e-8)
+        value = (vir_rew[idx] - vir_rew) / np.where(vir_rew > 0, vir_rew, 1e-8)
         clone = (value >= np.random.random()).astype(bool)
+
+        # Walkers reaching the score limit do freeze (do not clone nor step).
+        self._not_frozen = (self.rewards < self.score_limit)
 
         clone[deaths] = True
         clone[deaths[idx]] = False  # Do not clone to a dead companion
         # Actual cloning
-        self._will_clone = clone
+        self._will_clone = np.logical_and(clone, self._not_frozen)
         old_ids = set(self.walkers_id)
         for i, clo in enumerate(clone):
             if clo:
@@ -338,9 +337,19 @@ class SwarmWave:
         """This sets a hard limit on maximum samples. It also Finishes if all the walkers are dead,
          or the target score reached.
          """
-        stop_hard = self._n_samples_done > self._n_limit_samples
-        score = False if self.score_limit is None else self.rewards.max() >= self.score_limit
-        return stop_hard or score or self._terminal.all()
+        stop_hard = self._n_samples_done > self.n_limit_samples
+        stop_score = False if self.score_limit is None else self.rewards.max() >= self.score_limit
+        stop_terminal = self._terminal.all()
+        # Define game status so usr knows why game stoped
+        if stop_hard:
+            self._game_status = "Sample limit reached."
+        elif stop_score:
+            self._game_status = "Score limit reached."
+        elif stop_terminal:
+            self._game_status = "All the walkers died."
+        else:
+            self._game_status = "Playing..."
+        return stop_hard or stop_score or stop_terminal
 
     def run_swarm(self):
         """
