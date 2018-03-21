@@ -14,7 +14,6 @@
 **This project is still under active development. Please, think of it as an open beta.**
 
 - [Abstract](#abstract)
-- [What is FAI?](#what-is-fai-about)
 - [Quick Start](quick-start)
 - [Running the code](#installation)
 - [Benchmarks](#benchmarks)
@@ -59,14 +58,14 @@ to sampling both discrete and continuous state spaces.
 
 ## Quick start
 
-If you want to know the fundamentals about Fractal AI, please refer to the [Introduction to FAI]() 
+If you want to know the fundamentals about Fractal AI, please refer to the [Introduction to FAI](https://github.com/FragileTheory/FractalAI/blob/master/introduction_to_fai.md) 
 document, when you will find an explanation of the algorithms presented in this repository, and 
 and possible applications to Reinforcement Learning.
 
-You can refer to the [FMC Example.ipynb](https://github.com/FragileTheory/FractalAI/blob/master/Example.ipynb) to 
+You can refer to the [FMC Example.ipynb](https://github.com/FragileTheory/FractalAI/blob/master/FMC%20Example.ipynb) to 
 see how the agent performs on any Atari game, either using RAM, or pixels as observations.
 
-In case you want to check by yourself how the Swarm Wave algorithm works,the [Swarm Wave Example]()
+In case you want to check by yourself how the Swarm Wave algorithm works,the [Swarm Wave Example](https://github.com/FragileTheory/FractalAI/blob/master/Swarm%20Wave%20example.ipynb)
 is a good place to start.
 
 [I will be happy to discuss the ideas presented](https://twitter.com/Miau_DB) using the
