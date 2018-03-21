@@ -97,26 +97,34 @@ class SwarmWave:
                  n_samples: int = 1500,
                  n_walkers: int=50,
                  n_fixed_steps: int = 1,
-                 balance: int=1,
+                 balance: float=1.,
+                 time_weight: int=0.5,
                  skip_frames: int=0,
                  render_every: int=0,
-                 until_score: int=None):
+                 score_limit: int=None,
+                 save_tree: bool=True):
         """
+
+
         :param env_name: The name of the Atari game to be sampled.
         :param n_samples: Maximum number of samples allowed.
         :param n_walkers: Number of walkers that will use for exploring the space.
         :param n_fixed_steps: The number of times that we will apply the same action.
         :param balance: Coefficient that balances exploration vs exploitation.
+        :param time_weight: Coefficient that weights the time diversity of the swarm.
         :param render_every: Number of iterations to be performed before updating displayed
-        :param until_score: Maximum score that can be reached before stopping the sampling.
+        :param score_limit: Maximum score that can be reached before stopping the sampling.
          statistics.
+        :param save_tree: If false, the data generated is not stored.
         """
         self.env_name = env_name
         self.env = gym.make(env_name)
         self.root_state = self.env.unwrapped.clone_full_state().copy()
         self.balance = balance
+        self.time_weight = time_weight
+        self.save_tree = save_tree
         self.render_every = render_every
-        self.until_score = until_score
+        self.score_limit = score_limit
 
         self.n_actions = self.env.action_space.n
         self.n_fixed_steps = n_fixed_steps
@@ -147,26 +155,38 @@ class SwarmWave:
         self._init_swarm()
 
     def __str__(self):
-        efi = (len(self.tree.data.nodes) / self._n_samples_done) * 100
-        sam_step = self._n_samples_done / len(self.tree.data.nodes)
+        if self.save_tree:
+            efi = (len(self.tree.data.nodes) / self._n_samples_done) * 100
+            sam_step = self._n_samples_done / len(self.tree.data.nodes)
+            samples = len(self.tree.data.nodes)
+        else:
+            efi = 0.
+            sam_step = 0.
+            samples = 0.
         progress = (self._n_samples_done / self._n_limit_samples) * 100
-        if self.until_score is not None:
-            score_prog = (self.rewards.max() / self.until_score) * 100
+        if self.score_limit is not None:
+            score_prog = (self.rewards.max() / self.score_limit) * 100
             progress = max(progress, score_prog)
 
         text = "Environment: {}\n" \
                "Total samples: {} Progress {:.2f}%\n" \
-               "Reward: mean {:.2f} std {:.2f} max {:.2f} min {:.2f}\n" \
-               "Episode length: mean {:.2f} std {:.2f} max {:.2f} min {:.2f}\n" \
+               "Reward: mean {:.2f} | dispersion {:.2f} | max {:.2f} | min {:.2f} | std {:.2f}\n" \
+               "Episode length: mean {:.2f} | dispersion {:.2f} | max {:.2f} | min {:.2f} " \
+               "| std {:.2f}\n" \
                "Efficiency {:.2f}%\n" \
                "Generated {} Examples |" \
                " {:.2f} samples per example.".format(self.env_name, self._n_samples_done,
                                                      progress,
-                                                     self.rewards.mean(), self.rewards.std(),
+                                                     self.rewards.mean(),
+                                                     self.rewards.max() - self.rewards.min(),
                                                      self.rewards.max(), self.rewards.min(),
-                                                     self.times.mean(), self.times.std(),
+                                                     self.rewards.std(),
+                                                     self.times.mean(),
+                                                     self.times.max() - self.times.min(),
                                                      self.times.max(), self.times.min(),
-                                                     efi, len(self.tree.data.nodes),
+                                                     self.times.std(),
+                                                     efi,
+                                                     samples,
                                                      sam_step)
         return text
 
@@ -196,7 +216,8 @@ class SwarmWave:
         self._old_lives = np.ones(self.n_walkers) * lives
         self.obs = np.array([obs.copy() for _ in range(self.n_walkers)])
         self.rewards = np.ones(self.n_walkers) * reward
-        self.tree = DynamicTree()
+        if self.save_tree:
+            self.tree = DynamicTree()
 
     def _step_walkers(self, init_step: bool = False):
         """Sample an action for each walker, and act on the system.
@@ -227,11 +248,12 @@ class SwarmWave:
                     self.obs[i] = obs.copy()
                     self._old_lives[i] = old_lives
                     self._n_samples_done += 1
-                    # Keep track of the paths using the tree
+                    # Keep track of the paths using the tree if needed
                     new_state = self.env.unwrapped.clone_full_state().copy()
                     new_id = self._n_samples_done
-                    old_id = self.walkers_id[i]
-                    self.tree.append_leaf(new_id, parent_id=old_id, obs=obs)
+                    if self.save_tree:
+                        old_id = self.walkers_id[i]
+                        self.tree.append_leaf(new_id, parent_id=old_id, obs=obs)
                     self.walkers_id[i] = new_id
                     self.walkers[i] = new_state
                     # Reset if necessary
@@ -253,10 +275,13 @@ class SwarmWave:
         # Euclidean distance between pixels
         dist = np.sqrt(np.sum((obs[idx] - obs) ** 2, axis=tuple(range(1, len(obs.shape)))))
         # We want time diversity to detect deaths early and have some extra reaction time
-        time_div = np.linalg.norm(self.times.reshape((-1, 1)) - self.times[idx].reshape((-1, 1)),
-                                  axis=0)
+        time_div = normalize_vector(np.linalg.norm(self.times.reshape((-1, 1)) -
+                                                   self.times[idx].reshape((-1, 1)),
+                                    axis=0))
+
         # This is a distance formula that I just invented that expands the swarm in time
-        return normalize_vector(normalize_vector(dist) + normalize_vector(time_div))
+        space_time_dist = normalize_vector(dist) * time_div ** self.time_weight
+        return space_time_dist
 
     def _virtual_reward(self) -> np.ndarray:
         """Calculate the entropic reward of the walkers. This quantity is used for determining
@@ -306,14 +331,15 @@ class SwarmWave:
                 self.walkers_id[i] = copy.deepcopy(self.walkers_id[idx][i])
         # Prune tree to save memory
         dead_leafs = old_ids - set(self.walkers_id)
-        self.tree.prune_tree(dead_leafs, set(self.walkers_id))
+        if self.save_tree:
+            self.tree.prune_tree(dead_leafs, set(self.walkers_id))
 
     def _stop_condition(self) -> bool:
         """This sets a hard limit on maximum samples. It also Finishes if all the walkers are dead,
          or the target score reached.
          """
         stop_hard = self._n_samples_done > self._n_limit_samples
-        score = False if self.until_score is None else self.rewards.max() >= self.until_score
+        score = False if self.score_limit is None else self.rewards.max() >= self.score_limit
         return stop_hard or score or self._terminal.all()
 
     def run_swarm(self):
