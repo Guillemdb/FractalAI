@@ -122,7 +122,6 @@ class SwarmWave:
         self.n_fixed_steps = n_fixed_steps
         self.n_walkers = n_walkers
         self.skip_frames = skip_frames
-        self.balance = 1
         self._i_simulation = 0
         self._n_samples_done = 0
 

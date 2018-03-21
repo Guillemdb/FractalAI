@@ -14,6 +14,7 @@
 **This project is still under active development. Please, think of it as an open beta.**
 
 - [Abstract](#abstract)
+- [What is FAI?](#what-is-fai-about)
 - [Quick Start](quick-start)
 - [Running the code](#installation)
 - [Benchmarks](#benchmarks)
@@ -22,7 +23,6 @@
   * [Blog](#blog)
   * [YouTube](#youtube)
   * [Related papers](#related-papers)
-- [Other tasks solved](#other-tasks-solved)
 - [Cite us](#cite-us)
 - [FAQ](#faq)
 - [About](#about)
@@ -38,38 +38,39 @@ new mathematical tools that may be useful for modelling information using cellul
 structures instead of smooth functions.
 
 In this repository we are presenting a new agent called
-[Fractal Monte Carlo](https://github.com/FragileTheory/FractalAI/blob/master/fractalai/fractalai.py), derived
-from the first principles of the theory, which is capable of solving Atari games several
- orders of magnitude more efficiently than other similar techniques, like Monte Carlo Tree Search
-  **[[1](#bibliography)]**. 
+[Fractal Monte Carlo](https://github.com/FragileTheory/FractalAI/blob/master/fractalai/fractalai.py),
+derived from the first principles of the theory, which is capable of solving Atari games several
+orders of magnitude more efficiently than other similar techniques, like Monte Carlo Tree Search
+**[[1](#bibliography)]**. 
+  
+We are also presenting the [Swarm Wave](https://github.com/FragileTheory/FractalAI/blob/master/fractalai/swarm_wave.py)
+algorithm, a tool derived from FAI that allows us to solve Markov decision processes when we have a
+perfect model of the environment. Under this assumptions, Swarm Wave shows to be five orders of
+magnitude more efficient than MCTS, effectively solving many Atari games.
 
 The code provided shows how it is now possible to beat some of the current state of the art
- benchmarks on Atari games, using less than 1000 samples to calculate each one of the actions when 
- MCTS uses 3 Million samples. Among other things, Fractal AI makes it possible to generate a huge database of
- top performing examples with very little amount of computation required, transforming 
- Reinforcement Learning into a supervised problem.
+benchmarks on Atari games and generate a huge database of top performing examples with very
+little amount of computation required, transforming Reinforcement Learning into a supervised problem.
  
- The algorithm proposes a new approach to model the decision space, while
+The algorithms propose a new approach to model the decision space, while
 maintaining control over any aspect of the behavior of the Agent. This algorithm can be applied
- to sampling both discrete and continuous state spaces.
+to sampling both discrete and continuous state spaces.
  
+
 ## Quick start
 
-If you are a researcher, please refer to the [technical report](/technical_report.md). Although it
-is still under development, it offers a summary of the main features of the algorithm, and references
-to the specific lines of the file [fractalmc.py]() where the concepts explained can be found.
+If you want to know the fundamentals about Fractal AI, please refer to the [Introduction to FAI]() 
+document, when you will find an explanation of the algorithms presented in this repository, and 
+and possible applications to Reinforcement Learning.
+
+You can refer to the [FMC Example.ipynb](https://github.com/FragileTheory/FractalAI/blob/master/Example.ipynb) to 
+see how the agent performs on any Atari game, either using RAM, or pixels as observations.
+
+In case you want to check by yourself how the Swarm Wave algorithm works,the [Swarm Wave Example]()
+is a good place to start.
 
 [I will be happy to discuss the ideas presented](https://twitter.com/Miau_DB) using the
 conceptual framework of RL, and standard terminology.
-
-You can refer to the [Example.ipynb](https://github.com/FragileTheory/FractalAI/blob/master/Example.ipynb) to 
-see how the agent performs on any Atari game, either using RAM, or pixels as input. 
-
-To get an idea on how the Agent works, you can refer to the 
-[code](https://github.com/FragileTheory/FractalAI/blob/master/fractalai/fractalai.py), where every
- important aspect of the algorithm is commented. There is also a
- [blog post](https://entropicai.blogspot.com.es/2018/03/fractal-ai-recipe.html) where the
- fundamental aspects of the algorithm are explained.
   
 ## Installation
 
@@ -77,7 +78,8 @@ This code release aims for simplicity and self-explainability.
 It should be pretty straightforward to run in Python 3. Python 2 is not supported.
 
 It only needs numpy and [gym[atari]](https://github.com/openai/gym) **[[2](#bibliography)]**, although we also recommend
- installing the Jupyter Notebook for running the [Example.ipynb](https://github.com/FragileTheory/FractalAI/blob/master/Example.ipynb).
+ installing the Jupyter Notebook for running the 
+[Example.ipynb](https://github.com/FragileTheory/FractalAI/blob/master/Example.ipynb).
 notebook.
 
 #### Installing dependencies
@@ -116,6 +118,8 @@ what you end up installing on your platform.
 >If it doesn't agree with experiment, it's wrong.
 >
 > **Richard P. Feynman**
+
+**This section is outdated. We are updating it to incorporate the feedback received.***
 
 The following benchmarks have been calculated on a single machine 
 ([Razer Blade laptop](https://www.razerzone.com/gaming-laptops/razer-blade-pro)) using the
@@ -214,34 +218,6 @@ it gets really non-intuitive.
 The fundamental concepts behind this paper inspired our research. We develop our theory aiming to calculate future entropy faster,
  and being able to leverage the information contained in the Entropy of any state space, together with any potential function.
  
-## Other tasks solved
-
-Besides Atari games, we have also used our theory to solve different continuous control environments involving task such as:
-
-- **Collecting rocks with a spaceship** ([Video](https://www.youtube.com/watch?v=HLbThk624jI) and
- [blog post](http://entropicai.blogspot.com.es/2016/04/understanding-mining-example.html)): 
-    This agent can catch rocks using a hook that behaves like an elastic band. We are capable of
-     sampling low  probability trajectories in such chaotic space state.
-       
-       
-- **Multi agent environments**: It is aso possible to control multi agent environments, like
- [Maintaining a formation](https://www.youtube.com/watch?v=J9kW1lhT06A),
- [cooperating to achieve a shared goal](https://www.youtube.com/watch?v=DsvSH3cNhnE),
-  or [fighting](http://entropicai.blogspot.com.es/2015/05/tonight-four-of-my-new-fractal-minded.html) against each other.
- A nice property of our methods is that their computational cost scales near linearly with the number of agents. 
-       
-
-- **Stochastic simulations**: It can even [handle uncertainty in a continuous domain](http://entropicai.blogspot.com.es/2015/06/passing-asteroids-test.html?m=0).
-You can also check this on Atari games by setting the clone_seeds parameter of the agent to False.
-
-
-- **Multi objective and multi agent path finding**: This technique can also be applied to path finding problems. [Video 1](https://www.youtube.com/watch?v=AoiGseO7g1I),
- [Video 2](https://www.youtube.com/watch?v=R61FRUf-F6M), [Blog Post](http://entropicai.blogspot.com.es/search/label/Path%20finding).
-
-
-- **General optimization**: Here you can find a [visual representation](http://entropicai.blogspot.com.es/2016/02/serious-fractal-optimizing.html?m=0)
- of how the GAS algorithm explores the state space.
-
 ## Cite us
 
     @misc{1803.05049,
@@ -292,7 +268,7 @@ We are currently working in many improvements to the project, and we will welcom
 
 - Making the repo more researcher friendly.
 
-- Writing a technical report on the inner workings of the algorithm.
+- Improve Introduction to Fractal AI document.
 
 - Improve docstrings and code clarity.
 

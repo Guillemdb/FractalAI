@@ -14,8 +14,6 @@ problems.
 - [Using FAI to train Robots](#bibliography)
 - [Black box optimization](#black-box-optimization)
 
-
-
 ## What is FAI?
 
 [Fractal AI](https://arxiv.org/pdf/1803.05049.pdf) is a theory derived from first principles that
@@ -55,10 +53,18 @@ expectations over 1000 time steps.
 
 ## Fractal Monte Carlo
 
+According to FAI, FMC is an algorithm to efficiently explore functions that contain information on
+the input-output relation for a system, given a bound in computational resources.  It is meant to be
+a robust path-search algorithm that efficiently approximates path integrals formulated as a Markov
+decision process. FMC calculates each step of the path independently, but uses information extracted
+from previous time steps to adjust its parameters.
+
+### Domain of Application
+
+
+
 FMC applied to Atari is a toy example, however since we applied FMC in the context of Markov
-decision processes, we do not actually need a perfect model. According to FAI, FMC is an algorithm
-to efficiently explore functions that contain information on the input-output relation for a
-system, given a bound in computational resources. The swarm that FMC uses is not meant to be
+decision processes, we do not actually need a perfect model.  The swarm that FMC uses is not meant to be
 applied only when we have access to perfect models, but also in any mathematical function that
 does not require to dynamically adjust the step size(dt) when being integrated. 
 
@@ -69,7 +75,106 @@ FMC will still perform nicely. Unfortunately, when not assuming a perfect model 
 penalty in performance, although FMC is capable of successfully filtering out different kinds of
 noise.
 
-## Domain of Application
+### How it works
+
+*We provide links to the specific lines of the code where the described parts of the algorithm take
+place. For example, [(L45)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L45)
+will be a reference to the line 45 of the file [fractalmc.py](fractalai/fractalmc.py)*
+
+When calculating an action, FMC will construct a tree that consists of potential trajectories that
+describe the future evolution of the system. This tree, called causal cone, is expanded by a
+swarm [(L58, 105)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L58-L105)
+of walkers that populates its leaf nodes. The swarm will undergo an iterative process [(L322)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L322)
+in order to make the tree grow efficiently. When a maximum amount of computation has been reached,
+the utility of each action will be considered proportional to the number of walkers that populate
+leaf nodes originating from the same action [(120, 126)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L120-L126).
+
+The causal cone, unlike in MCTS, is not a static tree of all possible actions that will be explored.
+Instead the causal cone is a tree data structure that changes at every time step by applying random
+perturbations [(L142)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L142),
+and letting the swarm move freely among different leaf nodes of the tree.
+[(L199)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L199)
+
+In order to evolve the swarm, we first initialize the walkers at the root state, perturb them, and store
+the action chosen [(L136)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L136).
+Then use the following algorithm to make it evolve until the maximum number of samples allowed is reached:
+
+1. Measure the euclidean distance between all the observations of all the walkers, and the observation of
+another walker chosen at random [(L164)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L164).
+This will create an stochastic measure of diversity, that when incorporated into the virtual
+reward formula, will favor the diversity among the states in the swarm.
+
+2. Normalize the values so all the walkers' distances fall into the [0, 1] range [(L175)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L175). 
+Normalize the rewards to be in range [1, 2]. [(L184)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L184).
+This allows us to get rid of problems with the scale of both distances and rewards, and assures
+that the value of the virtual distance will be bounded.
+
+3. Calculate the virtual reward for each walker. [(L177)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L177).
+This value represents an stochastic measure of the importance of a given walker with respect
+to the whole swarm. It combines both an exploration term (distance) with an exploitation
+term (reward) that is weighted by the balance coefficient, which represents the current trade-off
+between exploration and exploitation, and helps modeling risk [(L304)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L304).
+
+4. Each walker of the swarm compares itself to another walker chosen at random [(L215)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L215),
+and gets assigned a probability of moving to the leaf node where the other walker is located [(L219)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L219).
+ 
+5. Determine if a walker is dead [(L209-212)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L209-L212).
+Then decide if the walker will clone or not depending on its death condition and clone probability [(L220-223)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L220-L223).
+The death condition is a flag set by the programmer that lets us incorporate arbitrary boundary
+conditions to the behaviour of the agent. The death flag helps the swarm avoiding undesired
+regions of the state space.
+
+6. Move the walkers that are cloning to theirs target leaf nodes [(L224-228)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L224-L228).
+This allows for recycling the walkers that either fall out of the desired domain (dead) or have
+been poorly valued with respect to the whole swarm. It also partially avoids exploring regions of
+the state space that are either too crowded (low diversity) or have a very poor reward.
+
+7. Choose an action for each walker and step the environment (perturbation).
+The swarm will evolve and explore new states. This is how you make the causal cone grow [(L142)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L142).
+The fact that we are choosing between cloning and exploring allows for a non-uniform growth of the 
+causal cone's time horizon. A walker can clone to a leaf node which has a different
+depth than its current leaf node, meaning that jumps forward and backwards in time are allowed.
+
+8. GOTO 1 until the maximum number of samples is reached. By iterating each time, we are
+redistributing the "useless" walkers to more promising leaf nodes, and perturbing the states located
+in the regions considered to have the highest utility. After several iterations, the density
+distribution of the walkers should match the reward density distribution of the state space.
+
+9. Approximate the utility for each action according to [(120, 126)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L120-L126).
+Take the action with more utility. Note that we are just counting how many states in the swarm
+took the same action in the root node.
+
+After deciding an action, the swarm will update its parameters: the number of walkers, and the
+number of times it will sample the state space to build the next causal cone. This update will be
+adjusted by a non linear feedback loop, with the objective of keeping the mean depth of the cone
+as close as possible to a desired time horizon [(L262, 280, 290)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L262-L290).
+
+### Parameters
+
+#### Set by the programmer
+
+- **Fixed steps**: It is the number of consecutive times that we will apply an action to the
+environment when we perturb it choosing an action. Although this parameter actually depends on the
+environment, we can use it to manually set the frequency at which the agent will play. Taking more
+consecutive fixed steps per action allows for exploring further into the future at the cost of
+longer reaction times.
+
+- **Time Horizon**: This value represents how far we need to look into the future when taking an
+action. A useful rule of thumb is **Time Horiozon = Nt / Fixed steps**, where **Nt** is the number
+of frames that it takes the agent to loose one life (die) since the moment it performs the actions
+that inevitably lead to its death. This parameters, multiplied by the fixed_steps, determines the
+time horizon of the bigger potential well that the agent should be able to escape.
+
+- **Max states**: This is the maximum number of walkers that can be part of the Swarm. This number
+is related to "how thick" we want the resulting causal cone to be. The algorithm will try to use
+the maximum number of walkers possible. 
+
+- **Max samples**: This is the maximum number of times that we can make a perturbation when using
+a swarm to build a causal cone. It is a superior bound, the algorithm will try to use as few
+samples as possible in order to meet the defined **time horizon**. It is a nice way to set how
+fast you need to take an action in the worst case. A reasonable value is **max walkers** \* **time horizon** \* ***N***,
+being ***N=5*** a number that works well in Atari games, but highly depends on the task.
+
 
 ## Combining FAI and RL
 
@@ -167,3 +272,31 @@ derived from FAI, depending on the specific behaviour desired for the walkers.
 
 FAI-derived tools are also really simple to escalate, and can greatly benefit from an increase in
 computational resources.
+
+## Other tasks solved
+
+Besides Atari games, we have also used our theory to solve different continuous control environments involving task such as:
+
+- **Collecting rocks with a spaceship** ([Video](https://www.youtube.com/watch?v=HLbThk624jI) and
+ [blog post](http://entropicai.blogspot.com.es/2016/04/understanding-mining-example.html)): 
+    This agent can catch rocks using a hook that behaves like an elastic band. We are capable of
+     sampling low  probability trajectories in such chaotic space state.
+       
+       
+- **Multi agent environments**: It is aso possible to control multi agent environments, like
+ [Maintaining a formation](https://www.youtube.com/watch?v=J9kW1lhT06A),
+ [cooperating to achieve a shared goal](https://www.youtube.com/watch?v=DsvSH3cNhnE),
+  or [fighting](http://entropicai.blogspot.com.es/2015/05/tonight-four-of-my-new-fractal-minded.html) against each other.
+ A nice property of our methods is that their computational cost scales near linearly with the number of agents. 
+       
+
+- **Stochastic simulations**: It can even [handle uncertainty in a continuous domain](http://entropicai.blogspot.com.es/2015/06/passing-asteroids-test.html?m=0).
+You can also check this on Atari games by setting the clone_seeds parameter of the agent to False.
+
+
+- **Multi objective and multi agent path finding**: This technique can also be applied to path finding problems. [Video 1](https://www.youtube.com/watch?v=AoiGseO7g1I),
+ [Video 2](https://www.youtube.com/watch?v=R61FRUf-F6M), [Blog Post](http://entropicai.blogspot.com.es/search/label/Path%20finding).
+
+
+- **General optimization**: Here you can find a [visual representation](http://entropicai.blogspot.com.es/2016/02/serious-fractal-optimizing.html?m=0)
+ of how the GAS algorithm explores the state space.
