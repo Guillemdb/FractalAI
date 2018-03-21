@@ -6,15 +6,18 @@ problems.
 
 ## Table of Contents
 
-- [What is FAI?](#what-is-fai?)
-- [Swarm Wave](#swarm-wave)
-- [Fractal Monte Carlo](#fractal-monte-carlo)
-- [Domain of application](#domain-of-application)
-- [Combining FAI and RL](#combining-fai-and-rl)
-- [Using FAI to train Robots](#bibliography)
-- [Black box optimization](#black-box-optimization)
+1. [What is FAI?](#1-what-is-fai)
+2. [Swarm Wave](#2-swarm-wave)
+3. [Fractal Monte Carlo](#3-fractal-monte-carlo)
+    1. [Domain of application](#31-domain-of-application)
+    2. [How it works](#32-how-it-works)
+    3. [Parameters](#33-parameters)
+4. [Combining FAI and RL](#4-combining-fai-and-rl)
+5. [Using FAI to train Robots](#5-using-fai-to-train-robots)
+6. [Black box optimization](#6-black-box-optimization)
+7. [Other tasks solved](#7-other-tasks-solved)
 
-## What is FAI?
+## [1.](#table-of-contents) What is FAI?
 
 [Fractal AI](https://arxiv.org/pdf/1803.05049.pdf) is a theory derived from first principles that
 allows to control swarms of walkers. It is a set of rules to move, compare, and extract information
@@ -49,9 +52,9 @@ problem.
 * Solving an stochastic integral to [find a path](https://youtu.be/0t7jI9WdTWI) that discounts
 expectations over 1000 time steps.
 
-## Swarm Wave
+## [2.](#table-of-contents) Swarm Wave
 
-## Fractal Monte Carlo
+## [3.](#table-of-contents) Fractal Monte Carlo
 
 According to FAI, FMC is an algorithm to efficiently explore functions that contain information on
 the input-output relation for a system, given a bound in computational resources.  It is meant to be
@@ -59,7 +62,7 @@ a robust path-search algorithm that efficiently approximates path integrals form
 decision process. FMC calculates each step of the path independently, but uses information extracted
 from previous time steps to adjust its parameters.
 
-### Domain of Application
+### [3.1](#table-of-contents) Domain of Application
 
 
 
@@ -75,7 +78,7 @@ FMC will still perform nicely. Unfortunately, when not assuming a perfect model 
 penalty in performance, although FMC is capable of successfully filtering out different kinds of
 noise.
 
-### How it works
+### [3.2](#table-of-contents) How it works
 
 *We provide links to the specific lines of the code where the described parts of the algorithm take
 place. For example, [(L45)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L45)
@@ -149,7 +152,7 @@ number of times it will sample the state space to build the next causal cone. Th
 adjusted by a non linear feedback loop, with the objective of keeping the mean depth of the cone
 as close as possible to a desired time horizon [(L262, 280, 290)](https://github.com/FragileTheory/FractalAI/blob/6b62d79559364c222025dbf3da669f0ac8a38c09/fractalai/fractalmc.py#L262-L290).
 
-### Parameters
+### [3.3](#table-of-contents) Parameters
 
 #### Set by the programmer
 
@@ -176,7 +179,7 @@ fast you need to take an action in the worst case. A reasonable value is **max w
 being ***N=5*** a number that works well in Atari games, but highly depends on the task.
 
 
-## Combining FAI and RL
+## [4.](#table-of-contents) Combining FAI and RL
 
 The techniques presented in this repository do not tackle "learning" in any way. They are just
 tools for generating data efficiently.
@@ -214,7 +217,7 @@ can be sampled.
 
 
 
-## Using FAI to train robots
+## [5.](#table-of-contents) Using FAI to train robots
 
 FMC can also be applied to continuous control tasks. It is possible to run environments from
 the dm_control library, although without proper reward shaping and defining boundary conditions,
@@ -229,7 +232,7 @@ Given that those trajectories were sampled with an early algorithm (also derived
 about two orders of magnitude less efficient than than FMC, we believe that the ideas proposed for
 discrete mdps could also be applied to robots.
 
-## Black box optimization
+## [6.](#table-of-contents) Black box optimization
 
 Although the first tool we have published is FMC, we do not believe it is the most suitable
 algorithm for training a policy that can be applied to real world problems. We think that FAI
@@ -273,7 +276,7 @@ derived from FAI, depending on the specific behaviour desired for the walkers.
 FAI-derived tools are also really simple to escalate, and can greatly benefit from an increase in
 computational resources.
 
-## Other tasks solved
+## [7.](#table-of-contents) Other tasks solved
 
 Besides Atari games, we have also used our theory to solve different continuous control environments involving task such as:
 
