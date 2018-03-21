@@ -6,11 +6,11 @@ problems.
 
 ## Table of Contents
 
-- [What is FAI?](#what-is-fai-about)
+- [What is FAI?](#what-is-fai?)
 - [Swarm Wave](#swarm-wave)
 - [Fractal Monte Carlo](#fractal-monte-carlo)
-- [Domain of application](#domain-of-aplication)
-- [Combining FAI and RL](#comining-fai-and-rl)
+- [Domain of application](#domain-of-application)
+- [Combining FAI and RL](#combining-fai-and-rl)
 - [Using FAI to train Robots](#bibliography)
 - [Black box optimization](#black-box-optimization)
 
@@ -26,7 +26,7 @@ In the context of FAI, Fractal Monte Carlo is just one of the possible tools tha
 solve specific problems. The Atari games, where we have perfect information, are just the simplest
 case to test the algorithm, but it is not the general case.
 
-We believe that swarms with different behaviours could be used as an alternative to traditional
+Swarms with different behaviours could be used as an alternative to traditional
 calculus techniques in many other problems. How to derive new tools from FAI that apply to real
 world problems would become a research topic, but some of the tools already derived suggest that
 FAI could compete efficiently with alternative techniques. 
