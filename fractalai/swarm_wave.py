@@ -6,7 +6,7 @@ import gym
 
 def normalize_vector(vector: np.ndarray) -> np.ndarray:
     """
-    Returns normalized values that sum 1.
+    Returns normalized values where min = 0 and sum = 1.
     :param vector: array to be normalized.
     :return: Normalized vector.
     """
@@ -14,8 +14,8 @@ def normalize_vector(vector: np.ndarray) -> np.ndarray:
     max_r, min_r = reward.max(), reward.min()
     if min_r == max_r:
         reward = np.ones(len(vector), dtype=np.float32)
-        return reward
-    reward = (reward - min_r) / (max_r - min_r)
+    else:
+        reward = (reward - min_r) / (max_r - min_r)
     return reward
 
 
@@ -269,7 +269,7 @@ class SwarmWave:
         # Get random companion
         idx = np.random.permutation(np.arange(self.n_walkers, dtype=int))
         obs = np.array(self.obs)
-        # Euclidean distance between pixels
+        # Euclidean distance between states (pixels/RAM)
         dist = np.sqrt(np.sum((obs[idx] - obs) ** 2, axis=tuple(range(1, len(obs.shape)))))
 
         # We want time diversity to detect deaths early and have some extra reaction time
@@ -278,6 +278,7 @@ class SwarmWave:
                                                    axis=0))
         # This is a distance formula that I just invented that expands the swarm in time
         space_time_dist = normalize_vector(dist) * time_div ** self.time_weight
+
         return space_time_dist
 
     def _virtual_reward(self) -> np.ndarray:
