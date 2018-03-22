@@ -303,8 +303,7 @@ class SwarmWave:
         """
         vir_rew = self._virtual_reward()
 
-        # Besides the death condition, zero virtual reward also counts as death when cloning
-        deaths = np.array([dead or vir_rew[i] == 0 for i, dead in enumerate(self._death_cond)])
+        deaths = np.array([dead for i, dead in enumerate(self._death_cond)])
         self._dead_mask = deaths
 
         idx = np.random.permutation(np.arange(self.n_walkers, dtype=int))
