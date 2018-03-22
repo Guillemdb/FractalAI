@@ -371,9 +371,8 @@ class SwarmWave:
                     print(self)
             except KeyboardInterrupt:
                 break
-
-        print(self)
         clear_output(True)
+        print(self)
 
     def recover_game(self, index=None) -> list:
         """
