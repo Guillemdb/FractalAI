@@ -303,7 +303,7 @@ class SwarmWave:
         """
         vir_rew = self._virtual_reward()
 
-        deaths = np.array([dead for i, dead in enumerate(self._death_cond)])
+        deaths = self._death_cond
         self._dead_mask = deaths
 
         idx = np.random.permutation(np.arange(self.n_walkers, dtype=int))
