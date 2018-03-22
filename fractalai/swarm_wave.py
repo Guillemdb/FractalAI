@@ -126,6 +126,8 @@ class SwarmWave:
         self.score_limit = score_limit
         self.save_tree = save_tree
 
+        print("Initializing, please wait...", flush=True)
+
         self.env = gym.make(env_name)
         self.n_actions = self.env.action_space.n
         self.obs = None
@@ -365,8 +367,8 @@ class SwarmWave:
                 self._i_simulation += 1
                 if self._i_simulation % self.render_every == 0:
                     from IPython.core.display import clear_output
-                    print(self)
                     clear_output(True)
+                    print(self)
             except KeyboardInterrupt:
                 break
 
