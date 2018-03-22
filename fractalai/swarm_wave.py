@@ -6,7 +6,7 @@ import gym
 
 def normalize_vector(vector: np.ndarray) -> np.ndarray:
     """
-    Returns normalized values where min = 0 and sum = 1.
+    Returns normalized values where min = 0 and max = 1.
     :param vector: array to be normalized.
     :return: Normalized vector.
     """
