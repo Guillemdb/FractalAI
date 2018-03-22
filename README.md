@@ -32,7 +32,7 @@
 ## Abstract
 
 [Fractal AI](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing) 
-is a theory for efficiently sampling state spaces. It allows to derive
+([arXiv](https://arxiv.org/abs/1803.05049)) is a theory for efficiently sampling state spaces. It allows to derive
 new mathematical tools that may be useful for modelling information using cellular automaton-like 
 structures instead of smooth functions.
 
