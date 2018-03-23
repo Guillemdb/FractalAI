@@ -143,7 +143,7 @@ class SwarmWave:
 
     def __str__(self):
         if self.save_tree:
-            efi = (len(self.tree.data.nodes) / self._n_samples_done) * 100
+            efi = (len(self.tree.data.nodes) / max(1, self._n_samples_done)) * 100
             sam_step = self._n_samples_done / len(self.tree.data.nodes)
             samples = len(self.tree.data.nodes)
         else:
