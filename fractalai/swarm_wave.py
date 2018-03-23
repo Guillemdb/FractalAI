@@ -270,15 +270,14 @@ class SwarmWave:
         # Get random companion
         idx = np.random.permutation(np.arange(self.n_walkers, dtype=int))
         obs = np.array(self.obs)
-        # Euclidean distance between states (pixels/RAM)
+        # Euclidean distance between observations (pixels/RAM)
         dist = np.sqrt(np.sum((obs[idx] - obs) ** 2, axis=tuple(range(1, len(obs.shape)))))
 
-        # We want time diversity to detect deaths early and have some extra reaction time
-        time_div = normalize_vector(np.linalg.norm(self.times.reshape((-1, 1)) -
-                                                   self.times[idx].reshape((-1, 1)),
-                                                   axis=0))
+        # Distance in the time dimension as compared to mean time
+        time_dist = np.abs((self.times[idx] - self.times) / self.times.mean())
+
         # This is a distance formula that I just invented that expands the swarm in time
-        space_time_dist = normalize_vector(dist) * time_div ** self.time_weight
+        space_time_dist = normalize_vector(dist) * time_dist ** self.time_weight
 
         return space_time_dist
 
