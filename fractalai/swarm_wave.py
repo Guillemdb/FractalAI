@@ -125,7 +125,7 @@ class SwarmWave:
         self.render_every = render_every
         self.score_limit = score_limit
         # Unbounded samples + save_tree = memory depleted
-        self.save_tree = None if n_fixed_steps is None else save_tree
+        self.save_tree = False if n_fixed_steps is None else save_tree
 
         print("Initializing, please wait...", flush=True)
 
