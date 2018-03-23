@@ -89,20 +89,19 @@ class SwarmWave:
 
      This algorithm is designed for generating efficiently high quality samples for supervised
      training. This is pretty much the same idea of FMC, but with no feedback loop to update the
-      parameters. Instead of approximating an small tree each step, we will construct a huge tree
-      that has a time horizon as further away as possible.
+     parameters. Instead of approximating an small tree each step, we will construct a huge tree
+     that has a time horizon as further away as possible.
      """
     def __init__(self,
                  env_name: str = "MsPacman-v0",
                  n_samples: int = 1500,
-                 n_walkers: int=50,
+                 n_walkers: int = 50,
                  n_fixed_steps: int = 1,
-                 balance: float=1.,
-                 time_weight: int=0.5,
-                 skip_frames: int=0,
-                 render_every: int=5,
-                 score_limit: int=None,
-                 save_tree: bool=True):
+                 balance: float = 1.,
+                 skip_frames: int = 0,
+                 render_every: int = 5,
+                 score_limit: int = None,
+                 save_tree: bool = True):
         """
 
         :param env_name: The name of the Atari game to be sampled.
@@ -110,7 +109,6 @@ class SwarmWave:
         :param n_walkers: Number of walkers that will use for exploring the space (avoid >2K).
         :param n_fixed_steps: The number of times that we will apply the same action.
         :param balance: Coefficient that balances exploration vs exploitation.
-        :param time_weight: Coefficient that weights the time diversity of the swarm.
         :param render_every: Number of iterations to be performed before updating displayed
         :param score_limit: Maximum score that can be reached before stopping the sampling.
         :param save_tree: If false, the data generated is not stored.
@@ -120,7 +118,6 @@ class SwarmWave:
         self.n_walkers = n_walkers
         self.n_fixed_steps = n_fixed_steps
         self.balance = balance
-        self.time_weight = time_weight
         self.skip_frames = skip_frames
         self.render_every = render_every
         self.score_limit = score_limit
@@ -272,14 +269,9 @@ class SwarmWave:
         obs = np.array(self.obs)
         # Euclidean distance between observations (pixels/RAM)
         dist = np.sqrt(np.sum((obs[idx] - obs) ** 2, axis=tuple(range(1, len(obs.shape)))))
+        space_dist = normalize_vector(dist)
 
-        # Distance in the time dimension as compared to mean time
-        time_dist = np.abs((self.times[idx] - self.times) / self.times.mean())
-
-        # This is a distance formula that I just invented that expands the swarm in time
-        space_time_dist = normalize_vector(dist) * time_dist ** self.time_weight
-
-        return space_time_dist
+        return space_dist
 
     def _virtual_reward(self) -> np.ndarray:
         """Calculate the virtual reward of the walkers. This quantity is used for determining
