@@ -124,7 +124,8 @@ class SwarmWave:
         self.skip_frames = skip_frames
         self.render_every = render_every
         self.score_limit = score_limit
-        self.save_tree = save_tree
+        # Unbounded samples + save_tree = memory depleted
+        self.save_tree = False if n_fixed_steps is None else save_tree
 
         print("Initializing, please wait...", flush=True)
 
@@ -142,7 +143,7 @@ class SwarmWave:
 
     def __str__(self):
         if self.save_tree:
-            efi = (len(self.tree.data.nodes) / self._n_samples_done) * 100
+            efi = (len(self.tree.data.nodes) / max(1, self._n_samples_done)) * 100
             sam_step = self._n_samples_done / len(self.tree.data.nodes)
             samples = len(self.tree.data.nodes)
         else:
@@ -269,15 +270,14 @@ class SwarmWave:
         # Get random companion
         idx = np.random.permutation(np.arange(self.n_walkers, dtype=int))
         obs = np.array(self.obs)
-        # Euclidean distance between states (pixels/RAM)
+        # Euclidean distance between observations (pixels/RAM)
         dist = np.sqrt(np.sum((obs[idx] - obs) ** 2, axis=tuple(range(1, len(obs.shape)))))
 
-        # We want time diversity to detect deaths early and have some extra reaction time
-        time_div = normalize_vector(np.linalg.norm(self.times.reshape((-1, 1)) -
-                                                   self.times[idx].reshape((-1, 1)),
-                                                   axis=0))
+        # Distance in the time dimension as compared to mean time
+        time_dist = np.abs((self.times[idx] - self.times) / self.times.mean())
+
         # This is a distance formula that I just invented that expands the swarm in time
-        space_time_dist = normalize_vector(dist) * time_div ** self.time_weight
+        space_time_dist = normalize_vector(dist) * time_dist ** self.time_weight
 
         return space_time_dist
 
@@ -329,6 +329,7 @@ class SwarmWave:
                 self._old_lives[i] = float(self._old_lives[idx][i])
                 self.times[i] = float(self.times[idx][i])
                 self.walkers_id[i] = copy.deepcopy(self.walkers_id[idx][i])
+                self._terminal[i] = False
         # Prune tree to save memory
         dead_leafs = old_ids - set(self.walkers_id)
         if self.save_tree:
@@ -338,7 +339,7 @@ class SwarmWave:
         """This sets a hard limit on maximum samples. It also Finishes if all the walkers are dead,
          or the target score reached.
          """
-        stop_hard = self._n_samples_done > self.n_limit_samples if self.save_tree else False
+        stop_hard = False if self.n_limit_samples is None else self._n_samples_done > self.n_limit_samples
         stop_score = False if self.score_limit is None else self.rewards.max() >= self.score_limit
         stop_terminal = self._terminal.all()
         # Define game status so usr knows why game stoped
