@@ -118,12 +118,18 @@ what you end up installing on your platform.
 >
 > **Richard P. Feynman**
 
-**This section is outdated. We are updating it to incorporate the feedback received.***
 
 The following benchmarks have been calculated on a single machine 
 ([Razer Blade laptop](https://www.razerzone.com/gaming-laptops/razer-blade-pro)) using the
  implementation we provide in this repository. The parameters used were chosen using first principles
  of the theory, and the performance observed corresponds with the expected values.
+
+
+| Available games  | 56 | |
+| Played by FMC    | 52 | 92.86% |
+| FMC defeats SOTA | 41 | 78.85% |
+| Solved or defeats human record | 17 | 32.69% |
+
 
 ### FMC Performance table
 
@@ -142,10 +148,6 @@ In the following table we show performance with respect to benchmarks widely acc
 
 - **FMC Score**: This is the maximum scored we achieved in the games we have documented. The number
  of runs for each game, and the parameters used may vary from one game to another.
-
-  
-- **N samples**: This is the mean number of samples that have been used in calculating each action.
- This is, the number of times we called step() on the environment per action.
  
 - **FMC vs SoTa**: Relative performance of FMC vs the State of The Art. 
 
