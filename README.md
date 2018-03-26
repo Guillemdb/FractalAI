@@ -14,7 +14,7 @@
 **This project is still under active development. Please, think of it as an open beta.**
 
 - [Abstract](#abstract)
-- [Quick Start](quick-start)
+- [Quick Start](#quick-start)
 - [Running the code](#installation)
 - [Benchmarks](#benchmarks)
 - [Additional Resources](#additional-resources)
