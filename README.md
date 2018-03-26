@@ -167,7 +167,6 @@ In the following table we show performance with respect to benchmarks widely acc
  | centipede | 1301709 | 25275.2 | **1351000** | 5345% | 
  | chopper command | **999900** | 15600 | **999900** | 6410% | 
  | crazy climber | **447000** | 179877 | 238300 | 132% | 
-#VALUE!
  | demon attack | **999970** | 130955 | **999970** | 764% | 
  | double dunk |  | 5 | **20** | 400% | 
  | enduro | 3617.9 | 3454 | **5279** | 153% | 
