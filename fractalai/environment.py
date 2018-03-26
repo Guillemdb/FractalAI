@@ -1,512 +1,500 @@
-import copy
-import numpy as np
-import gym
-from typing import Iterable
+import atexit
+import multiprocessing
+import sys
+import traceback
 from gym.envs.registration import registry as gym_registry
-from gym.envs.atari import AtariEnv
-from fractalai.state import Microstate, State, AtariState
+import numpy as np
 
 
 class Environment:
-    """This class handles the simulation of the environment in the FAI algorithm. It act as a
-    transfer function between swarm. Given a pair of State, Action it should be able to compute
-    the next state of the environment.
-
-    We have not implemented the get_environment_state because we only need to read its initial
-     condition. So the initial state will be provided when reset() is called.
-
-    Parameters
-    ----------
-    name: str;
-          Name of the  environment that the Simulator represents.
-    """
-
-    def __init__(self, name: str, state: State=None, fixed_steps: int=1):
-        """This class handles the simulation of the environment in the FAI algorithm. It acts as a
-        transfer function between swarm. Given a pair of State, Action it should compute the next
-         state of the environment.
-
-        Parameters
-        ----------
-        :param name: str; Name of the  environment that the Simulator represents.
-        :param state: State; State object that will be used to store information about
-                                 the state of the environment.
-        :param fixed_steps: The number of consecutive times that the action will be applied. This
-                            allows us to set the frequency at which the policy will play.
-        """
-        self.fixed_steps = fixed_steps
+    """Inherit from this class to test the Swarm on a different problem."""
+    def __init__(self, name, n_repeat_action: int=1):
         self._name = name
-        self._state = state
-        self._cum_reward = 0
-
-    @property
-    def state(self):
-        return self._state
+        self.n_repeat_action = n_repeat_action
 
     @property
     def name(self):
         return self._name
 
-    def set_seed(self, seed):
-        pass
-
-    def _step(self, state: State, action: [int, np.ndarray, list], fixed_steps: int=1) -> State:
-        """
-        Steps one state once. This way we can make the step() function work on batches also. If
-        you are too lazy to add vectorized support, override this function when inheriting.
-        :param state: Current State of the environment.
-        :param action: Scalar. Action that will be taken in the environment.
-        :param fixed_steps: The number of consecutive times that the action will be applied. This
-                            allows us to set the frequency at which the policy will play.
-        :return: The next unprocessed state of the environment.
-        """
-        self.set_simulation_state(state)
-        return self.step_simulation(action, fixed_steps=fixed_steps)
-
-    def step(self, state: [State, Iterable], action: np.ndarray, fixed_steps: int=1) -> [State,
-                                                                                         list]:
-        """
-        Step either a State or a batch of States.
-        :param state: State or vector of swarm to be stepped.
-        :param action: Action that will be taken in each one of the swarm.
-        :param fixed_steps: The number of consecutive times that the action will be applied. This
-                            allows us to set the frequency at which the policy will play.
-        :return: The State of the environment after taking the desired number of steps.
-                 If the input provided was a batch of swarm, return the stepped batch.
-        """
-        if not isinstance(state, Iterable):
-            return self._step(state, action, fixed_steps=fixed_steps)
-        return [self._step(st, ac, fixed_steps=fixed_steps) for (st, ac) in zip(state, action)]
-
-    def reset(self) -> State:
-        """Resets the simulator and returns initial state of the environment.
-         """
+    def step(self, action, state=None, n_repeat_action: int=1) -> tuple:
         raise NotImplementedError
 
-    def render(self):
-        """Render shows on the screen the current state of the environment.
-        Please, try to make it look cool."""
+    def step_batch(self, actions, states=None, n_repeat_action: int=1) -> tuple:
         raise NotImplementedError
 
-    def set_simulation_state(self, state: State):
-        """
-        Sets the microstate of the environment to the microstate of the target State.
-        :param state: State object that will be used to set the new state of the environment.
-        :return: None
-        """
+    def reset(self) -> tuple:
         raise NotImplementedError
 
-    def step_simulation(self, action: np.ndarray, fixed_steps: int=1) -> State:
-        """Perturbs the simulator with an arbitrary action.
-        :param action: action that will be selected in the environment.
-        :param fixed_steps: The number of consecutive times that the action will be applied. This
-                            allows us to set the frequency at which the policy will play.
-        :return: State representing the new state the environment is in.
-        """
+    def get_state(self):
         raise NotImplementedError
 
-
-class OpenAIEnvironment(Environment):
-    """Simulator meant to deal with OpenAI environments. We use this to test stuff
-             on a cartpole environment.
-    Parameters
-    ----------
-    name: str;
-          Name of the atari environment to be created. See: https://gym.openai.com/envs
-
-    Attributes
-    ----------
-        env: openai AtariEnv;
-             Environment object where the simulation takes place.
-    """
-    def __init__(self, name: str="CartPole-v0", env: gym.Env=None):
-        """This initializes the state of the environment to match the desired environment.
-        It should deal with the undocumented wrappers that gym has so we avoid random resets when
-        simulating.
-        """
-        super(OpenAIEnvironment, self).__init__(name=name)
-        if env is None and name:
-            spec = gym_registry.spec(name)
-            # not actually needed, but we feel safer
-            spec.max_episode_steps = None
-            spec.max_episode_time = None
-            self._env = spec.make()
-            self._name = name
-        elif env is not None:
-            self._env = env
-            self._name = env.spec.id
-        else:
-            raise ValueError("An env or an env name must be specified")
-        self._state = self.reset()
-
-    @property
-    def env(self):
-        """Access to the openai environment."""
-        return self._env
-
-    @property
-    def num_actions(self):
-        """Number of actions."""
-        return self.env.action_space.n
-
-    def set_seed(self, seed):
-        np.random.seed(seed)
-        self.env.seed(seed)
-
-    def render(self, *args, **kwargs):
-        """Shows the current screen of the video game in a separate window"""
-        self.env.render(*args, **kwargs)
-
-    def reset(self) -> State:
-        """Resets the environment and returns the first observation"""
-        if self._state is None:
-            self._state = State()
-        obs = self.env.reset()
-        if hasattr(self.env.unwrapped, "state"):
-            microstate = self.env.unwrapped.state
-        else:
-            microstate = 0  # State will not be stored. Implement a subclass if you need it.
-        self.state.reset_state()
-        self.state.update_state(observed=obs, microstate=microstate, end=False, reward=0.)
-        return self.state.create_clone()
-
-    def set_simulation_state(self, state: State):
-        """Sets the microstate of the simulator to the microstate of the target State"""
-        self._state = state
-        self._cum_reward = state.reward
-        self.env.unwrapped.state = state.microstate
-
-    def step_simulation(self, action: np.array, fixed_steps=1) -> State:
-        """Perturb the simulator with an arbitrary action"""
-        end = False
-        for i in range(fixed_steps):
-            observed, reward, _end, info = self.env.step(action.argmax())
-            self._cum_reward += reward
-            end = end or _end
-            if end:
-                break
-        if hasattr(self.env.unwrapped, "state"):
-            microstate = copy.deepcopy(self.env.unwrapped.state)
-        else:
-            microstate = 0  # State will not be stored. Implement a subclass if you need it.
-        self.state.reset_state()
-        self.state.update_state(observed=observed, microstate=microstate, reward=self._cum_reward,
-                                end=end,  # model_action=action, policy_action=action,
-                                model_data=[info])
-        if end:
-            self.env.reset()
-        return self.state
+    def set_state(self, state):
+        raise NotImplementedError
 
 
 class AtariEnvironment(Environment):
-    """Environment class used for managing Atari games. It can be used as a perfect simulation, or
-    as an imperfect one. It can work using rgb images, or ram as obs_0.
+    """Environment for playing Atari games."""
 
-    Parameters
-    ----------
-    name: str;
-          Name of the atari environment to be created. See: https://gym.openai.com/envs#atari
-          works also with "GameName-ram-v0" like environments.
+    def __init__(self, name: str, clone_seeds: bool=True, n_repeat_action: int=1):
+        super(AtariEnvironment, self).__init__(name=name, n_repeat_action=n_repeat_action)
+        self.clone_seeds = clone_seeds
+        spec = gym_registry.spec(name)
+        # not actually needed, but we feel safer
+        spec.max_episode_steps = None
+        spec.max_episode_time = None
+        self._env = spec.make()
 
-    clone_seeds: bool;
-                 If true, clone the pseudo random number generators of the environment for a
-                 perfect simulation. False provides an stochastic Simulator.
+    def __getattr__(self, item):
+        return getattr(self._env, item)
 
-    Attributes
-    ----------
-        env: openai AtariEnv;
-             Environment object where the simulation takes place.
+    @property
+    def n_actions(self):
+        return self._env.action_space.n
+
+    def get_state(self) -> np.ndarray:
+        if self.clone_seeds:
+            return self._env.unwrapped.clone_full_state()
+        else:
+            return self._env.unwrapped.clone_state()
+
+    def set_state(self, state: np.ndarray):
+        if self.clone_seeds:
+            self._env.unwrapped.restore_full_state(state)
+        else:
+            self._env.unwrapped.restore_state(state)
+        return state
+
+    def step(self, action: np.ndarray, state: np.ndarray = None,
+             n_repeat_action: int = 1) -> tuple:
+        n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
+        if state is not None:
+            self.set_state(state)
+
+        terminal = False
+        old_lives = -np.inf
+        reward = 0
+        for i in range(n_repeat_action):
+
+            obs, _reward, end, info = self._env.step(action)
+            lives = info["ale.lives"]
+            reward += _reward
+            terminal = terminal or end or lives < old_lives
+            old_lives = lives
+        if state is not None:
+            new_state = self.get_state()
+            return new_state, obs, reward, terminal, lives
+        return obs, reward, terminal, lives
+
+    def step_batch(self, actions, states=None, n_repeat_action: int=None) -> tuple:
+        n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
+        data = [self.step(action, state, n_repeat_action=n_repeat_action)
+                for action, state in zip(actions, states)]
+        new_states, observs, rewards, terminals, lives = [], [], [], [], []
+        for d in data:
+            if states is None:
+                obs, _reward, end, info = d
+            else:
+                new_state, obs, _reward, end, info = d
+                new_states.append(new_state)
+            observs.append(obs)
+            rewards.append(_reward)
+            terminals.append(end)
+            lives.append(info)
+        if states is None:
+            return observs, rewards, terminals, lives
+        else:
+            return new_states, observs, rewards, terminals, lives
+
+    def reset(self, return_state: bool=True):
+        if not return_state:
+            return self._env.reset()
+        else:
+            obs = self._env.reset()
+            return self.get_state(), obs
+
+
+def split_similar_chunks(vector: list, n_chunks: int):
+    chunk_size = int(np.ceil(len(vector) / n_chunks))
+    for i in range(0, len(vector), chunk_size):
+        yield vector[i:i + chunk_size]
+
+
+class ExternalProcess(object):
+    """Step environment in a separate process for lock free parallelism.
+    It is mostly a copy paste from
+    https://github.com/tensorflow/agents/blob/master/agents/tools/wrappers.py
     """
 
-    def __init__(self, state: AtariState=None, name: str="MsPacman-v0",
-                 clone_seeds: bool=True, env: AtariEnv=None,
-                 fixed_steps: int=1):
-        """
-        Environment class used for managing Atari games. It can be used as a perfect simulation, or
-        as an imperfect one. It can handle rgb images, or ram as observations.
-        :param name: Name of the atari environment to be created.
-                     See: https://gym.openai.com/envs#atari works also with "GameName-ram-v0" like
-                     environments.
-        :param clone_seeds:  bool;
-                 If true, clone the pseudo random number generators of the emulator for a
-                 perfect simulation. False provides an stochastic simulation.
-        :param env: Openai AtariEnv, optional; Use an already existing env instead of creating one.
-        :param fixed_steps: The number of consecutive times that the action will be applied. This
-                            allows us to set the frequency at which the policy will play.
-        """
-        self._clone_seeds = clone_seeds
-        self._cum_reward = 0
-        if env is None and name:
-            spec = gym_registry.spec(name)
-            # not actually needed, but we feel safer
-            spec.max_episode_steps = None
-            spec.max_episode_time = None
+    # Message types for communication via the pipe.
+    _ACCESS = 1
+    _CALL = 2
+    _RESULT = 3
+    _EXCEPTION = 4
+    _CLOSE = 5
 
-            self._env = spec.make()
-            self._name = name
-        elif env is not None:
-            self._env = env
-            self._name = env.spec.id
-        else:
-            raise ValueError("An env or an env name must be specified")
-        self._state = AtariState() if state is None else state
-        if state is None:
-            self._state = self.reset()
-
-        super(AtariEnvironment, self).__init__(name=name, state=self.state,
-                                               fixed_steps=fixed_steps)
+    def __init__(self, constructor):
+        """Step environment in a separate process for lock free paralellism.
+        The environment will be created in the external process by calling the
+        specified callable. This can be an environment class, or a function
+        creating the environment and potentially wrapping it. The returned
+        environment should not access global variables.
+        Args:
+          constructor: Callable that creates and returns an OpenAI gym environment.
+        Attributes:
+          observation_space: The cached observation space of the environment.
+          action_space: The cached action space of the environment.
+        """
+        self._conn, conn = multiprocessing.Pipe()
+        self._process = multiprocessing.Process(
+            target=self._worker, args=(constructor, conn))
+        atexit.register(self.close)
+        self._process.start()
+        self._observ_space = None
+        self._action_space = None
 
     @property
-    def env(self):
-        return self._env
+    def observation_space(self):
+        if not self._observ_space:
+            self._observ_space = self.__getattr__('observation_space')
+        return self._observ_space
 
     @property
-    def num_actions(self):
-        """Number of actions."""
-        return self.env.action_space.n
+    def action_space(self):
+        if not self._action_space:
+            self._action_space = self.__getattr__('action_space')
+        return self._action_space
 
-    @property
-    def gym_env(self):
-        return self._env
+    def __getattr__(self, name):
+        """Request an attribute from the environment.
+        Note that this involves communication with the external process, so it can
+        be slow.
+        Args:
+          name: Attribute to access.
+        Returns:
+          Value of the attribute.
+        """
+        self._conn.send((self._ACCESS, name))
+        return self._receive()
 
-    @property
-    def ram(self) -> np.ndarray:
-        """Decode the ram values of the current state of the environment."""
-        ram_size = self.gym_env.unwrapped.ale.getRAMSize()
-        ram = np.zeros(ram_size, dtype=np.uint8)
-        return self.gym_env.unwrapped.ale.getRAM(ram)
+    def call(self, name, *args, **kwargs):
+        """Asynchronously call a method of the external environment.
+        Args:
+          name: Name of the method to call.
+          *args: Positional arguments to forward to the method.
+          **kwargs: Keyword arguments to forward to the method.
+        Returns:
+          Promise object that blocks and provides the return value when called.
+        """
+        payload = name, args, kwargs
+        self._conn.send((self._CALL, payload))
+        return self._receive
 
-    @property
-    def clone_seeds(self):
-        """The full state of the system is being cloned, including random seeds."""
-        return self._clone_seeds
+    def close(self):
+        """Send a close message to the external process and join it."""
+        try:
+          self._conn.send((self._CLOSE, None))
+          self._conn.close()
+        except IOError:
+          # The connection was already closed.
+          pass
+        self._process.join()
 
-    def get_microstate(self):
-        if self.clone_seeds:
-            microstate = self.env.unwrapped.ale.cloneSystemState()
+    def set_state(self, state, blocking=True):
+        promise = self.call('set_state', state)
+        if blocking:
+            return promise()
         else:
-            microstate = self.env.unwrapped.ale.cloneState()
-        return Microstate(self.env, microstate)
+            return promise
 
-    def set_seed(self, seed):
-        np.random.seed(seed)
-        self.env.seed(seed)
-
-    def render(self, *args, **kwargs):
-        """Shows the current screen of the video game in a separate window"""
-        self.env.render(*args, **kwargs)
-
-    def reset(self) -> AtariState:
-        """
-        Resets the environment and returns the first observation
-        :return: AtariState representing the initial state of the game.
-        """
-        obs = self.env.reset()
-        if self.clone_seeds:
-            microstate = self.env.unwrapped.ale.cloneSystemState()
+    def step_batch(self, actions, states=None, n_repeat_action: int=1, blocking=True):
+        promise = self.call('step_batch', actions, states, n_repeat_action)
+        if blocking:
+            return promise()
         else:
-            microstate = self.env.unwrapped.ale.cloneState()
-        self.state.reset_state()
-        self.state.update_state(observed=obs, microstate=Microstate(self.env, microstate),
-                                end=False, reward=0)
-        return self.state.create_clone()
+            return promise
 
-    def set_simulation_state(self, state: AtariState):
+    def step(self, action, state=None, n_repeat_action: int=1, blocking=True):
+        """Step the environment.
+        Args:
+          action: The action to apply to the environment.
+          blocking: Whether to wait for the result.
+        Returns:
+          Transition tuple when blocking, otherwise callable that returns the
+          transition tuple.
         """
-        Sets the microstate of the environment to the microstate of the target State
-        :param state: State that will be set on the environment.
-        :return: None.
-        """
-        # Set the internal state of the atari emulator
-        self._cum_reward = state.reward
-        self._state = state
-        if self.clone_seeds:
-            self.env.unwrapped.ale.restoreSystemState(state.microstate.value)
+
+        promise = self.call('step', action, state, n_repeat_action)
+        if blocking:
+            return promise()
         else:
-            self.env.unwrapped.ale.restoreState(state.microstate.value)
+            return promise
 
-    def step_simulation(self, action: np.ndarray, fixed_steps: int=1) -> AtariState:
+    def reset(self, blocking=True, return_states: bool=False):
+        """Reset the environment.
+        Args:
+          blocking: Whether to wait for the result.
+        Returns:
+          New observation when blocking, otherwise callable that returns the new
+          observation.
         """
-        Perturb the simulator with an arbitrary action.
-        :param action: int representing the action to be taken.
-        :param fixed_steps: The number of consecutive times that the action will be applied. This
-                            allows us to set the frequency at which the policy will play.
-        :return: State representing the state of the environment after taking the desired number of
-                steps.
-        """
-        end = False
-        # _dead = False We will be deactivating this hack for now.
-        for i in range(fixed_steps):
-            observed, reward, _end, lives = self.env.step(action.argmax())
-            end = end or _end
-            # _dead = _dead or reward < 0
-            self._cum_reward += reward
-            if end:
-                break
-
-        if self.clone_seeds:
-            microstate = self.env.unwrapped.ale.cloneSystemState()
-
+        promise = self.call('reset', return_states=return_states)
+        if blocking:
+            return promise()
         else:
-            microstate = self.env.unwrapped.ale.cloneState()
+            return promise
 
-        self.state.update_state(observed=observed, reward=self._cum_reward,
-                                end=end, lives=lives, microstate=Microstate(self.env, microstate))
-        # self.state._dead = _dead
-        if end:
-            self.env.reset()
-        return self.state
-
-
-class DMControlEnv(Environment):
-        """I am offering this just to show that it can also work with any kind of problem, but I will
-        not be offering support for the dm_control package. It relies on Mujoco, and I don't want
-        to pollute this publication with proprietary code. Unfortunately, Mujoco is the only
-         library that allows to easily set and clone the state of the environment.
-
-         If anyone knows how to make it work with OpenAI Roboschool(PyBullet), I will release a
-          distributed version of the algorithm that allows to scale easily to thousands of walkers,
-        and run simulations in a cluster using ray.
+    def _receive(self):
+        """Wait for a message from the worker process and return its payload.
+        Raises:
+          Exception: An exception was raised inside the worker process.
+          KeyError: The reveived message is of an unknown type.
+        Returns:
+          Payload object of the message.
         """
+        message, payload = self._conn.recv()
+        # Re-raise exceptions in the main process.
+        if message == self._EXCEPTION:
+            stacktrace = payload
+            raise Exception(stacktrace)
+        if message == self._RESULT:
+            return payload
+        raise KeyError('Received message of unexpected type {}'.format(message))
 
-        def __init__(self, domain_name="cartpole", task_name="balance",
-                     visualize_reward: bool=True, fixed_steps: int=1,
-                     custom_death: "CustomDeath"=None):
-            """
-            Creates DMControlEnv and initializes the environment.
-
-            :param domain_name: match dm_control interface.
-            :param task_name: match dm_control interface.
-            :param visualize_reward: match dm_control interface.
-            :param fixed_steps: The number of consecutive times that an action will be applied.
-                            This allows us to set the frequency at which the policy will play.
-            :param custom_death: Pro hack to beat the shit out of DeepMind even further.
-            """
-            from dm_control import suite
-            name = str(domain_name) + ":" + str(task_name)
-            super(DMControlEnv, self).__init__(name=name, state=None)
-            self.fixed_steps = fixed_steps
-            self._render_i = 0
-            self._env = suite.load(domain_name=domain_name, task_name=task_name,
-                                   visualize_reward=visualize_reward)
-            self._name = name
-            self.viewer = []
-            self._last_time_step = None
-
-            self._custom_death = custom_death
-            self.reset()
-
-        def action_spec(self):
-            return self.env.action_spec()
-
-        @property
-        def physics(self):
-            return self.env.physics
-
-        @property
-        def env(self):
-            """Access to the environment."""
-            return self._env
-
-        def set_seed(self, seed):
-            np.random.seed(seed)
-            self.env.seed(seed)
-
-        def render(self, mode='human'):
-            img = self.env.physics.render(camera_id=0)
-            if mode == 'rgb_array':
-                return img
-            elif mode == 'human':
-                self.viewer.append(img)
-            return True
-
-        def reset(self) -> State:
-            """Resets the environment and returns the first observation"""
-            if self._state is None:
-                self._state = State()
-            time_step = self.env.reset()
-            observed = self._time_step_to_obs(time_step)
-
-            microstate = (np.array(self.env.physics.data.qpos),
-                          np.array(self.env.physics.data.qvel),
-                          np.array(self.env.physics.data.ctrl))
-
-            self._render_i = 0
-            self.state.reset_state()
-            self.state.update_state(observed=observed, microstate=microstate,
-                                    end=False, reward=time_step.reward)
-            return self.state.create_clone()
-
-        def set_simulation_state(self, state: State):
-            """
-            Sets the microstate of the simulator to the microstate of the target State.
-            I will be super grateful if someone shows me how to do this using Open Source code.
-
-            :param state:
-            :return:
-            """
-            self._state = state
-            self._cum_reward = state.reward
-            with self.env.physics.reset_context():
-                # mj_reset () is  called  upon  entering  the  context.
-                self.env.physics.data.qpos[:] = state.microstate[0]  # Set  position ,
-                self.env.physics.data.qvel[:] = state.microstate[1]  # velocity
-                self.env.physics.data.ctrl[:] = state.microstate[2]  # and  control.
-
-        def step_simulation(self, action: np.array, fixed_steps: int=None) -> State:
-            """
-            Perturb the simulator with an arbitrary action.
-            :param action: int representing the action to be taken.
-            :param fixed_steps: The number of consecutive times that the action will be applied.
-                        This allows us to set the frequency at which the policy will play.
-            :return: State representing the state of the environment after taking the desired
-                    number of steps.
-            """
-
-            if fixed_steps is not None:
-                self.fixed_steps = fixed_steps
-            custom_death = False
-            end = False
-
-            for i in range(self.fixed_steps):
-                time_step = self.env.step(action)
-                end = end or time_step.last()
-                self._cum_reward += time_step.reward
-                # The death condition is a super efficient way to discard huge chunks of the
-                # state space at discretion of the programmer. I am not uploading the code,
-                # because it is really easy to screw up if you provide the wrong function.
-                # In the end, its just a way to leverage human knowledge, and that should only
-                # be attempted if you have a profound understanding of how everything works.
-                # If done well, the speedup is a few orders of magnitude.
-                if self._custom_death is not None:
-                    custom_death = custom_death or \
-                                   self._custom_death.calculate(self,
-                                                                time_step,
-                                                                self._last_time_step)
-                self._last_time_step = time_step
-                if end:
+    def _worker(self, constructor, conn):
+        """The process waits for actions and sends back environment results.
+        Args:
+          constructor: Constructor for the OpenAI Gym environment.
+          conn: Connection for communication to the main process.
+        Raises:
+          KeyError: When receiving a message of unknown type.
+        """
+        try:
+            env = constructor()
+            env.reset()
+            while True:
+                try:
+                    # Only block for short times to have keyboard exceptions be raised.
+                    if not conn.poll(0.1):
+                        continue
+                    message, payload = conn.recv()
+                except (EOFError, KeyboardInterrupt):
                     break
-            # Here we save the state of the simulation inside the microstate attribute.
-            observed = self._time_step_to_obs(time_step)
-            microstate = (np.array(self.env.physics.data.qpos),
-                          np.array(self.env.physics.data.qvel),
-                          np.array(self.env.physics.data.ctrl))
+                if message == self._ACCESS:
+                    name = payload
+                    result = getattr(env, name)
+                    conn.send((self._RESULT, result))
+                    continue
+                if message == self._CALL:
+                    name, args, kwargs = payload
+                    result = getattr(env, name)(*args, **kwargs)
+                    conn.send((self._RESULT, result))
+                    continue
+                if message == self._CLOSE:
+                    assert payload is None
+                    break
+                raise KeyError('Received message of unknown type {}'.format(message))
+        except Exception:  # pylint: disable=broad-except
+            import tensorflow as tf
+            stacktrace = ''.join(traceback.format_exception(*sys.exc_info()))
+            tf.logging.error('Error in environment process: {}'.format(stacktrace))
+            conn.send((self._EXCEPTION, stacktrace))
+            conn.close()
 
-            # self.state.reset_state() If commented, policy and model data is not set to None.
-            self.state.update_state(observed=observed, microstate=microstate,
-                                    reward=self._cum_reward,
-                                    end=end)
-            # This is written as a hack because using custom deaths should be a hack.
-            if self._custom_death is not None:
-                self.state._dead = self.state._dead or custom_death
 
-            if end:
-                self.env.reset()
-            return self.state
+class BatchEnv(object):
+    """Combine multiple environments to step them in batch.
+    It is mostly a copy paste from
+    https://github.com/tensorflow/agents/blob/master/agents/tools/wrappers.py
+    """
 
-        @staticmethod
-        def _time_step_to_obs(time_step) -> tuple:
-            # Concat observations in a single, so it is easier to calculate distances
-            obs_array = np.hstack([np.array([time_step.observation[x]]).flatten()
-                                   for x in time_step.observation])
-            return obs_array
+    def __init__(self, envs, blocking):
+        """Combine multiple environments to step them in batch.
+        To step environments in parallel, environments must support a
+        `blocking=False` argument to their step and reset functions that makes them
+        return callables instead to receive the result at a later time.
+        Args:
+          envs: List of environments.
+          blocking: Step environments after another rather than in parallel.
+        Raises:
+          ValueError: Environments have different observation or action spaces.
+        """
+        self._envs = envs
+        self._blocking = blocking
+        observ_space = self._envs[0].observation_space
+        if not all(env.observation_space == observ_space for env in self._envs):
+            raise ValueError('All environments must use the same observation space.')
+        action_space = self._envs[0].action_space
+        if not all(env.action_space == action_space for env in self._envs):
+            raise ValueError('All environments must use the same observation space.')
+
+    def __len__(self):
+        """Number of combined environments."""
+        return len(self._envs)
+
+    def __getitem__(self, index):
+        """Access an underlying environment by index."""
+        return self._envs[index]
+
+    def __getattr__(self, name):
+        """Forward unimplemented attributes to one of the original environments.
+        Args:
+          name: Attribute that was accessed.
+        Returns:
+          Value behind the attribute name one of the wrapped environments.
+        """
+        return getattr(self._envs[0], name)
+
+    def _make_transitions(self, actions, states=None, n_repeat_action: int=1):
+        states = states if states is not None else [None] * len(actions)
+        chunks = len(self._envs)
+        states_chunk = split_similar_chunks(states, n_chunks=chunks)
+        actions_chunk = split_similar_chunks(actions, n_chunks=chunks)
+        results = []
+        for env, states_batch, actions_batch in zip(self._envs, states_chunk, actions_chunk):
+                result = env.step_batch(actions=actions_batch, states=states_batch,
+                                        n_repeat_action=n_repeat_action, blocking=self._blocking)
+                results.append(result)
+
+        _states = []
+        observs = []
+        rewards = []
+        terminals = []
+        infos = []
+        for result in results:
+            if self._blocking:
+                if states is None:
+                    obs, rew, ends, info = result
+                else:
+                    _sts, obs, rew, ends, info = result
+                    _states += _sts
+            else:
+                if states is None:
+                    obs, rew, ends, info = result()
+                else:
+                    _sts, obs, rew, ends, info = result()
+                    _states += _sts
+            observs += obs
+            rewards += rew
+            terminals += ends
+            infos += info
+        if states is None:
+            transitions = observs, rewards, terminals, infos
+        else:
+            transitions = _states, observs, rewards, terminals, infos
+        return transitions
+
+    def step_batch(self, actions, states=None, n_repeat_action: int=1):
+        """Forward a batch of actions to the wrapped environments.
+        Args:
+          actions: Batched action to apply to the environment.
+          states: States to be stepped. If None, act on current state.
+          n_repeat_action: Number of consecutive times the action will be applied.
+        Raises:
+          ValueError: Invalid actions.
+        Returns:
+          Batch of observations, rewards, and done flags.
+        """
+        for index, (env, action) in enumerate(zip(self._envs, actions)):
+            if not env.action_space.contains(action):
+                message = 'Invalid action at index {}: {}'
+                raise ValueError(message.format(index, action))
+
+        if states is None:
+            observs, rewards, dones, lives = self._make_transitions(actions, None, n_repeat_action)
+        else:
+            states, observs, rewards, dones, lives = self._make_transitions(actions, states,
+                                                                            n_repeat_action)
+        observ = np.stack(observs)
+        reward = np.stack(rewards)
+        done = np.stack(dones)
+        lives = np.stack(lives)
+        if states is None:
+            return observ, reward, done, lives
+        else:
+            return states, observs, rewards, dones, lives
+
+    def sync_states(self, state, blocking: bool=True):
+        for env in self._envs:
+            try:
+                env.set_state(state, blocking=blocking)
+            except EOFError:
+                continue
+
+    def reset(self, indices=None, return_states: bool=True):
+        """Reset the environment and convert the resulting observation.
+        Args:
+          indices: The batch indices of environments to reset; defaults to all.
+          return_states: return the corresponding states after reset.
+        Returns:
+          Batch of observations.
+        """
+        if indices is None:
+            indices = np.arange(len(self._envs))
+        if self._blocking:
+            observs = [self._envs[index].reset(return_states=return_states) for index in indices]
+        else:
+            transitions = [self._envs[index].reset(blocking=False,
+                                                   return_states=return_states)
+                           for index in indices]
+            transitions = [trans() for trans in transitions]
+            states, observs = zip(*transitions)
+
+        observ = np.stack(observs)
+        if return_states:
+            return np.array(states), observ
+        return observ
+
+    def close(self):
+        """Send close messages to the external process and join them."""
+        for env in self._envs:
+            if hasattr(env, 'close'):
+                env.close()
+
+
+def env_callable(name, env_class, *args, **kwargs):
+    return lambda: env_class(name, *args, **kwargs)
+
+
+class ParallelEnvironment(Environment):
+    """Wrap any environment to be stepped in parallel."""
+
+    def __init__(self, name, env_class, n_workers: int=8, blocking: bool=True, *args, **kwargs):
+        """
+
+        :param name: Name of the Environment
+        :param env_class: Class of the environment to be wrapped.
+        :param n_workers: number of workers that will be used.
+        :param blocking: step the environments asynchronously.
+        :param args: args of the environment that will be parallelized.
+        :param kwargs: kwargs of the environment that will be parallelized.
+        """
+        super(ParallelEnvironment, self).__init__(name=name)
+        self._env = env_callable(name, env_class, *args, **kwargs)()
+        envs = [ExternalProcess(constructor=env_callable(name, env_class, *args, **kwargs))
+                for _ in range(n_workers)]
+        self._batch_env = BatchEnv(envs, blocking)
+
+    def __getattr__(self, item):
+        return getattr(self._env, item)
+
+    def step_batch(self, actions: np.ndarray, states: np.ndarray=None, n_repeat_action: int=1):
+        return self._batch_env.step_batch(actions=actions, states=states,
+                                          n_repeat_action=n_repeat_action)
+
+    def step(self, action: np.ndarray, state: np.ndarray=None, n_repeat_action: int=1):
+        return self._env.step(action=action, state=state, n_repeat_action=n_repeat_action)
+
+    def reset(self, return_state: bool = True, blocking: bool=True):
+        state, obs = self._env.reset(return_state=True)
+        self.sync_states()
+        return state, obs if return_state else obs
+
+    def get_state(self):
+        return self._env.get_state()
+
+    def set_state(self, state):
+        self._env.set_state(state)
+        self.sync_states()
+
+    def sync_states(self):
+        self._batch_env.sync_states(self.get_state())
