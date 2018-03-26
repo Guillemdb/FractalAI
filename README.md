@@ -125,7 +125,8 @@ The following benchmarks have been calculated on a single machine
  of the theory, and the performance observed corresponds with the expected values.
 
 
-| Available games  | 56 | |
+| Available games  | 56 |  |
+| --- | --- | --- |
 | Played by FMC    | 52 | 92.86% |
 | FMC defeats SOTA | 41 | 78.85% |
 | Solved or defeats human record | 17 | 32.69% |
