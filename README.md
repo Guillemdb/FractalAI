@@ -130,10 +130,9 @@ The following benchmarks have been calculated on a single machine
 In the following table we show performance with respect to benchmarks widely accepted in the reinforcement
  learning community. For each game we tried, it displays the following information:
  
-- **FMC Score**: This is the maximum scored we achieved in the games we have documented. The number
- of runs for each game, and the parameters used may vary from one game to another.
+- **Human record**: It is the maximum score achieved by a human player as reported in **[[8](#bibliography)]**.
 
-- **SoTa**: It stands for "State of The Art", and it represents the maximum score achieved by any of
+- **SOTA**: It stands for "State of The Art", and it represents the maximum score achieved by any of
  the following algorithms: Random, DQN, C51 DQN, NoisyNet-DQN, Dueling, NoisyNet-Dueling, A3C,
   NoisyNet-A3C, A2C, HyperNEAT, ES FF, and  MCTS. Some scores are reported as an average across
    multiple runs (at most 100), and it is important to take that into account when interpreting the benchmark.
@@ -141,20 +140,76 @@ In the following table we show performance with respect to benchmarks widely acc
   **[[6](#bibliography)]**, **[[7](#bibliography)]**. A detailed source for each score can be 
  found in the performance sheet. 
 
-- **Human**: According to **[[5](#bibliography)]**, this is the mean score achieved by *a
- professional human games tester playing under controlled conditions*.
+- **FMC Score**: This is the maximum scored we achieved in the games we have documented. The number
+ of runs for each game, and the parameters used may vary from one game to another.
+
   
-- **Absolute record**: It is the maximum score achieved by a human player as reported in **[[8](#bibliography)]**.
-
-- **MCTS**: Scores achieved using UCT Monte Carlo Tree Search with 3 Million samples per action **[[1](#bibliography)]**.
-
 - **N samples**: This is the mean number of samples that have been used in calculating each action.
  This is, the number of times we called step() on the environment per action.
  
-- **% vs SoTa**: Relative performance of FMC vs the State of The Art, according to the formula
- (FMC Score / SoTa) * 100.
-   
-![Benchmarks](assets/benchmarks.png)  
+- **FMC vs SoTa**: Relative performance of FMC vs the State of The Art. 
+
+
+| Game | Human Record | SOTA | FMC Score | FMC vs SOTA |
+|:--- | :---: | :---: | :---: | ---:|
+ | alien | 251916 | 5899 | 19380 | 329% | 
+ | amidar | 155339 | 2354 | 4306 | 183% | 
+ | assault | 8647 | 11477 | 2782 | 24% | 
+ | asterix | 335500 | 406211 | 999500 | 246% | 
+ | asteroids | 10004100 | 26380 | 76270 | 289% | 
+ | atlantis | 7352737 | 8782433 | 10000100 | 114% | 
+ | bank heist | 199978 | 1611.9 | 1645 | 102% | 
+ | battle zone | 863000 | 42767 | 50000 | 117% | 
+ | beam rider | 999999 | 30276.5 | 288666 | 953% | 
+ | berzerk | 1057940 | 3409 | 13290 | 390% | 
+ | bowling | 300 | 135.8 | 86 | 63% | 
+ | boxing | 100 | 99.4 | 100 | 101% | 
+ | breakout |  | 748 | 750 | 100% | 
+ | centipede | 1301709 | 25275.2 | 1351000 | 5345% | 
+ | chopper command | 999900 | 15600 | 999900 | 6410% | 
+ | crazy climber | 447000 | 179877 | 238300 | 132% | 
+ | defender | 5470750 | 84997.5 | --- | ---% | 
+ | demon attack | 999970 | 130955 | 999970 | 764% | 
+ | double dunk |  | 5 | 20 | 400% | 
+ | enduro | 3617.9 | 3454 | 5279 | 153% | 
+ | fishing derby | 71 | 49.8 | -1 | -2% | 
+ | freeway | 34 | 33.9 | 33 | 97% | 
+ | frostbite | 552590 | 7413 | 397000 | 5355% | 
+ | gopher | 120000 | 104368.2 | 600000 | 575% | 
+ | gravitar | 1673950 | 805 | 2600 | 323% | 
+ | hero | 1000000 | 38874 | 36625 | 94% | 
+ | ice hockey | 36 | 10.6 | 64 | 604% | 
+ | jamesbond | 45550 | 4214 | 9600 | 228% | 
+ | kangaroo | 1436500 | 14854 | 7100 | 48% | 
+ | krull | 1006680 | 12601.4 | 307000 | 2436% | 
+ | kung fu master | 1000000 | 48375 | 144100 | 298% | 
+ | montezuma | 1219200 | 273.7 | 2500 | 913% | 
+ | ms pacman | 290090 | 6283 | 58521 | 931% | 
+ | name this game | 25220 | 15572.5 | 53010 | 340% | 
+ | phoenix | 4014440 | 70324.3 | 250450 | 356% | 
+ | pitfall | 114000 | 123 | 0 | 0% | 
+ | pong | 21 | 21 | 21 | 100% | 
+ | private eye | 103100 | 15095 | 40680 | 269% | 
+ | qbert | 2400000 | 23784 | 35750 | 150% | 
+ | riverraid | 194940 | 21162.6 | 18510 | 87% | 
+ | road runner | 2038100 | 69524 | 54000 | 78% | 
+ | robotank | 74 | 65.3 | 85 | 130% | 
+ | seaquest | 527160 | 266434 | 999999 | 375% | 
+ | skiing | 32,72 | 15442.5 |  | 0% | 
+ | solaris | 281740 | 11830 | 93520 | 791% | 
+ | space invaders | 621535 | 15311.5 | 17970 | 117% | 
+ | star gunner | 77400 | 125117 | 1600 | 1% | 
+ | surround |  | 6.8 |  | 0% | 
+ | tennis | 24 | 23.1 | 24 | 104% | 
+ | time pilot | 66500 | 11666 |  | 0% | 
+ | tutankham | 3493 | 321 | 342 | 107% | 
+ | up n down | 168830 | 145113 | 999999 | 689% | 
+ | venture | 31900 | 3800 | 1500 | 39% | 
+ | video pinball | 999999 | 949604 | 999999 | 105% | 
+ | wizard of wor | 233700 | 12352 | 93090 | 754% | 
+ | yars revenge | 15000105 | 69618.1 |  | 0% | 
+ | zaxxon | 100000 | 15567 |  | 0% | 
+
 
 #### Detailed Google Sheet
 
