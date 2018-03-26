@@ -96,9 +96,7 @@ class SwarmWave:
                  env_name: str = "MsPacman-v0",
                  n_samples: int = 1500,
                  n_walkers: int = 50,
-                 n_fixed_steps: int = 1,
                  balance: float = 1.,
-                 skip_frames: int = 0,
                  render_every: int = 5,
                  score_limit: int = None,
                  save_tree: bool = True):
@@ -107,7 +105,6 @@ class SwarmWave:
         :param env_name: The name of the Atari game to be sampled.
         :param n_samples: Maximum number of samples allowed. None = unlimited (avoid save_tree).
         :param n_walkers: Number of walkers that will use for exploring the space (avoid >2K).
-        :param n_fixed_steps: The number of times that we will apply the same action.
         :param balance: Coefficient that balances exploration vs exploitation.
         :param render_every: Number of iterations to be performed before updating displayed
         :param score_limit: Maximum score that can be reached before stopping the sampling.
@@ -116,13 +113,11 @@ class SwarmWave:
         self.env_name = env_name
         self.n_limit_samples = n_samples
         self.n_walkers = n_walkers
-        self.n_fixed_steps = n_fixed_steps
         self.balance = balance
-        self.skip_frames = skip_frames
         self.render_every = render_every
         self.score_limit = score_limit
         # Unbounded samples + save_tree = memory depleted
-        self.save_tree = False if n_fixed_steps is None else save_tree
+        self.save_tree = False if n_samples is None else save_tree
 
         print("Initializing, please wait...", flush=True)
 
@@ -185,15 +180,12 @@ class SwarmWave:
         self._i_simulation = 0
         obs = self.env.reset()
         reward, lives = 0, 0
-        # skip some frames
-        for i in range(self.skip_frames):
-            obs, _reward, end, info = self.env.step(0)
-            reward += reward
-            lives = info["ale.lives"]
-            if end:
-                obs = self.env.reset()
-                reward, lives = 0, 0
-                break
+        obs, _reward, end, info = self.env.step(0)
+        reward += reward
+        lives = info["ale.lives"]
+        if end:
+            obs = self.env.reset()
+            reward, lives = 0, 0
         # Initialize internal parameters
         self.root_state = self.env.unwrapped.clone_full_state()
         self.walkers = np.array([self.root_state.copy() for _ in range(self.n_walkers)])
@@ -228,34 +220,32 @@ class SwarmWave:
                 old_lives = self._old_lives[i]
                 end = False
                 action = self.random_actions[self._i_epoch % self.random_actions.shape[0], i]
-                # We can choose to apply the same action several times
-                for _ in range(self.n_fixed_steps):
-                    if self.rewards[i]<self.score_limit:
-                        obs, _reward, _end, info = self.env.step(action)
-                        self._n_samples_done += 1
-                        self.rewards[i] += _reward
-                        # Check boundary conditions
-                        end = end or _end
-                        self._death_cond[i] = end or info["ale.lives"] < old_lives
-                        old_lives = float(info["ale.lives"])
-                        # Update data
-                        self.times[i] += 1
-                        self.obs[i] = obs.copy()
-                        self._old_lives[i] = old_lives
-                        self._n_samples_done += 1
-                        # Keep track of the paths using the tree if needed
-                        new_state = self.env.unwrapped.clone_full_state().copy()
-                        new_id = self._n_samples_done
-                        if self.save_tree:
-                            old_id = self.walkers_id[i]
-                            self.tree.append_leaf(new_id, parent_id=old_id, obs=obs)
-                        self.walkers_id[i] = new_id
-                        self.walkers[i] = new_state
-                        # Reset if necessary
-                        if _end and self.rewards[i]<self.score_limit:
-                            self._terminal[i] = True
-                            self.env.reset()
-                            break
+                if self.rewards[i]<self.score_limit:
+                    obs, _reward, _end, info = self.env.step(action)
+                    self._n_samples_done += 1
+                    self.rewards[i] += _reward
+                    # Check boundary conditions
+                    end = end or _end
+                    self._death_cond[i] = end or info["ale.lives"] < old_lives
+                    old_lives = float(info["ale.lives"])
+                    # Update data
+                    self.times[i] += 1
+                    self.obs[i] = obs.copy()
+                    self._old_lives[i] = old_lives
+                    self._n_samples_done += 1
+                    # Keep track of the paths using the tree if needed
+                    new_state = self.env.unwrapped.clone_full_state().copy()
+                    new_id = self._n_samples_done
+                    if self.save_tree:
+                        old_id = self.walkers_id[i]
+                        self.tree.append_leaf(new_id, parent_id=old_id, obs=obs)
+                    self.walkers_id[i] = new_id
+                    self.walkers[i] = new_state
+                    # Reset if necessary
+                    if _end and self.rewards[i]<self.score_limit:
+                        self._terminal[i] = True
+                        self.env.reset()
+                        break
         self._will_step = step_ix
 
     def _evaluate_distance(self) -> np.ndarray:
