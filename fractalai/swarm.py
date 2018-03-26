@@ -174,7 +174,6 @@ class Swarm:
         # Internal masks
         self._will_clone = np.zeros(self.n_walkers, dtype=bool)
         self._will_step = np.ones(self.n_walkers, dtype=bool)
-        self._end_cond = np.zeros(self.n_walkers, dtype=bool)
         # Processed information sources
         self.virtual_rewards = np.zeros(self.n_walkers)
         self.distances = np.zeros(self.n_walkers)
@@ -264,7 +263,8 @@ class Swarm:
         """This sets a hard limit on maximum samples. It also Finishes if all the walkers are dead,
          or the target score reached.
          """
-        stop_hard = self._n_samples_done > self.samples_limit
+        stop_hard = False if self.samples_limit is None else \
+            self._n_samples_done > self.samples_limit
         stop_score = False if self.reward_limit is None else \
             self.rewards.max() >= self.reward_limit
         stop_terminal = self._end_cond.all()
@@ -294,7 +294,9 @@ class Swarm:
         self.states[self._will_step] = new_state
         self.observations[self._will_step] = np.array(observs).astype(np.float32)
         self.rewards[self._will_step] = self.rewards[self._will_step] + np.array(rewards)
+        self._not_frozen = (self.rewards < self.reward_limit)
         self._end_cond[self._will_step] = ends
+        self._end_cond = np.logical_and(self._end_cond, self._not_frozen)
         self.infos[self._will_step] = infos.astype(np.float32)
         self.actions[self._will_step] = actions.astype(np.float32)
         self.times[self._will_step] = self.times[self._will_step].astype(np.int32) + 1
