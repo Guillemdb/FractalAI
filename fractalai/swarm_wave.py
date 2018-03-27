@@ -7,7 +7,7 @@ class SwarmWave(Swarm):
 
     def __init__(self, env, model, n_walkers: int=100, balance: float=1.,
                  reward_limit: float=None, samples_limit: int=None, render_every: int=1e10,
-                 save_data: bool=True):
+                 save_data: bool=True, accumulate_rewards: bool=True):
         """
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
@@ -21,7 +21,8 @@ class SwarmWave(Swarm):
         """
         super(SwarmWave, self).__init__(env=env, model=model, n_walkers=n_walkers,
                                         balance=balance, reward_limit=reward_limit,
-                                        samples_limit=samples_limit, render_every=render_every)
+                                        samples_limit=samples_limit, render_every=render_every,
+                                        accumulate_rewards=accumulate_rewards)
         self.save_data = save_data
         self.old_ids = np.zeros(self.n_walkers)
         self.tree = DynamicTree() if save_data else None

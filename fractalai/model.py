@@ -110,6 +110,37 @@ class RandomDiscreteModel(DiscreteModel):
         return self.noise[:len(observations), self._i % self.samples]
 
 
+class ESModel(BaseModel):
+
+    def __init__(self, weights_shapes: [Iterable], sigma: float=0.01):
+        super(ESModel, self).__init__(action_space=weights_shapes)
+        self.weigths_shapes = weights_shapes
+        self.sigma = sigma
+
+    def predict(self, observation: np.ndarray=None) -> [int, np.ndarray]:
+        """
+        Returns one action chosen at random.
+        :param observation: Will be ignored. Observation representing the current state.
+        :return: int representing the action to be taken.
+        """
+        return [np.random.randn(*shape) * self.sigma for shape in self.weigths_shapes]
+
+    def predict_batch(self, observations: [Sized, Iterable]) -> np.ndarray:
+        """
+        Returns a vector of actions chosen at random.
+        :param observations: Represents a vector of observations. Only used in determining the size
+        of the returned array.
+        :return: Numpy array containing the action chosen for each observation.
+        """
+
+        perturbations = []
+        for i in range(len(observations)):
+            x = [np.random.randn(*shape) * self.sigma for shape in self.weigths_shapes]
+            perturbations.append(x)
+        return np.array(perturbations)
+
+
+
 class ContinuousModel(BaseModel):
     """This is the Model class meant to work with ``dm_control`` environments.
 

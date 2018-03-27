@@ -47,9 +47,14 @@ class DataStorage:
                 self.actions[w_id] = copy.deepcopy(action)
 
     def delete(self, walker_ids):
+        new_states = {}
+        new_actions = {}
         for w_id in walker_ids:
-            del self.states[w_id]
-            del self.actions[w_id]
+
+            new_states[w_id] = self.states[w_id]
+            new_actions[w_id] = self.states[w_id]
+        self.states = new_states
+        self.actions = new_actions
 
 
 class DynamicTree:
@@ -123,7 +128,8 @@ class Swarm:
     """
 
     def __init__(self, env, model, n_walkers: int=100, balance: float=1.,
-                 reward_limit: float=None, samples_limit: int=None, render_every: int=1e10):
+                 reward_limit: float=None, samples_limit: int=None, render_every: int=1e10,
+                 accumulate_rewards: bool=True):
         """
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
@@ -143,6 +149,7 @@ class Swarm:
         self.n_walkers = n_walkers
         self.balance = balance
         self.render_every = render_every
+        self.accumulate_rewards = accumulate_rewards
         # Environment information sources
         self.observations = None
         self.rewards = None
@@ -165,6 +172,7 @@ class Swarm:
         self.data = DataStorage()
         self._pre_clone_ids = [0]
         self._post_clone_ids = [0]
+        self._remove_id = [None]
 
     def __str__(self):
         """Print information about the internal state of the swarm."""
@@ -176,12 +184,12 @@ class Swarm:
             score_prog = (self.rewards.max() / self.reward_limit) * 100
             progress = max(progress, score_prog)
 
-        text = "Environment: {} | Walkers: {} | Deaths: {}\n" \
+        text = "Environment: {} | Walkers: {} | Deaths: {} | data_size {}\n" \
                "Total samples: {} Progress: {:.2f}%\n" \
                "Reward: mean {:.2f} | Dispersion: {:.2f} | max {:.2f} | min {:.2f} | std {:.2f}\n"\
                "Episode length: mean {:.2f} | Dispersion {:.2f} | max {:.2f} | min {:.2f} " \
                "| std {:.2f}\n" \
-               "Status: {}".format(self._env.name, self.n_walkers, self._end_cond.sum(),
+               "Status: {}".format(self._env.name, self.n_walkers, self._end_cond.sum(), len(self.data.states.keys()),
                                    self._n_samples_done, progress,
                                    self.rewards.mean(), self.rewards.max() - self.rewards.min(),
                                    self.rewards.max(), self.rewards.min(), self.rewards.std(),
@@ -248,7 +256,10 @@ class Swarm:
         self.walkers_id[self._will_step] = new_ids
         self.data.append(walker_ids=new_ids, states=new_state, actions=actions)
         self.observations[self._will_step] = np.array(observs).astype(np.float32)
-        self.rewards[self._will_step] = self.rewards[self._will_step] + np.array(rewards)
+        if self.accumulate_rewards:
+            self.rewards[self._will_step] = self.rewards[self._will_step] + np.array(rewards)
+        else:
+            self.rewards[self._will_step] = np.array(rewards)
         self._end_cond[self._will_step] = ends
         self.infos[self._will_step] = np.array(infos).astype(np.float32)
         self.times[self._will_step] = self.times[self._will_step].astype(np.int32) + 1
@@ -328,8 +339,8 @@ class Swarm:
         self.clone_condition()
         self.perform_clone()
         self._post_clone_ids = set(self.walkers_id.astype(int))
-        remove_id = self._pre_clone_ids - self._post_clone_ids
-        self.data.delete(remove_id)
+        self._remove_id = self._pre_clone_ids - self._post_clone_ids
+        self.data.delete(self._post_clone_ids)
 
     def stop_condition(self) -> bool:
         """This sets a hard limit on maximum samples. It also Finishes if all the walkers are dead,
