@@ -141,18 +141,18 @@ class ESEnvironment(Environment):
 
     def set_state(self, state: [np.ndarray, list]):
         """
-                   Sets the microstate of the simulator to the microstate of the target State.
-                   I will be super grateful if someone shows me how to do this using Open Source code.
-                   :param state:
-                   :return:
-                   """
+        Sets the microstate of the simulator to the microstate of the target State.
+        I will be super grateful if someone shows me how to do this using Open Source code.
+        :param state:
+        :return:
+        """
         self.neural_network.set_weights(state)
 
     def _perturb_weights(self, weights: [list, np.ndarray],
                          perturbations: [list, np.ndarray]) -> list:
         """
         Updates a set of weights with a gaussian perturbation with sigma equal to self.sigma and
-        mean 0
+        mean 0.
         :param weights: Set of weights that will be updated.
         :param perturbations: Standard gaussian noise.
         :return: perturbed weights with desired sigma.
@@ -164,8 +164,6 @@ class ESEnvironment(Environment):
 
     def step(self, action: np.ndarray, state: np.ndarray = None,
              n_repeat_action: int = None) -> tuple:
-
-
 
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
 
@@ -183,10 +181,10 @@ class ESEnvironment(Environment):
             for i in range(n_repeat_action):
 
                 obs, _reward, end, info = self._env.step(nn_action)
-                #lives = info.get("ale.lives", 1)
                 reward += _reward
+                # lives = info.get("ale.lives", 1)
                 # terminal = terminal or end or lives < old_lives
-                #old_lives = lives
+                # old_lives = lives
                 n_steps += 1
                 if end:
                     break
@@ -302,11 +300,11 @@ class ExternalProcess(object):
     def close(self):
         """Send a close message to the external process and join it."""
         try:
-          self._conn.send((self._CLOSE, None))
-          self._conn.close()
+            self._conn.send((self._CLOSE, None))
+            self._conn.close()
         except IOError:
-          # The connection was already closed.
-          pass
+            # The connection was already closed.
+            pass
         self._process.join()
 
     def set_state(self, state, blocking=True):

@@ -1,9 +1,8 @@
 import numpy as np
-
 from keras.models import Model, Input, Sequential
-from keras.layers import Dense, Conv2D, BatchNormalization, Flatten, Convolution2D, Dropout, Concatenate
+from keras.layers import Dense, Conv2D, BatchNormalization, Flatten, Dropout, Concatenate
 from keras.regularizers import l1
-from keras.optimizers import Adam # not important as there's no training here.
+from keras.optimizers import Adam  # not important as there's no training here.
 
 
 class RunningStat(object):
@@ -47,12 +46,11 @@ class SingleLayerModel:
         self.n_actor_neurons = actor_neurons
         self.n_encoder_neurons = encoder_neurons
         self.optimizer = optimizer
-
+        self.state_input = None
+        self.model = None
         self.state_shape = state_shape
         self.action_shape = action_shape
         self.shared_layer = self.create_shared_layers()
-        #self.encoder = self.create_encoder_layers()
-        #self.dynamics = self.create_dynamics_layer()
         self.actor = self.create_actor_layer()
         self.create_model()
 
@@ -71,8 +69,6 @@ class SingleLayerModel:
 
     def create_model(self):
 
-
-
         self.model = Model(inputs=[self.state_input],
                            outputs=[self.actor])
 
@@ -82,32 +78,30 @@ class SingleLayerModel:
 
     def create_actor_layer(self):
 
-
-
         self.actor = Dense(self.action_shape[0], activation='linear',
                            name="actor_out", trainable=False)(self.shared_layer)
 
         return self.actor
 
     def create_shared_layers(self):
+
         self.state_input = Input(shape=self.state_shape, name="state_input")
 
-
         self.shared_layer = Dense(self.n_shared_neurons, activation='tanh', name="shared_layer",
-                         kernel_regularizer=l1(0.01))(self.state_input)
+                                  kernel_regularizer=l1(0.01))(self.state_input)
 
         if self.dropout:
             self.shared_layer = Dropout(0.15)(self.shared_layer)
         if self.batchnorm:
             self.shared_layer = BatchNormalization()(self.shared_layer)
-        self.shared_layer = Dense(self.n_shared_neurons, activation='tanh', name="shared_layer_out",
+        self.shared_layer = Dense(self.n_shared_neurons, activation='tanh',
+                                  name="shared_layer_out",
                                   kernel_regularizer=l1(0.01))(self.shared_layer)
         if self.dropout:
             self.shared_layer = Dropout(0.15)(self.shared_layer)
         if self.batchnorm:
             self.shared_layer = BatchNormalization()(self.shared_layer)
         return self.shared_layer
-
 
 
 class DHModel:
@@ -124,7 +118,10 @@ class DHModel:
         self.n_actor_neurons = actor_neurons
         self.n_encoder_neurons = encoder_neurons
         self.optimizer = optimizer
-
+        self.state_input = None
+        self.model = None
+        self.action_input = None
+        self.shared_action_input = None
         self.state_shape = state_shape
         self.action_shape = action_shape
         self.encode_size = encode_size
@@ -135,7 +132,6 @@ class DHModel:
         self.actor = self.create_actor_layer()
         self.create_model()
 
-
     def create_actor_layer(self):
 
         decode_1 = Dense(self.n_actor_neurons, activation='relu', name="actor_hidden",
@@ -143,13 +139,13 @@ class DHModel:
         if self.batchnorm:
             decode_1 = BatchNormalization()(decode_1)
 
-
         decode_out = Dense(self.action_shape[0], activation='sigmoid',
                            name="actor_out", trainable=False)(decode_1)
 
         return decode_out
 
     def create_shared_layers(self):
+
         self.state_input = Input(shape=self.state_shape, name="state_input")
 
         shared_1 = Dense(self.n_shared_neurons, activation='relu', name="shared_hidden",
@@ -160,7 +156,7 @@ class DHModel:
             shared_1 = BatchNormalization()(shared_1)
 
         self.shared_layer = Dense(self.encode_size, activation='relu', name="shared_layer",
-                         kernel_regularizer=l1(0.01))(shared_1)
+                                  kernel_regularizer=l1(0.01))(shared_1)
         self.shared_layer = Flatten()(self.shared_layer)
         if self.dropout:
             self.shared_layer = Dropout(0.15)(self.shared_layer)
@@ -174,13 +170,16 @@ class DHModel:
             decode_1 = BatchNormalization()(decode_1)
         if self.dropout:
             decode_1 = Dropout(0.15)(decode_1)
-        decode_out = Dense(int(np.prod(self.state_shape)), activation='linear', name="decode_out")(decode_1)
+        decode_out = Dense(int(np.prod(self.state_shape)), activation='linear',
+                           name="decode_out")(decode_1)
         return decode_out
 
     def create_reward_layer(self):
         self.action_input = Input(shape=self.action_shape, name="action_input")
-        self.shared_action_input = Concatenate(name="shared_action_in")([self.action_input, self.shared_layer])
-        reward_1 = Dense(self.n_reward_neurons, activation='relu', name="reward_hidden")(self.shared_action_input)
+        self.shared_action_input = Concatenate(name="shared_action_in")([self.action_input,
+                                                                         self.shared_layer])
+        reward_1 = Dense(self.n_reward_neurons, activation='relu',
+                         name="reward_hidden")(self.shared_action_input)
         if self.batchnorm:
             reward_1 = BatchNormalization()(reward_1)
         if self.dropout:
@@ -195,7 +194,8 @@ class DHModel:
             dynamics = BatchNormalization()(dynamics)
         if self.dropout:
             dynamics = Dropout(self.dropout)(dynamics)
-        dynamics_out = Dense(int(np.prod(self.state_shape)), activation='linear', name="dynamics_out")(dynamics)
+        dynamics_out = Dense(int(np.prod(self.state_shape)), activation='linear',
+                             name="dynamics_out")(dynamics)
         return dynamics_out
 
     def create_model(self):
@@ -211,20 +211,18 @@ class DHModel:
                                          "actor_out": 0., "reward_out": 0.})
 
     def get_weights(self):
-        #return self.model.get_weights()
+
         weights = []
         if self.es_all:
             weights += self.model.get_layer("shared_hidden").get_weights()
             weights += self.model.get_layer("shared_layer").get_weights()
-
 
         weights += self.model.get_layer("actor_hidden").get_weights()
         weights += self.model.get_layer("actor_out").get_weights()
         return weights
 
     def set_weights(self, weights):
-        #self.model.set_weights(weights)
-        #return
+
         if self.es_all:
             self.model.get_layer("shared_hidden").set_weights(weights[:2])
             self.model.get_layer("shared_layer").set_weights(weights[2:4])
@@ -236,6 +234,7 @@ class DHModel:
         return self.model.predict({"state_input": obs.reshape((1,) + self.state_shape),
                                    "action_input": np.ones(
                                        self.action_shape[0]).reshape(1, -1)})[0][0]
+
     def predict(self, obs, action, *args, **kwargs):
         return self.model.predict({"state_input": obs,
                                    "action_input": action}, *args, **kwargs)

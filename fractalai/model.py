@@ -68,7 +68,7 @@ class RandomDiscreteModel(DiscreteModel):
     actions."""
 
     def __init__(self, n_actions: int, action_space=None,
-                 max_wakers: int=100, samples: int=100000):
+                 max_wakers: int=100, samples: int=100000, use_block: bool=False):
         """
 
         :param n_actions:
@@ -79,9 +79,11 @@ class RandomDiscreteModel(DiscreteModel):
         super(RandomDiscreteModel, self).__init__(n_actions=n_actions, action_space=action_space)
         self.max_walkers = max_wakers
         self.samples = samples
-        self.noise = np.random.randint(0, high=int(self.n_actions), size=(int(max_wakers),
-                                                                          int(samples)))
-        self._i = 0
+        self.use_block = use_block
+        if use_block:
+            self.noise = np.random.randint(0, high=int(self.n_actions), size=(int(max_wakers),
+                                                                              int(samples)))
+            self._i = 0
 
     def predict(self, observation: np.ndarray=None) -> [int, np.ndarray]:
         """
@@ -89,6 +91,8 @@ class RandomDiscreteModel(DiscreteModel):
         :param observation: Will be ignored. Observation representing the current state.
         :return: int representing the action to be taken.
         """
+        if not self.use_block:
+            return np.random.randint(0, high=int(self.n_actions))
         self._i += 1
         return self.noise[0, self._i % self.samples]
 
@@ -99,8 +103,10 @@ class RandomDiscreteModel(DiscreteModel):
         of the returned array.
         :return: Numpy array containing the action chosen for each observation.
         """
-        self._i += 1
 
+        if not self.use_block:
+            return np.random.randint(0, high=int(self.n_actions), size=(len(observations),))
+        self._i += 1
         return self.noise[:len(observations), self._i % self.samples]
 
 
