@@ -1,7 +1,9 @@
 import atexit
+from typing import Callable
 import multiprocessing
 import sys
 import traceback
+import gym
 from gym.envs.registration import registry as gym_registry
 import numpy as np
 
@@ -65,7 +67,7 @@ class AtariEnvironment(Environment):
         return state
 
     def step(self, action: np.ndarray, state: np.ndarray = None,
-             n_repeat_action: int = 1) -> tuple:
+             n_repeat_action: int = None) -> tuple:
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
         if state is not None:
             self.set_state(state)
@@ -76,7 +78,7 @@ class AtariEnvironment(Environment):
         for i in range(n_repeat_action):
 
             obs, _reward, end, info = self._env.step(action)
-            lives = info["ale.lives"]
+            lives = info.get("ale.lives", 1)
             reward += _reward
             terminal = terminal or end or lives < old_lives
             old_lives = lives
@@ -84,6 +86,114 @@ class AtariEnvironment(Environment):
             new_state = self.get_state()
             return new_state, obs, reward, terminal, lives
         return obs, reward, terminal, lives
+
+    def step_batch(self, actions, states=None, n_repeat_action: int=None) -> tuple:
+        """
+
+        :param actions:
+        :param states:
+        :param n_repeat_action:
+        :return:
+        """
+        n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
+        data = [self.step(action, state, n_repeat_action=n_repeat_action)
+                for action, state in zip(actions, states)]
+        new_states, observs, rewards, terminals, lives = [], [], [], [], []
+        for d in data:
+            if states is None:
+                obs, _reward, end, info = d
+            else:
+                new_state, obs, _reward, end, info = d
+                new_states.append(new_state)
+            observs.append(obs)
+            rewards.append(_reward)
+            terminals.append(end)
+            lives.append(info)
+        if states is None:
+            return observs, rewards, terminals, lives
+        else:
+            return new_states, observs, rewards, terminals, lives
+
+    def reset(self, return_state: bool=True):
+        if not return_state:
+            return self._env.reset()
+        else:
+            obs = self._env.reset()
+            return self.get_state(), obs
+
+
+class ESEnvironment(Environment):
+    """Environment for Solving Evolutionary Strategies."""
+
+    def __init__(self, name: str, dnn_callable: Callable, n_repeat_action: int=1,
+                 max_episode_length=1000):
+        super(ESEnvironment, self).__init__(name=name, n_repeat_action=n_repeat_action)
+        self.dnn_callable = dnn_callable
+        self._env = gym.make(name)
+        self.neural_network = self.dnn_callable()
+        self.max_episode_length = max_episode_length
+
+    def __getattr__(self, item):
+        return getattr(self._env, item)
+
+    def get_state(self) -> np.ndarray:
+        return self.neural_network.get_weights()
+
+    def set_state(self, state: [np.ndarray, list]):
+        """
+                   Sets the microstate of the simulator to the microstate of the target State.
+                   I will be super grateful if someone shows me how to do this using Open Source code.
+                   :param state:
+                   :return:
+                   """
+        self.neural_network.set_weights(state)
+
+    def _perturb_weights(self, weights: [list, np.ndarray],
+                         perturbations: [list, np.ndarray]) -> list:
+        """
+        Updates a set of weights with a gaussian perturbation with sigma equal to self.sigma and
+        mean 0
+        :param weights: Set of weights that will be updated.
+        :param perturbations: Standard gaussian noise.
+        :return: perturbed weights with desired sigma.
+        """
+        weights_try = []
+        for index, noise in enumerate(perturbations):
+            weights_try.append(weights[index] + noise)
+        return weights_try
+
+    def step(self, action: np.ndarray, state: np.ndarray = None,
+             n_repeat_action: int = None) -> tuple:
+
+
+
+        n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
+
+        if state is not None:
+            new_weights = self._perturb_weights(state, action)
+            self.set_state(new_weights)
+        obs = self._env.reset()
+        terminal = False
+        old_lives = -np.inf
+        reward = 0
+        n_steps = 0
+        end = False
+        while not end and n_steps < self.max_episode_length:
+            nn_action = self.neural_network.predict(obs.flatten())
+            for i in range(n_repeat_action):
+
+                obs, _reward, end, info = self._env.step(nn_action)
+                #lives = info.get("ale.lives", 1)
+                reward += _reward
+                # terminal = terminal or end or lives < old_lives
+                #old_lives = lives
+                n_steps += 1
+                if end:
+                    break
+        if state is not None:
+            new_state = self.get_state()
+            return new_state, obs, reward, terminal, 0
+        return obs, reward, terminal, 0
 
     def step_batch(self, actions, states=None, n_repeat_action: int=None) -> tuple:
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
@@ -105,7 +215,7 @@ class AtariEnvironment(Environment):
         else:
             return new_states, observs, rewards, terminals, lives
 
-    def reset(self, return_state: bool=True):
+    def reset(self, return_state: bool=False):
         if not return_state:
             return self._env.reset()
         else:
@@ -206,14 +316,14 @@ class ExternalProcess(object):
         else:
             return promise
 
-    def step_batch(self, actions, states=None, n_repeat_action: int=1, blocking=True):
+    def step_batch(self, actions, states=None, n_repeat_action: int=None, blocking=True):
         promise = self.call('step_batch', actions, states, n_repeat_action)
         if blocking:
             return promise()
         else:
             return promise
 
-    def step(self, action, state=None, n_repeat_action: int=1, blocking=True):
+    def step(self, action, state=None, n_repeat_action: int=None, blocking=True):
         """Step the environment.
         Args:
           action: The action to apply to the environment.
@@ -344,7 +454,7 @@ class BatchEnv(object):
         """
         return getattr(self._envs[0], name)
 
-    def _make_transitions(self, actions, states=None, n_repeat_action: int=1):
+    def _make_transitions(self, actions, states=None, n_repeat_action: int=None):
         states = states if states is not None else [None] * len(actions)
         chunks = len(self._envs)
         states_chunk = split_similar_chunks(states, n_chunks=chunks)
@@ -383,7 +493,7 @@ class BatchEnv(object):
             transitions = _states, observs, rewards, terminals, infos
         return transitions
 
-    def step_batch(self, actions, states=None, n_repeat_action: int=1):
+    def step_batch(self, actions, states=None, n_repeat_action: int=None):
         """Forward a batch of actions to the wrapped environments.
         Args:
           actions: Batched action to apply to the environment.
@@ -394,10 +504,6 @@ class BatchEnv(object):
         Returns:
           Batch of observations, rewards, and done flags.
         """
-        for index, (env, action) in enumerate(zip(self._envs, actions)):
-            if not env.action_space.contains(action):
-                message = 'Invalid action at index {}: {}'
-                raise ValueError(message.format(index, action))
 
         if states is None:
             observs, rewards, dones, lives = self._make_transitions(actions, None, n_repeat_action)
@@ -477,11 +583,11 @@ class ParallelEnvironment(Environment):
     def __getattr__(self, item):
         return getattr(self._env, item)
 
-    def step_batch(self, actions: np.ndarray, states: np.ndarray=None, n_repeat_action: int=1):
+    def step_batch(self, actions: np.ndarray, states: np.ndarray=None, n_repeat_action: int=None):
         return self._batch_env.step_batch(actions=actions, states=states,
                                           n_repeat_action=n_repeat_action)
 
-    def step(self, action: np.ndarray, state: np.ndarray=None, n_repeat_action: int=1):
+    def step(self, action: np.ndarray, state: np.ndarray=None, n_repeat_action: int=None):
         return self._env.step(action=action, state=state, n_repeat_action=n_repeat_action)
 
     def reset(self, return_state: bool = True, blocking: bool=True):
