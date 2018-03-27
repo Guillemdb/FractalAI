@@ -323,6 +323,7 @@ class Swarm:
                                      self.observations[idx], self.observations)
         # Using np.where seems to be faster than using a for loop
         self.rewards = np.where(self._will_clone, self.rewards[idx], self.rewards)
+        self._end_cond = np.where(self._end_cond, self._end_cond[idx], self._end_cond)
         self.infos = np.where(self._will_clone, self.infos[idx], self.infos)
         self.times = np.where(self._will_clone, self.times[idx], self.times)
         self.walkers_id = np.where(self._will_clone, self.walkers_id[idx],
