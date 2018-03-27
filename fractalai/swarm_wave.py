@@ -28,9 +28,12 @@ class SwarmWave(Swarm):
 
     def __str__(self):
         text = super(SwarmWave, self).__str__()
-        efi = (len(self.tree.data.nodes) / self._n_samples_done) * 100
-        sam_step = self._n_samples_done / len(self.tree.data.nodes)
-        samples = len(self.tree.data.nodes)
+        if self.save_data:
+            efi = (len(self.tree.data.nodes) / self._n_samples_done) * 100
+            sam_step = self._n_samples_done / len(self.tree.data.nodes)
+            samples = len(self.tree.data.nodes)
+        else:
+            efi, samples, sam_step = 0, 0, 0
         new_text = "{}\n"\
                    "Efficiency {:.2f}%\n" \
                    "Generated {} Examples |" \
@@ -43,8 +46,8 @@ class SwarmWave(Swarm):
         if self.save_data:
             for idx in np.arange(self.n_walkers)[self._will_step]:
                 self.tree.append_leaf(int(self.walkers_id[idx]), parent_id=int(old_ids[idx]),
-                                      state=self.states[idx].copy(),
-                                      action=self.actions[idx].copy())
+                                      state=self.data.get_states([self.walkers_id[idx]]).copy(),
+                                      action=self.data.get_actions([self.walkers_id[idx]]).copy())
 
     def clone(self):
         pre_clone_ids = set(self.walkers_id.astype(int))
