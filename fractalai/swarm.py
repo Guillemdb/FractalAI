@@ -40,7 +40,7 @@ class DataStorage:
         return [self.actions[label] for label in labels]
 
     def append(self, walker_ids, states, actions=None):
-        #actions = [None] * len(walker_ids) if actions is None else actions
+
         for w_id, state, action in zip(walker_ids, states, actions):
             self.states[w_id] = copy.deepcopy(state)
             if actions is not None:
@@ -165,7 +165,6 @@ class Swarm:
         self.data = DataStorage()
         self._pre_clone_ids = [0]
         self._post_clone_ids = [0]
-
 
     def __str__(self):
         """Print information about the internal state of the swarm."""

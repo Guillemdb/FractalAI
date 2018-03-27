@@ -44,8 +44,8 @@ class SwarmWave(Swarm):
         old_ids = self.walkers_id.copy()
         super(SwarmWave, self).step_walkers()
         if self.save_data:
-            for idx in self.walkers_id[self._will_step]:
-                self.tree.append_leaf(int(idx), parent_id=int(old_ids[idx]),
+            for i, idx in enumerate(self.walkers_id[self._will_step]):
+                self.tree.append_leaf(int(idx), parent_id=int(old_ids[self._will_step][i]),
                                       state=self.data.get_states([idx]).copy()[0],
                                       action=self.data.get_actions([idx]).copy()[0])
 
