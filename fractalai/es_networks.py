@@ -1,4 +1,5 @@
 import numpy as np
+import copy
 from keras.models import Model, Input, Sequential
 from keras.layers import Dense, Conv2D, BatchNormalization, Flatten, Dropout, Concatenate
 from keras.regularizers import l1
@@ -54,12 +55,19 @@ class SingleLayerModel:
         self.actor = self.create_actor_layer()
         self.create_model()
 
-    def predict_action(self, obs):
+    def get_weights_shapes(self):
+        return [w.shape for w in self.get_weights()]
+
+    def predict(self, obs):
         if self.stats:
             obs = np.clip((obs - self.stats.mean / self.stats.std), -5, 5)
             s, ssq = obs.sum(), np.square(obs).sum()
             self.stats.increment(s, ssq, 1)
-        return self.model.predict(obs.reshape(1, -1))[0]
+        if len(self.action_shape) >= 1:
+            return self.model.predict(obs.reshape(1, -1))[0]
+        else:
+            # This is for discrete environments
+            return self.model.predict(obs.reshape(1, -1))[0].argmax()
 
     def set_weights(self, weights):
         self.model.set_weights(weights)
@@ -77,8 +85,8 @@ class SingleLayerModel:
                            )
 
     def create_actor_layer(self):
-
-        self.actor = Dense(self.action_shape[0], activation='linear',
+        action_shape = self.action_shape[0] if len(self.action_shape) >= 1 else 1
+        self.actor = Dense(action_shape, activation='linear',
                            name="actor_out", trainable=False)(self.shared_layer)
 
         return self.actor
