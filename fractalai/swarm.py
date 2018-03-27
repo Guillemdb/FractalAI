@@ -295,10 +295,11 @@ class Swarm:
         """Calculates the walkers that will cone depending on their virtual rewards. Returns the
         index of the random companion chosen for comparing virtual rewards.
         """
-
+        self._pre_clone_ids = set(self.walkers_id.astype(int))
         # Calculate virtual rewards and choose another walker at random
         vir_rew = self.virtual_reward()
         alive_walkers = np.arange(self.n_walkers, dtype=int)[np.logical_not(self._end_cond)]
+        alive_walkers = alive_walkers if len(alive_walkers) > 0 else np.arange(self.n_walkers)
         self._clone_idx = idx = np.random.choice(alive_walkers, self.n_walkers)
 
         # The probability of cloning depends on the relationship of virtual rewards
@@ -307,12 +308,15 @@ class Swarm:
         clone = (value >= np.random.random()).astype(bool)
         # Boundary conditions(_end_cond) modify the cloning probability.
         clone[self._end_cond] = True
-        clone[self._end_cond[idx]] = False  # Do not clone to a dead companion
+        #clone[self._end_cond[idx]] = False  # Do not clone to a dead companion
 
         # Walkers reaching the score limit do freeze (do not clone nor step)
         self._not_frozen = (self.rewards < self.reward_limit)
         self._will_clone = np.logical_and(clone, self._not_frozen)
         self._will_step = np.logical_and(np.logical_not(self._will_clone), self._not_frozen)
+        if self._will_step.sum() == 0:
+            raise ValueError("Everyone is cloning")
+
 
     def perform_clone(self):
         idx = self._clone_idx
@@ -337,8 +341,7 @@ class Swarm:
         2 - Calculate the probability of cloning based on their virtual reward relationship.
         3 - Clone if p > random[0,1] or the walker is dead.
         """
-        self._pre_clone_ids = set(self.walkers_id.astype(int))
-        self.clone_condition()
+        self._will_clone[self._end_cond] = True
         self.perform_clone()
         self._post_clone_ids = set(self.walkers_id.astype(int))
         self._remove_id = self._pre_clone_ids - self._post_clone_ids
@@ -374,8 +377,10 @@ class Swarm:
         while not self.stop_condition():
             try:
                 if self._i_simulation > 1:
-                    self.clone()
+                    self.clone_condition()
                 self.step_walkers()
+                if self._i_simulation > 1:
+                    self.clone()
                 self._i_simulation += 1
                 if self._i_simulation % self.render_every == 0 and print_swarm:
                     print(self)
