@@ -126,12 +126,13 @@ class ESEnvironment(Environment):
     """Environment for Solving Evolutionary Strategies."""
 
     def __init__(self, name: str, dnn_callable: Callable, n_repeat_action: int=1,
-                 max_episode_length=1000):
+                 max_episode_length=1000, noise_prob: float=0):
         super(ESEnvironment, self).__init__(name=name, n_repeat_action=n_repeat_action)
         self.dnn_callable = dnn_callable
         self._env = gym.make(name)
         self.neural_network = self.dnn_callable()
         self.max_episode_length = max_episode_length
+        self.noise_prob = noise_prob
 
     def __getattr__(self, item):
         return getattr(self._env, item)
@@ -177,7 +178,10 @@ class ESEnvironment(Environment):
         n_steps = 0
         end = False
         while not end and n_steps < self.max_episode_length:
-            nn_action = self.neural_network.predict(obs.flatten())
+            if np.random.random() < self.noise_prob:
+                nn_action = self._env.action_space.sample()
+            else:
+                nn_action = self.neural_network.predict(obs.flatten())
             for i in range(n_repeat_action):
 
                 obs, _reward, end, info = self._env.step(nn_action)
