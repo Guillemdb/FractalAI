@@ -79,7 +79,8 @@ class RandomDiscreteModel(DiscreteModel):
         super(RandomDiscreteModel, self).__init__(n_actions=n_actions, action_space=action_space)
         self.max_walkers = max_wakers
         self.samples = samples
-        self.noise = np.random.randint(0, high=self.n_actions, size=(max_wakers, samples))
+        self.noise = np.random.randint(0, high=int(self.n_actions), size=(int(max_wakers),
+                                                                          int(samples)))
         self._i = 0
 
     def predict(self, observation: np.ndarray=None) -> [int, np.ndarray]:

@@ -44,20 +44,18 @@ class SwarmWave(Swarm):
         old_ids = self.walkers_id.copy()
         super(SwarmWave, self).step_walkers()
         if self.save_data:
-            for idx in np.arange(self.n_walkers)[self._will_step]:
-                self.tree.append_leaf(int(self.walkers_id[idx]), parent_id=int(old_ids[idx]),
-                                      state=self.data.get_states([self.walkers_id[idx]]).copy()[0],
-                                      action=self.data.get_actions([self.walkers_id[idx]]
-                                                                   ).copy()[0])
+            for idx in self.walkers_id[self._will_step]:
+                self.tree.append_leaf(int(idx), parent_id=int(old_ids[idx]),
+                                      state=self.data.get_states([idx]).copy()[0],
+                                      action=self.data.get_actions([idx]).copy()[0])
 
     def clone(self):
-        pre_clone_ids = set(self.walkers_id.astype(int))
+
         super(SwarmWave, self).clone()
         # Prune tree to save memory
         if self.save_data:
-            post_clone_ids = set(self.walkers_id.astype(int))
-            dead_leafs = pre_clone_ids - post_clone_ids
-            self.tree.prune_tree(dead_leafs, post_clone_ids)
+            dead_leafs = self._pre_clone_ids - self._post_clone_ids
+            self.tree.prune_tree(dead_leafs, self._post_clone_ids)
 
     def recover_game(self, index=None) -> tuple:
         """
