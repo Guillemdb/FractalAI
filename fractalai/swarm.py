@@ -342,6 +342,7 @@ class Swarm:
         3 - Clone if p > random[0,1] or the walker is dead.
         """
         self._will_clone[self._end_cond] = True
+        self._will_clone[self._end_cond[self._clone_idx]] = False
         self.perform_clone()
         self._post_clone_ids = set(self.walkers_id.astype(int))
         self._remove_id = self._pre_clone_ids - self._post_clone_ids
