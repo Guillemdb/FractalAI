@@ -46,8 +46,9 @@ class SwarmWave(Swarm):
         if self.save_data:
             for idx in np.arange(self.n_walkers)[self._will_step]:
                 self.tree.append_leaf(int(self.walkers_id[idx]), parent_id=int(old_ids[idx]),
-                                      state=self.data.get_states([self.walkers_id[idx]]).copy(),
-                                      action=self.data.get_actions([self.walkers_id[idx]]).copy())
+                                      state=self.data.get_states([self.walkers_id[idx]]).copy()[0],
+                                      action=self.data.get_actions([self.walkers_id[idx]]
+                                                                   ).copy()[0])
 
     def clone(self):
         pre_clone_ids = set(self.walkers_id.astype(int))
