@@ -299,7 +299,7 @@ class Swarm:
         # Calculate virtual rewards and choose another walker at random
         vir_rew = self.virtual_reward()
         alive_walkers = np.arange(self.n_walkers, dtype=int)[np.logical_not(self._end_cond)]
-        self._clone_idx = idx = np.random.permutation(alive_walkers)
+        self._clone_idx = idx = np.random.choice(alive_walkers, self.n_walkers)
 
         # The probability of cloning depends on the relationship of virtual rewards
         # with respect to a randomly chosen walker.
