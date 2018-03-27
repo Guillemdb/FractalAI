@@ -253,8 +253,6 @@ class Swarm:
         self._end_cond[self._will_step] = ends
         self.infos[self._will_step] = np.array(infos).astype(np.float32)
         self.times[self._will_step] = self.times[self._will_step].astype(np.int32) + 1
-
-
         self._n_samples_done += steps_done
 
     def evaluate_distance(self) -> np.ndarray:
