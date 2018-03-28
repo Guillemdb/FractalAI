@@ -1,6 +1,7 @@
+from typing import Iterable
+import copy
 import numpy as np
 import networkx as nx
-import copy
 from IPython.core.display import clear_output
 
 
@@ -19,7 +20,7 @@ def normalize_vector(vector):
 
 
 class DataStorage:
-
+    """This is a class for storing the states and the observations of a Swarm."""
     def __init__(self):
         self.states = {}
         self.actions = {}
@@ -33,24 +34,24 @@ class DataStorage:
         self.states = {}
         self.actions = {}
 
-    def get_states(self, labels):
+    def get_states(self, labels: Iterable) -> list:
         return [self.states[label] for label in labels]
 
-    def get_actions(self, labels):
+    def get_actions(self, labels: Iterable) -> list:
         return [self.actions[label] for label in labels]
 
-    def append(self, walker_ids, states, actions=None):
-
+    def append(self, walker_ids: [list, np.ndarray], states: Iterable, actions=None):
+        actions = actions if actions is not None else [None] * len(walker_ids)
         for w_id, state, action in zip(walker_ids, states, actions):
             self.states[w_id] = copy.deepcopy(state)
             if actions is not None:
                 self.actions[w_id] = copy.deepcopy(action)
 
-    def delete(self, walker_ids):
+    def update_values(self, walker_ids):
+        # This is not optimal, but ensures no memory leak
         new_states = {}
         new_actions = {}
         for w_id in walker_ids:
-
             new_states[w_id] = self.states[w_id]
             new_actions[w_id] = self.states[w_id]
         self.states = new_states
@@ -154,7 +155,6 @@ class Swarm:
         self.observations = None
         self.rewards = None
         self.infos = None
-
         # Internal masks
         self._end_cond = np.zeros(self.n_walkers, dtype=bool)
         self._will_clone = np.zeros(self.n_walkers, dtype=bool)
@@ -169,6 +169,7 @@ class Swarm:
         self._i_simulation = 0
         self._game_status = ""
         self.walkers_id = np.zeros(self.n_walkers).astype(int)
+        # This is for storing states and actions of arbitrary shape and type
         self.data = DataStorage()
         self._pre_clone_ids = [0]
         self._post_clone_ids = [0]
@@ -189,7 +190,8 @@ class Swarm:
                "Reward: mean {:.2f} | Dispersion: {:.2f} | max {:.2f} | min {:.2f} | std {:.2f}\n"\
                "Episode length: mean {:.2f} | Dispersion {:.2f} | max {:.2f} | min {:.2f} " \
                "| std {:.2f}\n" \
-               "Status: {}".format(self._env.name, self.n_walkers, self._end_cond.sum(), len(self.data.states.keys()),
+               "Status: {}".format(self._env.name, self.n_walkers, self._end_cond.sum(),
+                                   len(self.data.states.keys()),
                                    self._n_samples_done, progress,
                                    self.rewards.mean(), self.rewards.max() - self.rewards.min(),
                                    self.rewards.max(), self.rewards.min(), self.rewards.std(),
@@ -218,12 +220,10 @@ class Swarm:
             state, obs = self._env.reset(return_state=True)
             obs = obs.astype(np.float32)
         # Environment Information sources
-
         self.observations = np.array([obs.copy() for _ in range(self.n_walkers)])
         self.rewards = np.zeros(self.n_walkers, dtype=np.float32)
         self._end_cond = np.zeros(self.n_walkers, dtype=bool)
         self.infos = -1 * np.ones(self.n_walkers, dtype=bool)
-
         # Internal masks
         self._will_clone = np.zeros(self.n_walkers, dtype=bool)
         self._will_step = np.ones(self.n_walkers, dtype=bool)
@@ -233,8 +233,9 @@ class Swarm:
         self.times = np.zeros(self.n_walkers)
         self._n_samples_done = 0
         self._i_simulation = 0
-        self.walkers_id = np.zeros(self.n_walkers).astype(int)
+        # Store data and keep indices
         self.data.reset()
+        self.walkers_id = np.zeros(self.n_walkers).astype(int)
         actions = self._model.predict_batch(self.observations)
         states = np.array([copy.deepcopy(state) for _ in range(self.n_walkers)])
         self.data.append(walker_ids=self.walkers_id, states=states, actions=actions)
@@ -245,21 +246,21 @@ class Swarm:
         :return: None.
         """
         # Only step an state if it has not cloned and is not frozen
-
         actions = self._model.predict_batch(self.observations[self._will_step])
         states = self.data.get_states(self.walkers_id[self._will_step])
         new_state, observs, rewards, ends, infos = self._env.step_batch(actions, states=states)
-
         # Save data and update sample count
         steps_done = self._will_step.sum().astype(np.int32)
         new_ids = self._n_samples_done + np.arange(steps_done).astype(int)
         self.walkers_id[self._will_step] = new_ids
         self.data.append(walker_ids=new_ids, states=new_state, actions=actions)
         self.observations[self._will_step] = np.array(observs).astype(np.float32)
+        # Accumulate if you are solving a trajectory, if you are searching for a point set to False
         if self.accumulate_rewards:
             self.rewards[self._will_step] = self.rewards[self._will_step] + np.array(rewards)
         else:
             self.rewards[self._will_step] = np.array(rewards)
+        # Maybe infos should be stored in data, bur now we only use it as a life counter.
         self._end_cond[self._will_step] = ends
         self.infos[self._will_step] = np.array(infos).astype(np.float32)
         self.times[self._will_step] = self.times[self._will_step].astype(np.int32) + 1
@@ -301,22 +302,14 @@ class Swarm:
         alive_walkers = np.arange(self.n_walkers, dtype=int)[np.logical_not(self._end_cond)]
         alive_walkers = alive_walkers if len(alive_walkers) > 0 else np.arange(self.n_walkers)
         self._clone_idx = idx = np.random.choice(alive_walkers, self.n_walkers)
-
         # The probability of cloning depends on the relationship of virtual rewards
         # with respect to a randomly chosen walker.
         value = (vir_rew[idx] - vir_rew) / np.where(vir_rew > 0, vir_rew, 1e-8)
         clone = (value >= np.random.random()).astype(bool)
-        # Boundary conditions(_end_cond) modify the cloning probability.
-        clone[self._end_cond] = True
-        #clone[self._end_cond[idx]] = False  # Do not clone to a dead companion
-
         # Walkers reaching the score limit do freeze (do not clone nor step)
         self._not_frozen = (self.rewards < self.reward_limit)
         self._will_clone = np.logical_and(clone, self._not_frozen)
         self._will_step = np.logical_and(np.logical_not(self._will_clone), self._not_frozen)
-        if self._will_step.sum() == 0:
-            raise ValueError("Everyone is cloning")
-
 
     def perform_clone(self):
         idx = self._clone_idx
@@ -341,12 +334,13 @@ class Swarm:
         2 - Calculate the probability of cloning based on their virtual reward relationship.
         3 - Clone if p > random[0,1] or the walker is dead.
         """
+        # Boundary conditions(_end_cond) modify the cloning probability.
         self._will_clone[self._end_cond] = True
         self._will_clone[self._end_cond[self._clone_idx]] = False
+
         self.perform_clone()
         self._post_clone_ids = set(self.walkers_id.astype(int))
-        self._remove_id = self._pre_clone_ids - self._post_clone_ids
-        self.data.delete(self._post_clone_ids)
+        self.data.update_values(self._post_clone_ids)
 
     def stop_condition(self) -> bool:
         """This sets a hard limit on maximum samples. It also Finishes if all the walkers are dead,
@@ -357,7 +351,7 @@ class Swarm:
         stop_score = False if self.reward_limit is None else \
             self.rewards.max() >= self.reward_limit
         stop_terminal = self._end_cond.all()
-        # Define game status so the user knows why game stopped. Only used when printing the Swarm
+        # Define game status so the user knows why a game stopped. Only used when printing
         if stop_hard:
             self._game_status = "Sample limit reached."
         elif stop_score:
@@ -377,6 +371,8 @@ class Swarm:
         self.init_swarm(state=state, obs=obs)
         while not self.stop_condition():
             try:
+                # Calculating the clone condition, and then stepping the walkers before cloning
+                # This allows the deaths to recycle faster, and the Swarm becomes more flexible
                 if self._i_simulation > 1:
                     self.clone_condition()
                 self.step_walkers()
