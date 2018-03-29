@@ -53,7 +53,7 @@ class DataStorage:
         new_actions = {}
         for w_id in walker_ids:
             new_states[w_id] = self.states[w_id]
-            new_actions[w_id] = self.states[w_id]
+            new_actions[w_id] = self.actions[w_id]
         self.states = new_states
         self.actions = new_actions
 
@@ -237,7 +237,7 @@ class Swarm:
             obs = obs.astype(np.float32)
         # Environment Information sources
         self.observations = np.array([obs.copy() for _ in range(self.n_walkers)])
-        self.rewards = -np.inf * np.ones(self.n_walkers, dtype=np.float32)
+        self.rewards = np.ones(self.n_walkers, dtype=np.float32)
         self._end_cond = np.zeros(self.n_walkers, dtype=bool)
         self.infos = -1 * np.ones(self.n_walkers, dtype=bool)
         # Internal masks
@@ -344,6 +344,10 @@ class Swarm:
         self.walkers_id = np.where(self._will_clone, self.walkers_id[idx],
                                    self.walkers_id).astype(int)
 
+    def update_data(self):
+        self._post_clone_ids = set(self.walkers_id.astype(int))
+        self.data.update_values(self._post_clone_ids)
+
     def clone(self):
         """The clone operator aims to change the distribution of walkers in the state space, by
          cloning some walkers to a randomly chosen companion. After cloning, the distribution of
@@ -358,8 +362,9 @@ class Swarm:
         self._will_clone[-1] = False
 
         self.perform_clone()
-        self._post_clone_ids = set(self.walkers_id.astype(int))
-        self.data.update_values(self._post_clone_ids)
+
+        self.update_data()
+
 
     def stop_condition(self) -> bool:
         """This sets a hard limit on maximum samples. It also Finishes if all the walkers are dead,
