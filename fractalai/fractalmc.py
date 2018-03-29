@@ -1,8 +1,9 @@
 import time
 import numpy as np
+import copy
 from collections import Counter
 from IPython.core.display import clear_output
-from fractalai.model import DiscreteModel
+from fractalai.model import DiscreteModel, ContinuousModel, ESModel
 from fractalai.swarm import Swarm, DynamicTree
 
 
@@ -25,7 +26,6 @@ class FractalMC(Swarm):
         self.max_walkers = max_walkers
         self.time_horizon = time_horizon
         self.max_samples = max_samples
-        self.init_actions = None
 
         _max_samples = max_samples if max_samples is not None else 1e10
         self._max_samples_step = min(_max_samples, max_walkers * time_horizon)
@@ -34,43 +34,26 @@ class FractalMC(Swarm):
                                         balance=balance, reward_limit=reward_limit,
                                         samples_limit=self._max_samples_step,
                                         render_every=render_every)
+        self.init_ids = np.zeros(self.n_walkers).astype(int)
 
         self._save_steps = []
         self._agent_reward = 0
         self._last_action = None
+
         self.tree = DynamicTree()
 
-    def __str__(self):
-        """Print information about the internal state of the swarm."""
+    @property
+    def init_actions(self):
+        return self.data.get_actions(self.init_ids)
 
-        progress = 0 if self.samples_limit is None \
-            else (self._n_samples_done / self.samples_limit) * 100
+    def init_swarm(self, state: np.ndarray=None, obs: np.ndarray=None):
+        self.init_ids = np.zeros(self.n_walkers).astype(int)
+        super(FractalMC, self).init_swarm(state=state, obs=obs)
 
-        if self.reward_limit is not None:
-            score_prog = (self.rewards.max() / self.reward_limit) * 100
-            progress = max(progress, score_prog)
-
-        text = "Environment: {} | Last Action: {} | reward: {:.2f}\n" \
-               "balance: {:.2f} | Mean time: {:.2f}\n" \
-               "Walkers: {} | Deaths: {}\n" \
-               "Total samples: {} Progress: {:.2f}%\n" \
-               "Reward: mean {:.2f} | Dispersion: {:.2f} | max {:.2f} | min {:.2f} | std {:.2f}\n"\
-               "Episode length: mean {:.2f} | Dispersion {:.2f} | max {:.2f} | min {:.2f} " \
-               "| std {:.2f}\n" \
-               "Status: {}".format(self._env.name, self._last_action,
-                                   self._agent_reward, self.balance, np.mean(self._save_steps),
-                                   self.n_walkers, self._end_cond.sum(),
-                                   self._n_samples_done, progress,
-                                   self.rewards.mean(), self.rewards.max() - self.rewards.min(),
-                                   self.rewards.max(), self.rewards.min(), self.rewards.std(),
-                                   self.times.mean(), self.times.max() - self.times.min(),
-                                   self.times.max(), self.times.min(),
-                                   self.times.std(), self._game_status)
-        return text
 
     def clone(self):
-        idx = super(FractalMC, self).clone()
-        self.init_actions = np.where(self._will_clone, self.init_actions[idx], self.init_actions)
+        super(FractalMC, self).clone()
+        self.init_ids = np.where(self._will_clone, self.init_ids[self._clone_idx], self.init_ids)
 
     def weight_actions(self) -> np.ndarray:
         """Gets an approximation of the Q value function for a given state.
@@ -85,6 +68,13 @@ class FractalMC(Swarm):
         vals = self.init_actions.sum(axis=0)
         return vals / self.n_walkers
 
+    def update_data(self):
+        init_actions = list(set(np.array(self.init_ids).astype(int)))
+        walker_data = list(set(np.array(self.walkers_id).astype(int)))
+        #print(self.data.states.keys(), init_actions, walker_data)
+        self.data.update_values(set(walker_data + init_actions))
+        #print(self.data.states.keys())
+
     def run_swarm(self, state: np.ndarray=None, obs: np.ndarray=None, print_swarm: bool=False):
         """
         Iterate the swarm by either evolving or cloning each walker until a certain condition
@@ -94,14 +84,23 @@ class FractalMC(Swarm):
         self.init_swarm(state=state, obs=obs)
         while not self.stop_condition():
             try:
+                # We calculate the clone condition, and then perturb the walkers before cloning
+                # This allows the deaths to recycle faster, and the Swarm becomes more flexible
+                if self._i_simulation > 1:
+                    self.clone_condition()
+                self.step_walkers()
                 if self._i_simulation > 1:
                     self.clone()
-                self.step_walkers()
-                if self._i_simulation == 0:
-                    self.init_actions = self.actions.copy()
+                elif self._i_simulation == 0:
+                    self.init_ids = self.walkers_id.copy()
                 self._i_simulation += 1
+                if self._i_simulation % self.render_every == 0 and print_swarm:
+                    print(self)
+                    clear_output(True)
             except KeyboardInterrupt:
                 break
+        if print_swarm:
+            print(self)
 
     def _update_n_samples(self):
         """This will adjust the number of samples we make for calculating an state swarm. In case

@@ -148,8 +148,8 @@ class ESEnvironment(Environment):
         :return:
         """
         self.neural_network.set_weights(state)
-
-    def _perturb_weights(self, weights: [list, np.ndarray],
+    @staticmethod
+    def _perturb_weights(weights: [list, np.ndarray],
                          perturbations: [list, np.ndarray]) -> list:
         """
         Updates a set of weights with a gaussian perturbation with sigma equal to self.sigma and
@@ -162,6 +162,12 @@ class ESEnvironment(Environment):
         for index, noise in enumerate(perturbations):
             weights_try.append(weights[index] + noise)
         return weights_try
+
+    def _normalize_observation(self, obs):
+        if "v0" in self.name:
+            return obs / 255
+        else:
+            return obs
 
     def step(self, action: np.ndarray, state: np.ndarray = None,
              n_repeat_action: int = None) -> tuple:
@@ -181,7 +187,8 @@ class ESEnvironment(Environment):
             if np.random.random() < self.noise_prob:
                 nn_action = self._env.action_space.sample()
             else:
-                nn_action = self.neural_network.predict(obs.flatten())
+                processed_obs = self._normalize_observation(obs.flatten())
+                nn_action = self.neural_network.predict(processed_obs)
             for i in range(n_repeat_action):
 
                 obs, _reward, end, info = self._env.step(nn_action)
@@ -194,8 +201,8 @@ class ESEnvironment(Environment):
                     break
         if state is not None:
             new_state = self.get_state()
-            return new_state, obs, reward, terminal, 0
-        return obs, reward, terminal, 0
+            return new_state, obs, reward, False, 0
+        return obs, reward, False, 0
 
     def step_batch(self, actions, states=None, n_repeat_action: int=None) -> tuple:
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
