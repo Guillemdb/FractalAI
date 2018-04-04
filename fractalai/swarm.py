@@ -168,6 +168,7 @@ class Swarm:
         self.virtual_rewards = np.zeros(self.n_walkers)
         self.distances = np.zeros(self.n_walkers)
         self.times = np.zeros(self.n_walkers)
+        self.dt = np.ones(self.n_walkers, dtype=int)
         self._n_samples_done = 0
         self._i_simulation = 0
         self._game_status = ""
@@ -360,6 +361,7 @@ class Swarm:
         self._end_cond = np.where(self._end_cond, self._end_cond[idx], self._end_cond)
         self.infos = np.where(self._will_clone, self.infos[idx], self.infos)
         self.times = np.where(self._will_clone, self.times[idx], self.times)
+        self.dt = np.where(self._will_clone, self.dt[idx], self.dt)
         self.walkers_id = np.where(self._will_clone, self.walkers_id[idx],
                                    self.walkers_id).astype(int)
 
