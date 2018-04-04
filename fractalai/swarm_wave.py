@@ -1,4 +1,5 @@
 import time
+import copy
 import numpy as np
 from fractalai.swarm import Swarm, DynamicTree
 
@@ -7,7 +8,8 @@ class SwarmWave(Swarm):
 
     def __init__(self, env, model, n_walkers: int=100, balance: float=1.,
                  reward_limit: float=None, samples_limit: int=None, render_every: int=1e10,
-                 save_data: bool=True, accumulate_rewards: bool=True):
+                 save_data: bool=True, accumulate_rewards: bool=True, dt_mean: float=None,
+                 dt_std: float=None):
         """
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
@@ -22,7 +24,8 @@ class SwarmWave(Swarm):
         super(SwarmWave, self).__init__(env=env, model=model, n_walkers=n_walkers,
                                         balance=balance, reward_limit=reward_limit,
                                         samples_limit=samples_limit, render_every=render_every,
-                                        accumulate_rewards=accumulate_rewards)
+                                        accumulate_rewards=accumulate_rewards, dt_mean=dt_mean,
+                                        dt_std=dt_std)
         self.save_data = save_data
         self.old_ids = np.zeros(self.n_walkers)
         self.tree = DynamicTree() if save_data else None
@@ -48,7 +51,8 @@ class SwarmWave(Swarm):
             for i, idx in enumerate(self.walkers_id[self._will_step]):
                 self.tree.append_leaf(int(idx), parent_id=int(old_ids[self._will_step][i]),
                                       state=self.data.get_states([idx]).copy()[0],
-                                      action=self.data.get_actions([idx]).copy()[0])
+                                      action=self.data.get_actions([idx]).copy()[0],
+                                      dt=copy.deepcopy(self.dt[i]))
 
     def clone(self):
 
@@ -70,9 +74,9 @@ class SwarmWave(Swarm):
 
     def render_game(self, index=None, sleep: float=0.02):
         """Renders the game stored in the tree that ends in the node labeled as index."""
-        states, actions = self.recover_game(index)
-        for state, action in zip(states, actions):
-            self._env.step(action, state=state)
+        states, actions, dts = self.recover_game(index)
+        for state, action, dt in zip(states, actions, dts):
+            self._env.step(action, state=state, n_repeat_action=dt)
             self._env.render()
             time.sleep(sleep)
 

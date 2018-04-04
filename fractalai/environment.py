@@ -87,7 +87,7 @@ class AtariEnvironment(Environment):
             return new_state, obs, reward, terminal, lives
         return obs, reward, terminal, lives
 
-    def step_batch(self, actions, states=None, n_repeat_action: int=None) -> tuple:
+    def step_batch(self, actions, states=None, n_repeat_action: [int, np.ndarray]=None) -> tuple:
         """
 
         :param actions:
@@ -96,8 +96,10 @@ class AtariEnvironment(Environment):
         :return:
         """
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
-        data = [self.step(action, state, n_repeat_action=n_repeat_action)
-                for action, state in zip(actions, states)]
+        n_repeat_action = n_repeat_action if isinstance(n_repeat_action, np.ndarray) \
+            else np.ones(len(states)) * n_repeat_action
+        data = [self.step(action, state, n_repeat_action=dt)
+                for action, state, dt in zip(actions, states, n_repeat_action)]
         new_states, observs, rewards, terminals, lives = [], [], [], [], []
         for d in data:
             if states is None:
@@ -206,8 +208,10 @@ class ESEnvironment(Environment):
 
     def step_batch(self, actions, states=None, n_repeat_action: int=None) -> tuple:
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
-        data = [self.step(action, state, n_repeat_action=n_repeat_action)
-                for action, state in zip(actions, states)]
+        n_repeat_action = n_repeat_action if isinstance(n_repeat_action, np.ndarray) \
+            else np.ones(len(states)) * n_repeat_action
+        data = [self.step(action, state, n_repeat_action=dt)
+                for action, state, dt in zip(actions, states, n_repeat_action)]
         new_states, observs, rewards, terminals, lives = [], [], [], [], []
         for d in data:
             if states is None:
@@ -325,7 +329,8 @@ class ExternalProcess(object):
         else:
             return promise
 
-    def step_batch(self, actions, states=None, n_repeat_action: int=None, blocking=True):
+    def step_batch(self, actions, states=None,
+                   n_repeat_action: [np.ndarray, int]=None, blocking=True):
         promise = self.call('step_batch', actions, states, n_repeat_action)
         if blocking:
             return promise()
@@ -463,15 +468,19 @@ class BatchEnv(object):
         """
         return getattr(self._envs[0], name)
 
-    def _make_transitions(self, actions, states=None, n_repeat_action: int=None):
+    def _make_transitions(self, actions, states=None, n_repeat_action: [np.ndarray, int]=None):
         states = states if states is not None else [None] * len(actions)
+        n_repeat_action = n_repeat_action if isinstance(n_repeat_action, np.ndarray) \
+            else np.ones(len(states)) * n_repeat_action
         chunks = len(self._envs)
         states_chunk = split_similar_chunks(states, n_chunks=chunks)
         actions_chunk = split_similar_chunks(actions, n_chunks=chunks)
+        repeat_chunk = split_similar_chunks(n_repeat_action, n_chunks=chunks)
         results = []
-        for env, states_batch, actions_batch in zip(self._envs, states_chunk, actions_chunk):
+        for env, states_batch, actions_batch, dt in zip(self._envs,
+                                                        states_chunk, actions_chunk, repeat_chunk):
                 result = env.step_batch(actions=actions_batch, states=states_batch,
-                                        n_repeat_action=n_repeat_action, blocking=self._blocking)
+                                        n_repeat_action=dt, blocking=self._blocking)
                 results.append(result)
 
         _states = []
@@ -502,7 +511,7 @@ class BatchEnv(object):
             transitions = _states, observs, rewards, terminals, infos
         return transitions
 
-    def step_batch(self, actions, states=None, n_repeat_action: int=None):
+    def step_batch(self, actions, states=None, n_repeat_action: [np.ndarray, int]=None):
         """Forward a batch of actions to the wrapped environments.
         Args:
           actions: Batched action to apply to the environment.
@@ -592,7 +601,8 @@ class ParallelEnvironment(Environment):
     def __getattr__(self, item):
         return getattr(self._env, item)
 
-    def step_batch(self, actions: np.ndarray, states: np.ndarray=None, n_repeat_action: int=None):
+    def step_batch(self, actions: np.ndarray, states: np.ndarray=None,
+                   n_repeat_action: [np.ndarray, int]=None):
         return self._batch_env.step_batch(actions=actions, states=states,
                                           n_repeat_action=n_repeat_action)
 
