@@ -376,12 +376,8 @@ class Swarm:
         3 - Clone if p > random[0,1] or the walker is dead.
         """
         # Boundary conditions(_end_cond) modify the cloning probability.
-        self._will_clone[self._end_cond] = True
-        self._will_clone[self._end_cond[self._clone_idx]] = False
         self._will_clone[-1] = False
-
         self.perform_clone()
-
         self.update_data()
 
     def stop_condition(self) -> bool:
@@ -417,9 +413,8 @@ class Swarm:
                 # This allows the deaths to recycle faster, and the Swarm becomes more flexible
                 if self._i_simulation > 1:
                     self.clone_condition()
-                self.step_walkers()
-                if self._i_simulation > 1:
                     self.clone()
+                self.step_walkers()
                 self._i_simulation += 1
                 if self._i_simulation % self.render_every == 0 and print_swarm:
                     print(self)
