@@ -413,7 +413,6 @@ class Swarm:
                 # This allows the deaths to recycle faster, and the Swarm becomes more flexible
                 if self._i_simulation > 1:
                     self.clone_condition()
-                if self._i_simulation > 1:
                     self.clone()
                 self.step_walkers()
                 self._i_simulation += 1
