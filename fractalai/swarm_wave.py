@@ -1,6 +1,5 @@
 import time
 import copy
-import gym
 import numpy as np
 from typing import Callable
 from fractalai.swarm import Swarm, DynamicTree
