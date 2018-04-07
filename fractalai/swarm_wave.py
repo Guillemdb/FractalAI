@@ -1,5 +1,6 @@
 import time
 import copy
+import gym
 import numpy as np
 from fractalai.swarm import Swarm, DynamicTree
 
@@ -29,6 +30,11 @@ class SwarmWave(Swarm):
         self.save_data = save_data
         self.old_ids = np.zeros(self.n_walkers)
         self.tree = DynamicTree() if save_data else None
+        self._current_index = None
+        self._curr_states = []
+        self._curr_actions = []
+        self._curr_dts = []
+        self._current_ix = -1
 
     def __str__(self):
         text = super(SwarmWave, self).__str__()
@@ -76,9 +82,89 @@ class SwarmWave(Swarm):
         """Renders the game stored in the tree that ends in the node labeled as index."""
         states, actions, dts = self.recover_game(index)
         for state, action, dt in zip(states, actions, dts):
-            self._env.step(action, state=state, n_repeat_action=dt)
+            self._env.step(action, state=state, n_repeat_action=1)
             self._env.render()
             time.sleep(sleep)
+            for i in range(max(0, dt - 1)):
+                self._env.step(action, n_repeat_action=1)
+                self._env.render()
+                time.sleep(sleep)
 
+
+class AtariDataProvider(SwarmWave):
+
+    def __init__(self, rgb=True,  *args, **kwargs):
+        super(AtariDataProvider, self).__init__(*args, **kwargs)
+        self.rgb = rgb
+        data_env_name = self._env.name.replace("-ram", "") if rgb else self._env.name
+        self._played_games = []
+        self.data_env = gym.make(data_env_name)
+        self.data_env.reset()
+
+    def __getattr__(self, item):
+        return getattr(self.data_env, item)
+
+    def run_swarm(self, state: np.ndarray=None, obs: np.ndarray=None, print_swarm: bool=False):
+        super(AtariDataProvider, self).run_swarm(state=state, obs=obs, print_swarm=print_swarm)
+        self._played_games = list(set(self._post_clone_ids))
+
+    @property
+    def name(self):
+        return self._env.name
+
+    def process_game(self, index):
+        self.data_env.reset()
+        states, actions, dts = self.recover_game(index)
+        observs, data_actions, rewards, ends = [], [], [], []
+        for i, (state, action, dt) in enumerate(zip(states, actions, dts)):
+            self.data_env.unwrapped.restore_full_state(state)
+            obs, reward, end, info = self.data_env.step(action)
+            observs.append(copy.copy(obs))
+            rewards.append(copy.copy(reward))
+            ends.append(copy.copy(end))
+            # this syncs the actions to the obs where they are taken
+            _oh_action = np.zeros(self.data_env.action_space.n)
+            _oh_action[action] = 1
+            if i > 0:
+                data_actions.append(copy.copy(_oh_action))
+            for j in range(max(0, dt - 1)):
+                obs, reward, end, info = self.data_env.step(action)
+                observs.append(copy.copy(obs))
+                rewards.append(copy.copy(reward))
+                ends.append(copy.copy(end))
+                data_actions.append(copy.copy(_oh_action))
+        return observs[:-1], rewards[:-1], ends[:-1], data_actions
+
+    def _recover_random_game(self):
+        if len(self._played_games) == 0:
+            self.run_swarm()
+        index = np.random.choice(self._played_games)
+        game = self.recover_game(index)
+        self._played_games.remove(index)
+        return game
+
+    def step_generator(self):
+        self.data_env.reset()
+        states, actions, dts = self._recover_random_game()
+        for i, (state, action, dt) in enumerate(zip(states, actions, dts)):
+            self.data_env.unwrapped.restore_full_state(state)
+            for j in range(dt):
+                try:
+                    obs, reward, end, info = self.data_env.step(action)
+                except RuntimeError:
+                    self.data_env.reset()
+                    break
+                _oh_action = np.zeros(self.data_env.action_space.n)
+                _oh_action[action] = 1
+
+                if i == len(actions) - 1 and j == dt - 1:
+                    end = True
+                yield obs, reward, end, _oh_action
+                if end:
+                    self.data_env.reset()
+
+    def game_generator(self):
+        for game in set(self.walkers_id):
+            yield self.process_game(game)
 
 

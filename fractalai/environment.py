@@ -150,6 +150,7 @@ class ESEnvironment(Environment):
         :return:
         """
         self.neural_network.set_weights(state)
+
     @staticmethod
     def _perturb_weights(weights: [list, np.ndarray],
                          perturbations: [list, np.ndarray]) -> list:
@@ -180,8 +181,6 @@ class ESEnvironment(Environment):
             new_weights = self._perturb_weights(state, action)
             self.set_state(new_weights)
         obs = self._env.reset()
-        terminal = False
-        old_lives = -np.inf
         reward = 0
         n_steps = 0
         end = False
@@ -195,9 +194,6 @@ class ESEnvironment(Environment):
 
                 obs, _reward, end, info = self._env.step(nn_action)
                 reward += _reward
-                # lives = info.get("ale.lives", 1)
-                # terminal = terminal or end or lives < old_lives
-                # old_lives = lives
                 n_steps += 1
                 if end:
                     break
@@ -447,9 +443,6 @@ class BatchEnv(object):
         observ_space = self._envs[0].observation_space
         if not all(env.observation_space == observ_space for env in self._envs):
             raise ValueError('All environments must use the same observation space.')
-        action_space = self._envs[0].action_space
-        if not all(env.action_space == action_space for env in self._envs):
-            raise ValueError('All environments must use the same observation space.')
 
     def __len__(self):
         """Number of combined environments."""
@@ -576,7 +569,9 @@ class BatchEnv(object):
 
 
 def env_callable(name, env_class, *args, **kwargs):
-    return lambda: env_class(name, *args, **kwargs)
+    def _dummy():
+        return env_class(name, *args, **kwargs)
+    return _dummy
 
 
 class ParallelEnvironment(Environment):

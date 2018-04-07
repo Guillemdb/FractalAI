@@ -36,6 +36,20 @@ class BaseModel:
         return np.array([self.predict(obs) for obs in observations])
 
 
+class GymRandomModel(BaseModel):
+    def __init__(self, action_space):
+        super(GymRandomModel, self).__init__(action_space=action_space)
+
+    def predict(self, observation: np.ndarray=None) -> [np.ndarray, float, int]:
+        """
+        Returns one action available from a given state or a vector of swarm.
+
+        :param observation: **State** or vector of swarm.
+        :return: An scalar in case ``state`` represents a single state, or a numpy array otherwise.
+        """
+        return self.action_space.sample()
+
+
 class DiscreteModel(BaseModel):
     """This is the base class for discrete models.
 
