@@ -154,7 +154,6 @@ class ESModel(BaseModel):
         return np.array(perturbations)
 
 
-
 class ContinuousModel(BaseModel):
     """This is the Model class meant to work with ``dm_control`` environments.
 

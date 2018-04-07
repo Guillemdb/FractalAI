@@ -11,7 +11,7 @@ class SwarmWave(Swarm):
     def __init__(self, env, model, n_walkers: int=100, balance: float=1.,
                  reward_limit: float=None, samples_limit: int=None, render_every: int=1e10,
                  save_data: bool=True, accumulate_rewards: bool=True, dt_mean: float=None,
-                 dt_std: float=None,custom_reward: Callable=None, custom_end: Callable=None):
+                 dt_std: float=None, custom_reward: Callable=None, custom_end: Callable=None):
         """
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
@@ -168,5 +168,3 @@ class AtariDataProvider(SwarmWave):
     def game_generator(self):
         for game in set(self.walkers_id):
             yield self.process_game(game)
-
-
