@@ -231,6 +231,10 @@ class Swarm:
         return text
 
     @property
+    def env(self):
+        return self._env
+
+    @property
     def actions(self):
         return self.data.get_actions(self.walkers_id)
 

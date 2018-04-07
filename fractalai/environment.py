@@ -10,9 +10,24 @@ import numpy as np
 
 class Environment:
     """Inherit from this class to test the Swarm on a different problem."""
+
+    action_space = None
+    observation_space = None
+    reward_range = None
+    metadata = None
+
     def __init__(self, name, n_repeat_action: int=1):
         self._name = name
         self.n_repeat_action = n_repeat_action
+
+    @property
+    def unwrapped(self):
+        """Completely unwrap this env.
+
+        Returns:
+            fractalai.Environment: The base non-wrapped fractalai.Environment instance
+        """
+        return self
 
     @property
     def name(self):
@@ -45,6 +60,10 @@ class AtariEnvironment(Environment):
         spec.max_episode_steps = None
         spec.max_episode_time = None
         self._env = spec.make()
+        self.action_space = self._env.action_space
+        self.observation_space = self._env.observation_space
+        self.reward_range = self._env.reward_range
+        self.metadata = self._env.metadata
 
     def __getattr__(self, item):
         return getattr(self._env, item)
