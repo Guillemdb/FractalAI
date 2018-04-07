@@ -1,7 +1,7 @@
 import time
 import numpy as np
 import copy
-from collections import Counter
+from typing import Callable
 from IPython.core.display import clear_output
 from fractalai.model import DiscreteModel, ContinuousModel, ESModel
 from fractalai.swarm import Swarm, DynamicTree
@@ -11,7 +11,9 @@ class FractalMC(Swarm):
 
     def __init__(self, env, model, max_walkers: int=100, balance: float=1.,
                  time_horizon: int=15,
-                 reward_limit: float=None, max_samples: int=None, render_every: int=1e10):
+                 reward_limit: float=None, max_samples: int=None, render_every: int=1e10,
+                 custom_reward: Callable=None, custom_end: Callable=None, dt_mean: float=None,
+                 dt_std: float=None):
         """
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
@@ -33,7 +35,8 @@ class FractalMC(Swarm):
         super(FractalMC, self).__init__(env=env, model=model, n_walkers=self.max_walkers,
                                         balance=balance, reward_limit=reward_limit,
                                         samples_limit=self._max_samples_step,
-                                        render_every=render_every)
+                                        render_every=render_every, custom_reward=custom_reward,
+                                        custom_end=custom_end, dt_mean=dt_mean, dt_std=dt_std)
         self.init_ids = np.zeros(self.n_walkers).astype(int)
 
         self._save_steps = []
@@ -196,7 +199,7 @@ class FractalMC(Swarm):
             self._env.render()
             time.sleep(sleep)
 
-    def run_agent(self, render: bool = False):
+    def run_agent(self, render: bool = False, print_swarm: bool=False):
         """
 
         :param render:
@@ -208,7 +211,7 @@ class FractalMC(Swarm):
         self._save_steps = []
         state, obs = self._env.reset(return_state=True)
         self.tree.append_leaf(i_step, parent_id=i_step - 1,
-                              state=state, action=0)
+                              state=state, action=0, dt=1)
         while not end and self._agent_reward < self.reward_limit:
             i_step += 1
             self.run_swarm(state=state.copy(), obs=obs)
@@ -216,13 +219,14 @@ class FractalMC(Swarm):
 
             state, obs, _reward, _end, info = self._env.step(state=state, action=action)
             self.tree.append_leaf(i_step, parent_id=i_step - 1,
-                                  state=state, action=action)
+                                  state=state, action=action, dt=self._env.n_repeat_action)
             self._agent_reward += _reward
             self._last_action = action
             end = end or _end
 
             if render:
                 self._env.render()
+            if print_swarm:
                 print(self)
                 clear_output(True)
             self.update_parameters()
