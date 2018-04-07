@@ -53,7 +53,6 @@ class FractalMC(Swarm):
         self.init_ids = np.zeros(self.n_walkers).astype(int)
         super(FractalMC, self).init_swarm(state=state, obs=obs)
 
-
     def clone(self):
         super(FractalMC, self).clone()
         self.init_ids = np.where(self._will_clone, self.init_ids[self._clone_idx], self.init_ids)
@@ -74,9 +73,7 @@ class FractalMC(Swarm):
     def update_data(self):
         init_actions = list(set(np.array(self.init_ids).astype(int)))
         walker_data = list(set(np.array(self.walkers_id).astype(int)))
-        #print(self.data.states.keys(), init_actions, walker_data)
         self.data.update_values(set(walker_data + init_actions))
-        #print(self.data.states.keys())
 
     def run_swarm(self, state: np.ndarray=None, obs: np.ndarray=None, print_swarm: bool=False):
         """
