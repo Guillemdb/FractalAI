@@ -71,21 +71,16 @@ class AtariEnvironment(Environment):
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
         if state is not None:
             self.set_state(state)
-
-        terminal = False
-        old_lives = -np.inf
         reward = 0
         for i in range(n_repeat_action):
 
             obs, _reward, end, info = self._env.step(action)
-            lives = info.get("ale.lives", 1)
+            info["lives"] = info.get("ale.lives", 1)
             reward += _reward
-            terminal = terminal or end or lives < old_lives
-            old_lives = lives
         if state is not None:
             new_state = self.get_state()
-            return new_state, obs, reward, terminal, lives
-        return obs, reward, terminal, lives
+            return new_state, obs, reward, end, info
+        return obs, reward, end, info
 
     def step_batch(self, actions, states=None, n_repeat_action: [int, np.ndarray]=None) -> tuple:
         """

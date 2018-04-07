@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Iterable, Callable
 import copy
 import numpy as np
 import networkx as nx
@@ -142,7 +142,8 @@ class Swarm:
 
     def __init__(self, env, model, n_walkers: int=100, balance: float=1.,
                  reward_limit: float=None, samples_limit: int=None, render_every: int=1e10,
-                 accumulate_rewards: bool=True, dt_mean: float=None, dt_std: float=None):
+                 accumulate_rewards: bool=True, dt_mean: float=None, dt_std: float=None,
+                 custom_reward: Callable=None, custom_end: Callable=None):
         """
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
@@ -154,6 +155,13 @@ class Swarm:
         :param render_every: Number of iterations that will be performed before printing the Swarm
          status.
         """
+        def default_end(infos, old_infos, **kwargs):
+            return np.array([n.get("lives", 0) < o.get("lives", 0)
+                             for n, o in zip(infos, old_infos)])
+
+        def default_reward(rewards, *args, **kwargs):
+            return rewards
+
         # Parameters of the algorithm
         self.samples_limit = samples_limit if samples_limit is not None else np.inf
         self.reward_limit = reward_limit if reward_limit is not None else np.inf
@@ -165,11 +173,14 @@ class Swarm:
         self.accumulate_rewards = accumulate_rewards
         self.dt_mean = dt_mean
         self.dt_std = dt_std
+        self.custom_end = custom_end if custom_end is not None else default_end
+        self.custom_reward = custom_reward if custom_reward is not None else default_reward
         # Environment information sources
         self.observations = None
         self.rewards = np.zeros(self.n_walkers)
         # Internal masks
         self._end_cond = np.zeros(self.n_walkers, dtype=bool)
+        self._terminals = np.zeros(self.n_walkers, dtype=bool)
         self._will_clone = np.zeros(self.n_walkers, dtype=bool)
         self._will_step = np.ones(self.n_walkers, dtype=bool)
         self._not_frozen = np.ones(self.n_walkers, dtype=bool)
@@ -188,21 +199,6 @@ class Swarm:
         self._pre_clone_ids = [0]
         self._post_clone_ids = [0]
         self._remove_id = [None]
-
-    def track_best_walker(self):
-        """The last walker represents the best solution found so far. It gets frozen so
-         other walkers can always compare to it when cloning."""
-        # Last walker stores the best value found so far so other walkers can clone to it
-        self._not_frozen[-1] = True
-        self._will_clone[-1] = False
-        self._will_step[-1] = False
-        best_walker = self.rewards.argmax()
-        if best_walker != -1:
-            self.walkers_id[-1] = int(self.walkers_id[best_walker])
-            self.observations[-1] = copy.deepcopy(self.observations[best_walker])
-            self.rewards[-1] = float(self.rewards[best_walker])
-            self.times[-1] = float(self.times[best_walker])
-            self._end_cond[-1] = bool(self._end_cond[best_walker])
 
     def __str__(self):
         """Print information about the internal state of the swarm."""
@@ -293,8 +289,14 @@ class Swarm:
         self.calculate_dt()
         actions = self._model.predict_batch(self.observations[self._will_step])
         states = self.data.get_states(self.walkers_id[self._will_step])
-        new_state, observs, rewards, ends, infos = self._env.step_batch(actions, states=states,
-                                                                        n_repeat_action=self.dt)
+        old_infos = self.data.get_infos(self.walkers_id[self._will_step])
+        new_state, observs, _rewards, terms, infos = self._env.step_batch(actions, states=states,
+                                                                          n_repeat_action=self.dt)
+        self.times[self._will_step] = self.times[self._will_step].astype(np.int32) + self.dt
+        rewards = self.custom_reward(infos=infos, old_infos=old_infos, rewards=_rewards,
+                                     times=self.times)
+        ends = self.custom_end(infos=infos, old_infos=old_infos, rewards=_rewards,
+                               times=self.times, terminals=terms)
         # Save data and update sample count
         steps_done = self._will_step.sum().astype(np.int32)
         new_ids = self._n_samples_done + np.arange(steps_done).astype(int)
@@ -308,7 +310,8 @@ class Swarm:
             self.rewards[self._will_step] = np.array(rewards)
         # Maybe infos should be stored in data, bur now we only use it as a life counter.
         self._end_cond[self._will_step] = ends
-        self.times[self._will_step] = self.times[self._will_step].astype(np.int32) + self.dt
+        self._terminals[self._will_step] = terms
+
         self._n_samples_done += self.dt.sum()
 
     def evaluate_distance(self) -> np.ndarray:
@@ -336,6 +339,21 @@ class Swarm:
         # The balance sets how much preference we are giving exploitation over exploration
         vir_reward = dist * scores ** self.balance
         return vir_reward
+
+    def track_best_walker(self):
+        """The last walker represents the best solution found so far. It gets frozen so
+         other walkers can always compare to it when cloning."""
+        # Last walker stores the best value found so far so other walkers can clone to it
+        self._not_frozen[-1] = True
+        self._will_clone[-1] = False
+        self._will_step[-1] = False
+        best_walker = self.rewards.argmax()
+        if best_walker != -1:
+            self.walkers_id[-1] = int(self.walkers_id[best_walker])
+            self.observations[-1] = copy.deepcopy(self.observations[best_walker])
+            self.rewards[-1] = float(self.rewards[best_walker])
+            self.times[-1] = float(self.times[best_walker])
+            self._end_cond[-1] = bool(self._end_cond[best_walker])
 
     def clone_condition(self):
         """Calculates the walkers that will cone depending on their virtual rewards. Returns the
@@ -397,7 +415,7 @@ class Swarm:
             self._n_samples_done > self.samples_limit
         stop_score = False if self.reward_limit is None else \
             self.rewards.max() >= self.reward_limit
-        stop_terminal = self._end_cond.all()
+        stop_terminal = self._terminals.all()
         # Define game status so the user knows why a game stopped. Only used when printing
         if stop_hard:
             self._game_status = "Sample limit reached."
