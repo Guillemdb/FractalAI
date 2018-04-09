@@ -165,7 +165,7 @@ class FractalMC(Swarm):
         stop_hard = self._n_samples_done > self._max_samples_step
         stop_score = False if self.reward_limit is None else \
             self.rewards.max() >= self.reward_limit
-        stop_terminal = self._end_cond.all()
+        stop_terminal = np.logical_or(self._end_cond, self._terminals).all()
         # Define game status so the user knows why game stopped. Only used when printing the Swarm
         if stop_hard:
             self._game_status = "Sample limit reached."
@@ -190,9 +190,9 @@ class FractalMC(Swarm):
     def render_game(self, index=None, sleep: float=0.02):
         """Renders the game stored in the tree that ends in the node labeled as index."""
         idx = max(list(self.tree.data.nodes)) if index is None else index
-        states, actions = self.recover_game(idx)
-        for state, action in zip(states, actions):
-            self._env.step(action, state=state)
+        states, actions, dts = self.recover_game(idx)
+        for state, action, dt in zip(states, actions, dts):
+            self._env.step(action, state=state, n_repeat_action=dt)
             self._env.render()
             time.sleep(sleep)
 

@@ -454,9 +454,9 @@ class BatchEnv(object):
         """
         self._envs = envs
         self._blocking = blocking
-        observ_space = self._envs[0].observation_space
-        if not all(env.observation_space == observ_space for env in self._envs):
-            raise ValueError('All environments must use the same observation space.')
+        #observ_space = self._envs[0].observation_space
+        #if not all(env.observation_space == observ_space for env in self._envs):
+        #    raise ValueError('All environments must use the same observation space.')
 
     def __len__(self):
         """Number of combined environments."""
@@ -606,6 +606,8 @@ class ParallelEnvironment(Environment):
         envs = [ExternalProcess(constructor=env_callable(name, env_class, *args, **kwargs))
                 for _ in range(n_workers)]
         self._batch_env = BatchEnv(envs, blocking)
+        self.action_space = self._env.action_space
+        self.observation_space = self._env.observation_space
 
     def __getattr__(self, item):
         return getattr(self._env, item)

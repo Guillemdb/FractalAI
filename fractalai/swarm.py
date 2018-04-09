@@ -155,9 +155,9 @@ class Swarm:
         :param render_every: Number of iterations that will be performed before printing the Swarm
          status.
         """
-        def default_end(infos, old_infos, **kwargs):
-            return np.array([n.get("lives", 0) < o.get("lives", 0)
-                             for n, o in zip(infos, old_infos)])
+        def default_end(infos, old_infos, rewards, **kwargs):
+            return np.array([n.get("lives", 0) < o.get("lives", 0) or r < 0
+                             for n, o, r in zip(infos, old_infos, rewards)])
 
         def default_reward(rewards, *args, **kwargs):
             return rewards
@@ -289,34 +289,36 @@ class Swarm:
         :return: None.
         """
         # Only step an state if it has not cloned and is not frozen
+
         self._will_step[-1] = False
         self.calculate_dt()
         actions = self._model.predict_batch(self.observations[self._will_step])
-        states = self.data.get_states(self.walkers_id[self._will_step])
-        old_infos = self.data.get_infos(self.walkers_id[self._will_step])
-        new_state, observs, _rewards, terms, infos = self._env.step_batch(actions, states=states,
-                                                                          n_repeat_action=self.dt)
-        self.times[self._will_step] = self.times[self._will_step].astype(np.int32) + self.dt
-        rewards = self.custom_reward(infos=infos, old_infos=old_infos, rewards=_rewards,
-                                     times=self.times)
-        ends = self.custom_end(infos=infos, old_infos=old_infos, rewards=_rewards,
-                               times=self.times, terminals=terms)
-        # Save data and update sample count
-        steps_done = self._will_step.sum().astype(np.int32)
-        new_ids = self._n_samples_done + np.arange(steps_done).astype(int)
-        self.walkers_id[self._will_step] = new_ids
-        self.data.append(walker_ids=new_ids, states=new_state, actions=actions, infos=infos)
-        self.observations[self._will_step] = np.array(observs).astype(np.float32)
-        # Accumulate if you are solving a trajectory, if you are searching for a point set to False
-        if self.accumulate_rewards:
-            self.rewards[self._will_step] = self.rewards[self._will_step] + np.array(rewards)
-        else:
-            self.rewards[self._will_step] = np.array(rewards)
-        # Maybe infos should be stored in data, bur now we only use it as a life counter.
-        self._end_cond[self._will_step] = ends
-        self._terminals[self._will_step] = terms
+        if len(actions) > 0:
+            states = self.data.get_states(self.walkers_id[self._will_step])
+            old_infos = self.data.get_infos(self.walkers_id[self._will_step])
+            new_state, observs, _rewards, terms, infos = self._env.step_batch(actions, states=states,
+                                                                              n_repeat_action=self.dt)
+            self.times[self._will_step] = self.times[self._will_step].astype(np.int32) + self.dt
+            rewards = self.custom_reward(infos=infos, old_infos=old_infos, rewards=_rewards,
+                                         times=self.times)
+            ends = self.custom_end(infos=infos, old_infos=old_infos, rewards=_rewards,
+                                   times=self.times, terminals=terms)
+            # Save data and update sample count
+            steps_done = self._will_step.sum().astype(np.int32)
+            new_ids = self._n_samples_done + np.arange(steps_done).astype(int)
+            self.walkers_id[self._will_step] = new_ids
+            self.data.append(walker_ids=new_ids, states=new_state, actions=actions, infos=infos)
+            self.observations[self._will_step] = np.array(observs).astype(np.float32)
+            # Accumulate if you are solving a trajectory, if you are searching for a point set to False
+            if self.accumulate_rewards:
+                self.rewards[self._will_step] = self.rewards[self._will_step] + np.array(rewards)
+            else:
+                self.rewards[self._will_step] = np.array(rewards)
+            # Maybe infos should be stored in data, bur now we only use it as a life counter.
+            self._end_cond[self._will_step] = ends
+            self._terminals[self._will_step] = terms
 
-        self._n_samples_done += self.dt.sum()
+            self._n_samples_done += self.dt.sum()
 
     def evaluate_distance(self) -> np.ndarray:
         """Calculates the euclidean distance between pixels of two different arrays
@@ -419,7 +421,8 @@ class Swarm:
             self._n_samples_done > self.samples_limit
         stop_score = False if self.reward_limit is None else \
             self.rewards.max() >= self.reward_limit
-        stop_terminal = self._terminals.all()
+
+        stop_terminal = np.logical_or(self._terminals, self._end_cond).all()
         # Define game status so the user knows why a game stopped. Only used when printing
         if stop_hard:
             self._game_status = "Sample limit reached."
