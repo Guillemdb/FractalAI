@@ -86,13 +86,14 @@ class DynamicTree:
         self.data.add_node(0)
         self.root_id = 0
 
-    def append_leaf(self, leaf_id: int, parent_id: int, state, action, dt):
+    def append_leaf(self, leaf_id: int, parent_id: int, state, action, dt: int):
         """
         Add a new state as a leaf node of the tree to keep track of the trajectories of the swarm.
         :param leaf_id: Id that identifies the state that will be added to the tree.
         :param parent_id: id that references the state of the system before taking the action.
         :param state: observation assigned to leaf_id state.
         :param action: action taken at leaf_id state.
+        :param dt: parameters taken into account when integrating the action.
         :return:
         """
         self.data.add_node(int(leaf_id), state=state)
@@ -131,6 +132,9 @@ class DynamicTree:
         actions = [self.data.edges[(n, nodes[i+1])]["action"] for i, n in enumerate(nodes[:-1])]
         dts = [self.data.edges[(n, nodes[i + 1])]["dt"] for i, n in enumerate(nodes[:-1])]
         return states, actions, dts
+
+    def get_parent(self, node_id):
+        return list(self.data.in_edges(node_id))[0][0]
 
 
 class Swarm:
@@ -319,6 +323,9 @@ class Swarm:
             self._terminals[self._will_step] = terms
 
             self._n_samples_done += self.dt.sum()
+        else:
+            self._end_cond = np.ones(self.n_walkers, dtype=bool)
+            self._terminals = np.ones(self.n_walkers, dtype=bool)
 
     def evaluate_distance(self) -> np.ndarray:
         """Calculates the euclidean distance between pixels of two different arrays
@@ -333,6 +340,10 @@ class Swarm:
         dist = np.sqrt(np.sum((obs[idx] - obs) ** 2, axis=tuple(range(1, len(obs.shape)))))
         return normalize_vector(dist)
 
+    def normalize_rewards(self) -> np.ndarray:
+        rewards = np.array(self.rewards).astype(np.float32)
+        return normalize_vector(rewards) + 1  # Goes between 1 and 2
+
     def virtual_reward(self) -> np.ndarray:
         """Calculate the virtual reward of the walkers. This quantity is used for determining
         the chance a given walker has of cloning. This scalar gives us a measure of how well a
@@ -340,8 +351,7 @@ class Swarm:
         walkers of the Swarm.
         """
         dist = self.evaluate_distance()  # goes between 0 and 1
-        rewards = np.array(self.rewards).astype(np.float32)
-        scores = normalize_vector(rewards) + 1  # Goes between 1 and 2
+        scores = self.normalize_rewards()
         # The balance sets how much preference we are giving exploitation over exploration
         vir_reward = dist * scores ** self.balance
         return vir_reward
@@ -361,24 +371,37 @@ class Swarm:
             self.times[-1] = float(self.times[best_walker])
             self._end_cond[-1] = bool(self._end_cond[best_walker])
 
+    def freeze_walkers(self):
+        # Walkers reaching the score limit do freeze (do not clone nor step). Last walker is frozen
+        self._not_frozen = (self.rewards < self.reward_limit)
+
+    def get_clone_index(self):
+        alive_walkers = np.arange(self.n_walkers, dtype=int)[np.logical_not(self._end_cond)]
+        if len(alive_walkers) > 0:
+            self._clone_idx = np.random.choice(alive_walkers, self.n_walkers)
+        else:
+            self._clone_idx = np.zeros(self.n_walkers)
+            self._end_cond = np.ones(self.n_walkers, dtype=bool)
+            self._terminals = np.ones(self.n_walkers, dtype=bool)
+        return self._clone_idx
+
     def clone_condition(self):
         """Calculates the walkers that will cone depending on their virtual rewards. Returns the
         index of the random companion chosen for comparing virtual rewards.
         """
-        # Walkers reaching the score limit do freeze (do not clone nor step). Last walker is frozen
-        self._not_frozen = (self.rewards < self.reward_limit)
+        self.freeze_walkers()
         self.track_best_walker()
         self._pre_clone_ids = set(self.walkers_id.astype(int))
         # Calculate virtual rewards and choose another walker at random
         vir_rew = self.virtual_reward()
-        alive_walkers = np.arange(self.n_walkers, dtype=int)[np.logical_not(self._end_cond)]
-        alive_walkers = alive_walkers if len(alive_walkers) > 0 else np.arange(self.n_walkers)
-        self._clone_idx = idx = np.random.choice(alive_walkers, self.n_walkers)
+
+        idx = self.get_clone_index()
         # The probability of cloning depends on the relationship of virtual rewards
         # with respect to a randomly chosen walker.
         value = (vir_rew[idx] - vir_rew) / np.where(vir_rew > 0, vir_rew, 1e-8)
         clone = (value >= np.random.random()).astype(bool)
         self._will_clone = np.logical_and(clone, self._not_frozen)
+
         self._will_step = np.logical_and(np.logical_not(self._will_clone), self._not_frozen)
 
     def perform_clone(self):
@@ -421,8 +444,7 @@ class Swarm:
             self._n_samples_done > self.samples_limit
         stop_score = False if self.reward_limit is None else \
             self.rewards.max() >= self.reward_limit
-
-        stop_terminal = np.logical_or(self._terminals, self._end_cond).all()
+        stop_terminal = np.logical_or(self._terminals[:-1], self._end_cond[:-1]).all()
         # Define game status so the user knows why a game stopped. Only used when printing
         if stop_hard:
             self._game_status = "Sample limit reached."

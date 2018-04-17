@@ -1,9 +1,8 @@
 import time
 import numpy as np
-import copy
 from typing import Callable
 from IPython.core.display import clear_output
-from fractalai.model import DiscreteModel, ContinuousModel, ESModel
+from fractalai.model import DiscreteModel
 from fractalai.swarm import Swarm, DynamicTree
 
 
