@@ -374,6 +374,7 @@ class Swarm:
         # The balance sets how much preference we are giving exploitation over exploration
         vir_reward = dist * scores ** self.balance
         self._virtual_reward = vir_reward
+        # self._virtual_reward[-1] = 0
         return vir_reward
 
     def track_best_walker(self):
@@ -410,7 +411,7 @@ class Swarm:
         index of the random companion chosen for comparing virtual rewards.
         """
         self.freeze_walkers()
-        self.track_best_walker()
+        # self.track_best_walker()
         self._pre_clone_ids = list(set(self.walkers_id.astype(int)))
         # Calculate virtual rewards and choose another walker at random
         vir_rew = self.virtual_reward()
@@ -452,8 +453,8 @@ class Swarm:
         3 - Clone if p > random[0,1] or the walker is dead.
         """
         # Boundary conditions(_end_cond) modify the cloning probability.
-        self._will_clone[-1] = False
-        self._end_cond[-1] = True
+        # self._will_clone[-1] = False
+        # self._end_cond[-1] = True
         self.perform_clone()
         self.update_data()
 
