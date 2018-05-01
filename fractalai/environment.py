@@ -91,11 +91,17 @@ class AtariEnvironment(Environment):
         if state is not None:
             self.set_state(state)
         reward = 0
+        end = False
+        info = {"lives": -1}
         for i in range(n_repeat_action):
 
-            obs, _reward, end, info = self._env.step(action)
-            info["lives"] = info.get("ale.lives", 1)
+            obs, _reward, _end, _info = self._env.step(action)
+            _info["lives"] = _info.get("ale.lives", -1)
+            end = _end or end or info["lives"] > _info["lives"]
+            info = _info
             reward += _reward
+            if end:
+                break
         if state is not None:
             new_state = self.get_state()
             return new_state, obs, reward, end, info
@@ -454,9 +460,6 @@ class BatchEnv(object):
         """
         self._envs = envs
         self._blocking = blocking
-        #observ_space = self._envs[0].observation_space
-        #if not all(env.observation_space == observ_space for env in self._envs):
-        #    raise ValueError('All environments must use the same observation space.')
 
     def __len__(self):
         """Number of combined environments."""

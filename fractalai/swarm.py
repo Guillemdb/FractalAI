@@ -6,6 +6,16 @@ from IPython.core.display import clear_output
 
 
 def normalize_vector(vector):
+    std = vector.std()
+    if std == 0:
+        return np.ones(len(vector))
+    standard = (vector - vector.mean()) / std
+    standard[standard > 0] = np.log(1 + standard[standard > 0]) + 1
+    standard[standard <= 0] = np.exp(standard[standard <= 0])
+    return standard
+
+
+def normalize_vector_zero_one(vector):
     """
     Returns normalized values where min = 0 and max = 1.
     :param vector: array to be normalized.
@@ -25,6 +35,7 @@ class DataStorage:
         self.states = {}
         self.actions = {}
         self.infos = {}
+        self.walker_ids = []
 
     def __getitem__(self, item):
         states = self.get_states(item)
@@ -43,7 +54,7 @@ class DataStorage:
         return [self.actions[label] for label in labels]
 
     def get_infos(self, labels: Iterable) -> list:
-        return [self.infos[label] for label in labels]
+        return [copy.copy(self.infos[label]) for label in labels]
 
     def append(self, walker_ids: [list, np.ndarray], states: Iterable, actions=None, infos=None):
         actions = actions if actions is not None else [None] * len(walker_ids)
@@ -54,6 +65,8 @@ class DataStorage:
                 self.actions[w_id] = copy.deepcopy(action)
             if infos is not None:
                 self.infos[w_id] = copy.deepcopy(info)
+        self.walker_ids = list(set(self.walker_ids))
+        self.walker_ids += list(set(walker_ids))
 
     def update_values(self, walker_ids):
         # This is not optimal, but ensures no memory leak
@@ -67,6 +80,7 @@ class DataStorage:
         self.states = new_states
         self.actions = new_actions
         self.infos = new_infos
+        self.walker_ids = walker_ids
 
 
 class DynamicTree:
@@ -160,8 +174,8 @@ class Swarm:
          status.
         """
         def default_end(infos, old_infos, rewards, **kwargs):
-            return np.array([n.get("lives", 0) < o.get("lives", 0) or r < 0
-                             for n, o, r in zip(infos, old_infos, rewards)])
+            return np.array([int(n.get("lives", -1)) < int(o.get("lives", -1))  # or r < 0
+                             for n, o, r in zip(infos, old_infos, rewards)]).astype(bool)
 
         def default_reward(rewards, *args, **kwargs):
             return rewards
@@ -198,6 +212,7 @@ class Swarm:
         self._i_simulation = 0
         self._game_status = ""
         self.walkers_id = np.zeros(self.n_walkers).astype(int)
+        self._virtual_reward = None
         # This is for storing states and actions of arbitrary shape and type
         self.data = DataStorage()
         self._pre_clone_ids = [0]
@@ -270,6 +285,7 @@ class Swarm:
         self.times = np.zeros(self.n_walkers)
         self._n_samples_done = 0
         self._i_simulation = 0
+        self._virtual_reward = None
         # Store data and keep indices
         self.data.reset()
         self.walkers_id = np.zeros(self.n_walkers).astype(int)
@@ -300,7 +316,8 @@ class Swarm:
         if len(actions) > 0:
             states = self.data.get_states(self.walkers_id[self._will_step])
             old_infos = self.data.get_infos(self.walkers_id[self._will_step])
-            new_state, observs, _rewards, terms, infos = self._env.step_batch(actions, states=states,
+            new_state, observs, _rewards, terms, infos = self._env.step_batch(actions,
+                                                                              states=states,
                                                                               n_repeat_action=self.dt)
             self.times[self._will_step] = self.times[self._will_step].astype(np.int32) + self.dt
             rewards = self.custom_reward(infos=infos, old_infos=old_infos, rewards=_rewards,
@@ -313,17 +330,19 @@ class Swarm:
             self.walkers_id[self._will_step] = new_ids
             self.data.append(walker_ids=new_ids, states=new_state, actions=actions, infos=infos)
             self.observations[self._will_step] = np.array(observs).astype(np.float32)
-            # Accumulate if you are solving a trajectory, if you are searching for a point set to False
+            # Accumulate if you are solving a trajectory,
+            # If you are searching for a point set to False
             if self.accumulate_rewards:
                 self.rewards[self._will_step] = self.rewards[self._will_step] + np.array(rewards)
             else:
                 self.rewards[self._will_step] = np.array(rewards)
             # Maybe infos should be stored in data, bur now we only use it as a life counter.
-            self._end_cond[self._will_step] = ends
+            self._end_cond[self._will_step] = np.logical_or(ends, terms)
             self._terminals[self._will_step] = terms
 
             self._n_samples_done += self.dt.sum()
         else:
+            raise RuntimeError
             self._end_cond = np.ones(self.n_walkers, dtype=bool)
             self._terminals = np.ones(self.n_walkers, dtype=bool)
 
@@ -342,7 +361,7 @@ class Swarm:
 
     def normalize_rewards(self) -> np.ndarray:
         rewards = np.array(self.rewards).astype(np.float32)
-        return normalize_vector(rewards) + 1  # Goes between 1 and 2
+        return normalize_vector(rewards)
 
     def virtual_reward(self) -> np.ndarray:
         """Calculate the virtual reward of the walkers. This quantity is used for determining
@@ -354,17 +373,18 @@ class Swarm:
         scores = self.normalize_rewards()
         # The balance sets how much preference we are giving exploitation over exploration
         vir_reward = dist * scores ** self.balance
+        self._virtual_reward = vir_reward
         return vir_reward
 
     def track_best_walker(self):
         """The last walker represents the best solution found so far. It gets frozen so
          other walkers can always compare to it when cloning."""
         # Last walker stores the best value found so far so other walkers can clone to it
-        self._not_frozen[-1] = True
+        self._not_frozen[-1] = False
         self._will_clone[-1] = False
         self._will_step[-1] = False
         best_walker = self.rewards.argmax()
-        if best_walker != -1:
+        if best_walker != self.n_walkers - 1:
             self.walkers_id[-1] = int(self.walkers_id[best_walker])
             self.observations[-1] = copy.deepcopy(self.observations[best_walker])
             self.rewards[-1] = float(self.rewards[best_walker])
@@ -375,7 +395,7 @@ class Swarm:
         # Walkers reaching the score limit do freeze (do not clone nor step). Last walker is frozen
         self._not_frozen = (self.rewards < self.reward_limit)
 
-    def get_clone_index(self):
+    def get_clone_compas(self):
         alive_walkers = np.arange(self.n_walkers, dtype=int)[np.logical_not(self._end_cond)]
         if len(alive_walkers) > 0:
             self._clone_idx = np.random.choice(alive_walkers, self.n_walkers)
@@ -383,7 +403,7 @@ class Swarm:
             self._clone_idx = np.zeros(self.n_walkers)
             self._end_cond = np.ones(self.n_walkers, dtype=bool)
             self._terminals = np.ones(self.n_walkers, dtype=bool)
-        return self._clone_idx
+        return self._virtual_reward[self._clone_idx]
 
     def clone_condition(self):
         """Calculates the walkers that will cone depending on their virtual rewards. Returns the
@@ -391,18 +411,18 @@ class Swarm:
         """
         self.freeze_walkers()
         self.track_best_walker()
-        self._pre_clone_ids = set(self.walkers_id.astype(int))
+        self._pre_clone_ids = list(set(self.walkers_id.astype(int)))
         # Calculate virtual rewards and choose another walker at random
         vir_rew = self.virtual_reward()
-
-        idx = self.get_clone_index()
+        vr_compas = self.get_clone_compas()
         # The probability of cloning depends on the relationship of virtual rewards
         # with respect to a randomly chosen walker.
-        value = (vir_rew[idx] - vir_rew) / np.where(vir_rew > 0, vir_rew, 1e-8)
+        value = (vr_compas - vir_rew) / np.where(vir_rew > 0, vir_rew, 1e-8)
         clone = (value >= np.random.random()).astype(bool)
         self._will_clone = np.logical_and(clone, self._not_frozen)
 
-        self._will_step = np.logical_and(np.logical_not(self._will_clone), self._not_frozen)
+        # self._will_step = np.logical_and(np.logical_not(self._will_clone), self._not_frozen)
+        self._will_step = np.logical_and(np.ones(self.n_walkers, dtype=bool), self._not_frozen)
 
     def perform_clone(self):
         idx = self._clone_idx
@@ -413,7 +433,7 @@ class Swarm:
                                      self.observations[idx], self.observations)
         # Using np.where seems to be faster than using a for loop
         self.rewards = np.where(self._will_clone, self.rewards[idx], self.rewards)
-        self._end_cond = np.where(self._end_cond, self._end_cond[idx], self._end_cond)
+        self._end_cond = np.where(self._will_clone, self._end_cond[idx], self._end_cond)
         self.times = np.where(self._will_clone, self.times[idx], self.times)
 
         self.walkers_id = np.where(self._will_clone, self.walkers_id[idx],
@@ -433,6 +453,7 @@ class Swarm:
         """
         # Boundary conditions(_end_cond) modify the cloning probability.
         self._will_clone[-1] = False
+        self._end_cond[-1] = True
         self.perform_clone()
         self.update_data()
 

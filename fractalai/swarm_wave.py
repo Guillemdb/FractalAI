@@ -66,7 +66,7 @@ class SwarmWave(Swarm):
         super(SwarmWave, self).clone()
         # Prune tree to save memory
         if self.save_data:
-            dead_leafs = self._pre_clone_ids - self._post_clone_ids
+            dead_leafs = list(set(self._pre_clone_ids) - set(self._post_clone_ids))
             self.tree.prune_tree(dead_leafs, self._post_clone_ids)
 
     def recover_game(self, index=None) -> tuple:
