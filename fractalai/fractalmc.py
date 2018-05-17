@@ -12,7 +12,7 @@ class FractalMC(Swarm):
                  time_horizon: int=15,
                  reward_limit: float=None, max_samples: int=None, render_every: int=1e10,
                  custom_reward: Callable=None, custom_end: Callable=None, dt_mean: float=None,
-                 dt_std: float=None):
+                 dt_std: float=None, accumulate_rewards: bool=True, keep_best: bool=True):
         """
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
@@ -35,7 +35,8 @@ class FractalMC(Swarm):
                                         balance=balance, reward_limit=reward_limit,
                                         samples_limit=self._max_samples_step,
                                         render_every=render_every, custom_reward=custom_reward,
-                                        custom_end=custom_end, dt_mean=dt_mean, dt_std=dt_std)
+                                        custom_end=custom_end, dt_mean=dt_mean, dt_std=dt_std, keep_best=keep_best,
+                                        accumulate_rewards=accumulate_rewards)
         self.init_ids = np.zeros(self.n_walkers).astype(int)
 
         self._save_steps = []

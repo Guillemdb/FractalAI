@@ -161,7 +161,7 @@ class Swarm:
     def __init__(self, env, model, n_walkers: int=100, balance: float=1.,
                  reward_limit: float=None, samples_limit: int=None, render_every: int=1e10,
                  accumulate_rewards: bool=True, dt_mean: float=None, dt_std: float=None,
-                 custom_reward: Callable=None, custom_end: Callable=None):
+                 custom_reward: Callable=None, custom_end: Callable=None, keep_best: bool=False):
         """
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
@@ -193,6 +193,7 @@ class Swarm:
         self.dt_std = dt_std
         self.custom_end = custom_end if custom_end is not None else default_end
         self.custom_reward = custom_reward if custom_reward is not None else default_reward
+        self.keep_best = keep_best
         # Environment information sources
         self.observations = None
         self.rewards = np.zeros(self.n_walkers)
@@ -309,8 +310,8 @@ class Swarm:
         :return: None.
         """
         # Only step an state if it has not cloned and is not frozen
-
-        self._will_step[-1] = False
+        if self.keep_best:
+            self._will_step[-1] = False
         self.calculate_dt()
         actions = self._model.predict_batch(self.observations[self._will_step])
         if len(actions) > 0:
@@ -321,9 +322,9 @@ class Swarm:
                                                                               n_repeat_action=self.dt)
             self.times[self._will_step] = self.times[self._will_step].astype(np.int32) + self.dt
             rewards = self.custom_reward(infos=infos, old_infos=old_infos, rewards=_rewards,
-                                         times=self.times)
+                                         times=self.times, old_rewards=self.rewards)
             ends = self.custom_end(infos=infos, old_infos=old_infos, rewards=_rewards,
-                                   times=self.times, terminals=terms)
+                                   times=self.times, terminals=terms, old_rewards=self.rewards)
             # Save data and update sample count
             steps_done = self._will_step.sum().astype(np.int32)
             new_ids = self._n_samples_done + np.arange(steps_done).astype(int)
@@ -336,7 +337,6 @@ class Swarm:
                 self.rewards[self._will_step] = self.rewards[self._will_step] + np.array(rewards)
             else:
                 self.rewards[self._will_step] = np.array(rewards)
-            # Maybe infos should be stored in data, bur now we only use it as a life counter.
             self._end_cond[self._will_step] = np.logical_or(ends, terms)
             self._terminals[self._will_step] = terms
 
@@ -411,7 +411,8 @@ class Swarm:
         index of the random companion chosen for comparing virtual rewards.
         """
         self.freeze_walkers()
-        # self.track_best_walker()
+        if self.keep_best:
+            self.track_best_walker()
         self._pre_clone_ids = list(set(self.walkers_id.astype(int)))
         # Calculate virtual rewards and choose another walker at random
         vir_rew = self.virtual_reward()
@@ -453,7 +454,8 @@ class Swarm:
         3 - Clone if p > random[0,1] or the walker is dead.
         """
         # Boundary conditions(_end_cond) modify the cloning probability.
-        # self._will_clone[-1] = False
+        if self.keep_best:
+            self._will_clone[-1] = False
         # self._end_cond[-1] = True
         self.perform_clone()
         self.update_data()
