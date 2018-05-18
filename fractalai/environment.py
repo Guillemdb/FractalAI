@@ -98,7 +98,7 @@ class AtariEnvironment(Environment):
             obs, _reward, _end, _info = self._env.step(action)
             _info["lives"] = _info.get("ale.lives", -1)
             end = _end or end or info["lives"] > _info["lives"]
-            info = _info
+            info = _info.copy()
             reward += _reward
             if _end:
                 break

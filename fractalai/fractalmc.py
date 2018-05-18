@@ -169,7 +169,7 @@ class FractalMC(Swarm):
         stop_hard = self._n_samples_done > self._max_samples_step
         stop_score = False if self.reward_limit is None else \
             self.rewards.max() >= self.reward_limit
-        stop_terminal = np.logical_or(self._end_cond, self._terminals).all()
+        stop_terminal = self._end_cond.all()
         # Define game status so the user knows why game stopped. Only used when printing the Swarm
         if stop_hard:
             self._game_status = "Sample limit reached."
