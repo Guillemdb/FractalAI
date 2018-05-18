@@ -1,305 +1,128 @@
+import time
 import numpy as np
-from fractalai.state import State
-from fractalai.policy import PolicyWrapper, Policy
+from typing import Callable
+from IPython.core.display import clear_output
+from fractalai.model import DiscreteModel
+from fractalai.swarm import Swarm, DynamicTree
 
 
-def normalize_vector(vector: np.ndarray) -> np.ndarray:
-    """
-    Returns normalized values that sum 1.
-    :param vector: array to be normalized.
-    :return: Normalized vector.
-    """
-    reward = vector
-    max_r, min_r = reward.max(), reward.min()
-    if min_r == max_r:
-        reward = np.ones(len(vector), dtype=np.float32)
-        return reward
-    reward = (reward - min_r) / (max_r - min_r)
-    return reward
+class FractalMC(Swarm):
 
-
-class FractalAI(PolicyWrapper):
-
-    def __init__(self,
-                 policy: Policy,
-                 max_samples: int = 1500,
-                 max_states: int=1000,
-                 time_horizon: int = 25,
-                 n_fixed_steps: int=1):
+    def __init__(self, env, model, max_walkers: int=100, balance: float=1.,
+                 time_horizon: int=15,
+                 reward_limit: float=None, max_samples: int=None, render_every: int=1e10,
+                 custom_reward: Callable=None, custom_end: Callable=None, dt_mean: float=None,
+                 dt_std: float=None, accumulate_rewards: bool=True, keep_best: bool=True,
+                 min_dt: int=1):
         """
-
-        :param policy: Policy that will be used as a prior when calculating an action.
-        :param max_samples: Max number of times that we can step the environment to calculate an
-         action for a given state.
-        :param max_states: Maximum number of swarm that will be used to build a swarm.
-        :param time_horizon: Desired time horizon of the swarm
-        :param n_fixed_steps:
+        :param env: Environment that will be sampled.
+        :param model: Model used for sampling actions from observations.
+        :param max_walkers: Number of walkers that the swarm will use
+        :param balance: Balance coefficient for the virtual reward formula.
+        :param reward_limit: Maximum reward that can be reached before stopping the swarm.
+        :param max_samples: Maximum number of time the Swarm can sample the environment
+         befors stopping.
+        :param render_every: Number of iterations that will be performed before printing the Swarm
+         status.
         """
-        # policy._model = policy.model
-        super(FractalAI, self).__init__(policy=policy)
-
-        self.n_fixed_steps = n_fixed_steps
-
+        self.max_walkers = max_walkers
         self.time_horizon = time_horizon
-        self.max_states = max_states
         self.max_samples = max_samples
 
-        self.n_states = max_states
-        self.balance = 1
-        self._i_simulation = 0
-        self._n_samples_done = 0
-        # The ideal number of samples is max_state * time_horizon
-        init_samples = min(max_samples, time_horizon * max_states)
-        self._n_limit_samples = init_samples
+        _max_samples = max_samples if max_samples is not None else 1e10
+        self._max_samples_step = min(_max_samples, max_walkers * time_horizon)
 
-        self._root_state = policy.reset()
-        self.root_state.update_policy_data(0)  # Init time step w.r. to the present state
-        # This is the swarm pool where max_states swarm are stored.
-        self._swarm = np.array([self.root_state.create_clone()
-                                for _ in range(self.max_states)], dtype=type(self.root_state))
+        super(FractalMC, self).__init__(env=env, model=model, n_walkers=self.max_walkers,
+                                        balance=balance, reward_limit=reward_limit,
+                                        samples_limit=self._max_samples_step,
+                                        render_every=render_every, custom_reward=custom_reward,
+                                        custom_end=custom_end, dt_mean=dt_mean, dt_std=dt_std,
+                                        keep_best=keep_best,
+                                        accumulate_rewards=accumulate_rewards, min_dt=min_dt)
+        self.init_ids = np.zeros(self.n_walkers).astype(int)
 
-        self._will_clone = np.zeros(self.n_states, dtype=np.bool)
-        self._dead_mask = np.zeros(self.n_states, dtype=np.bool)
-        self._will_step = np.zeros(self.n_states, dtype=np.bool)
-        self._state_times = np.ones(self.n_states)
         self._save_steps = []
+        self._agent_reward = 0
+        self._last_action = None
 
-    def __str__(self):
-        """Print stats about the last step performed by the agent."""
-
-        # Time stats
-        times = self.state_times
-        mean_time = times.mean()
-        std_time = times.std()
-
-        # Death stats
-        dead = np.array([s.dead for s in self.swarm]).sum()
-        death_pct = dead / len(self.swarm) * 100
-
-        # Worker stats
-        cloned = self._will_clone.sum() / len(self.swarm) * 100
-        step = self._will_step.sum() / len(self.swarm) * 100
-
-        text = "Fractal with {} swarm.\n" \
-               "Balance Coef {:.4f} | Mean Samples {:.2f} | Current sample limit {}\n" \
-               "Algorithm last iter:\n" \
-               "- Deaths: \n" \
-               "    {} swarm: {:.2f}%\n" \
-               "- Time: \n" \
-               "    Mean: {:.2f} | Std: {:.2f}\n" \
-               "- Worker: \n" \
-               "    Step: {:.2f}% {} steps | Clone: {:.2f}% {} clones\n"
-
-        return text.format(len(self.swarm),
-                           self.balance, np.mean(self._save_steps), self._n_limit_samples,
-                           dead, death_pct,
-                           mean_time, std_time,
-                           step, self._will_step.sum(), cloned, self._will_clone.sum())
-
-    @property
-    def root_state(self) -> State:
-        """We are calculating the Q values for each action with respect to the root state."""
-        return self._root_state
-
-    @property
-    def swarm(self) -> np.ndarray:
-        """Return the swarm that are currently used."""
-        return self._swarm[:self.n_states]
-
-    @property
-    def state_times(self) -> np.ndarray:
-        """Array containing the time of each state with respect to the root state."""
-        return self._state_times
-
-    @property
-    def deaths(self) -> np.ndarray:
-        """Contains booleans indicating whether an state meets the death condition or not."""
-        return np.array([s.dead for s in self.swarm])
+        self.tree = DynamicTree()
 
     @property
     def init_actions(self):
-        """The actions taken by each walker at the root state. They are used for
-         approximating the Q values.
-         """
-        return np.array([s.policy_action for s in self.swarm])
+        return self.data.get_actions(self.init_ids)
 
-    def _action_probabilities(self) -> np.ndarray:
+    def init_swarm(self, state: np.ndarray=None, obs: np.ndarray=None):
+        self.init_ids = np.zeros(self.n_walkers).astype(int)
+        super(FractalMC, self).init_swarm(state=state, obs=obs)
+
+    def clone(self):
+        super(FractalMC, self).clone()
+        self.init_ids = np.where(self._will_clone, self.init_ids[self._clone_idx], self.init_ids)
+
+    def weight_actions(self) -> np.ndarray:
         """Gets an approximation of the Q value function for a given state.
 
         It weights the number of times a given initial action appears in each state of the swarm.
         The the proportion of times each initial action appears on the swarm, is proportional to
         the Q value of that action.
         """
+
+        if isinstance(self._model, DiscreteModel):
+            # return self.init_actions[self.rewards.argmax()]
+            counts = np.bincount(self.init_actions)
+            return np.argmax(counts)
         vals = self.init_actions.sum(axis=0)
-        return vals / self.n_states
+        return vals / self.n_walkers
 
-    def _init_step(self):
-        """Sync all the swarm so they become a copy of the root state"""
-        self.swarm[:] = [self.root_state.create_clone() for _ in range(self.n_states)]
-        self._will_clone = np.zeros(self.n_states, dtype=np.bool)
-        self._state_times = np.ones(self.n_states)
+    def update_data(self):
+        init_actions = list(set(np.array(self.init_ids).astype(int)))
+        walker_data = list(set(np.array(self.walkers_id).astype(int)))
+        self.data.update_values(set(walker_data + init_actions))
 
-    def _step_states(self, init_step: bool = False, n_fixed_steps: int = 1):
-        """Sample an action for each walker, and act on the system.
-        Keep track of the action chosen if init_step
-        :param init_step: If it is the first step, keep track of the initial actions taken.
-        :param n_fixed_steps: Number of consecutive steps the same action will be applied.
-        :return: None.
+    def run_swarm(self, state: np.ndarray=None, obs: np.ndarray=None, print_swarm: bool=False):
         """
-        # Only step an state if it has not cloned
-        step_ix = np.logical_not(self._will_clone) if not init_step else np.ones(len(self.swarm),
-                                                                                 dtype=bool)
-
-        actions = self.policy.predict(self.swarm[step_ix])
-        self.swarm[step_ix] = self.step(self.swarm[step_ix], actions,
-                                        fixed_steps=n_fixed_steps)
-        # Save action taken from root state inside
-        if init_step:
-            for ix, state in enumerate(self.swarm[step_ix]):
-                state.update_policy_action(actions[ix])  # Save init action
-                state.update_policy_data(0)  # Set simulation time to zero.
-        self._n_samples_done += step_ix.sum()
-        self._will_step = step_ix
-
-    def _evaluate_distance(self) -> np.ndarray:
-        """Calculates the euclidean distance between pixels of two different images
-        on a vector of swarm, and normalizes the relative distances between 1 and 2.
-        In a more general scenario, any function that quantifies the notion of "how different two
-        swarm are" could work, even though it is not a proper distance.
+        Iterate the swarm by evolving and cloning each walker until a certain condition
+        is met.
+        :return:
         """
-        # Get random companion
-        idx = np.random.permutation(np.arange(len(self.swarm)))
-        obs = np.array([state.observed for state in self.swarm])
-        # Euclidean distance between pixels
-        dist = np.sqrt(np.sum((obs[idx] - obs) ** 2, axis=tuple(range(1, len(obs.shape)))))
-        return normalize_vector(dist)
-
-    def _virtual_reward(self) -> np.ndarray:
-        """Calculate the entropic reward of the walkers. This quantity is used for determining
-        the chance a given state has of cloning. This scalar gives us a measure of how well an
-        state is solving the exploration vs exploitation problem.
-        """
-        dist = self._evaluate_distance()  # goes between 0 and 1
-        rewards = np.array([state.reward for state in self.swarm])
-        scores = normalize_vector(rewards) + 1  # Goes between 1 and 2
-        # The balance sets how much preference we are giving exploitation over exploration.
-        ent_reward = dist * scores ** self.balance
-        return ent_reward
-
-    def _update_time_step(self):
-        """Keep track of the time of each state in the cone, with respect to the present state.
-        In case the state has been stepped, increase time by 1.
-        """
-        for state in self.swarm[self._will_step]:
-            # The current simulation time is stored inside the policy_data attribute of each state.
-            current_ts = state.policy_data if state.policy_data is not None else 0
-            state.update_policy_data(current_ts + 1)
-        self._state_times = np.array([s.policy_data for s in self.swarm])
-
-    def _clone(self):
-        """The clone phase aims to change the distribution of walkers in the state space, by
-         cloning some swarm to a randomly chosen companion. After cloning, the distribution of
-         walkers will be closer to the reward distribution of the state space.
-        1 - Choose a random companion who is alive.
-        2 - Calculate the probability of cloning.
-        3 - Clone if True or the walker is dead.
-        """
-        ent_rew = self._virtual_reward()
-
-        # Besides the death condition, zero entropic reward also counts as death when cloning
-        deaths = np.array([s.dead or ent_rew[i] == 0 for i, s in enumerate(self.swarm)])
-        # The following line is tailored to atari games. Beware when using in a general case.
-        deaths = np.logical_or(deaths, [s.reward < self.root_state.reward for s in self.swarm])
-        self._dead_mask = deaths
-
-        idx = self._get_companions()
-
-        # The probability of cloning depends on the relationship of entropic rewards
-        # with respect to a randomly chosen walker.
-        value = (ent_rew[idx] - ent_rew) / np.where(ent_rew > 0, ent_rew, 1e-8)
-        clone = (value >= np.random.random()).astype(bool)
-
-        clone[deaths] = True
-        clone[deaths[idx]] = False  # Do not clone to a dead companion
-        # Actual cloning
-        self._will_clone = clone
-        for i, clo in enumerate(clone):
-            if clo:
-                self.swarm[i] = self.swarm[idx][i].create_clone()
-
-    def _act(self, state: State=None, render: bool = False, *args, **kwargs) -> State:
-        """ Given an arbitrary state, acts on the environment and return the
-        processed new state where the system ends up.
-        :param state: State that represents the current state of the environment.
-        :param render: If true, the environment will be displayed.
-        :param args: Will be passed to predict_proba.
-        :param kwargs: Will be passed to predict_proba.
-        :return: Next state of the system.
-        """
-        # If state not provided we will act on the root_state
-        if state is not None:
-            self.set_root_state(state)
-        model_action = self.model.predict(self.root_state)
-        self._model_pred = model_action
-        action = self._predict(self.root_state, *args, **kwargs)
-        self._last_pred = action
-        for _ in range(self.n_fixed_steps):
-            new_state = self.step(self.root_state, action)
-            if render:
-                self.env.render()
-        new_state.update_policy_action(action)
-        new_state.update_model_action(model_action)
-        return new_state
-
-    def _get_companions(self) -> np.ndarray:
-        """
-        Return an array of indices corresponding to a walker chosen at random.
-        Self selection can happen.
-        :return: np.ndarray containing the indices of the companions to be chosen for each walker.
-        """
-        return np.random.permutation(np.arange(self.n_states))
-
-    def _update_parameters(self):
-        """Here we update the parameters of the algorithm in order to maintain the average time of
-        the state swarm the closest to the minimum time horizon possible.
-        """
-        self._save_steps.append(int(self._n_samples_done))  # Save for showing while printing.
-        self._update_balance()
-        if self.balance >= 1:  # We are doing great
-            if self.n_states == self.max_states:
-                self._update_n_samples()  # Decrease the samples so we can be faster.
-            else:
-                self._update_n_states()  # Thi will increase the number of swarm
-
-        else:  # We are not arriving at the desired time horizon.
-            if self._n_limit_samples == self.max_samples:
-                self._update_n_states()  # Reduce the number of swarm to avoid useless clones.
-            else:
-                self._update_n_samples()  # Increase the amount of computation.
+        self.init_swarm(state=state, obs=obs)
+        while not self.stop_condition():
+            try:
+                # We calculate the clone condition, and then perturb the walkers before cloning
+                # This allows the deaths to recycle faster, and the Swarm becomes more flexible
+                if self._i_simulation > 1:
+                    self.clone_condition()
+                self.step_walkers()
+                if self._i_simulation > 1:
+                    self.clone()
+                elif self._i_simulation == 0:
+                    self.init_ids = self.walkers_id.copy()
+                self._i_simulation += 1
+                if self._i_simulation % self.render_every == 0 and print_swarm:
+                    print(self)
+                    clear_output(True)
+            except KeyboardInterrupt:
+                break
+        if print_swarm:
+            print(self)
 
     def _update_n_samples(self):
         """This will adjust the number of samples we make for calculating an state swarm. In case
         we are doing poorly the number of samples will increase, and it will decrease if we are
         sampling further than the minimum mean time desired.
         """
-        limit_samples = self._n_limit_samples / self.balance
+        limit_samples = self._max_samples_step / np.maximum(1e-7, self.balance)
         # Round and clip
         limit_clean = int(np.clip(np.ceil(limit_samples), 2, self.max_samples))
-        self._n_limit_samples = limit_clean
+        self._max_samples_step = limit_clean
 
-    def _update_n_states(self):
+    def _update_n_walkers(self):
         """The number of parallel trajectories used changes every step. It tries to use enough
          swarm to make the mean time of the swarm tend to the minimum mean time selected.
          """
-        old_n = int(self.n_states)
-        new_n = self.n_states * self.balance
-        new_n = int(np.clip(np.ceil(new_n), 2, self.max_states))
-        self.n_states = new_n
-        # New swarm start as a copy of already existing swarm.
-        if new_n > old_n:
-            self._swarm[old_n:new_n] = [x.create_clone() for x
-                                        in np.random.choice(self.swarm, int(new_n - old_n))]
-        self.n_states = int(new_n)
+        new_n = self.n_walkers * self.balance
+        new_n = int(np.clip(np.ceil(new_n), 2, self.max_walkers))
+        self.n_walkers = new_n
 
     def _update_balance(self):
         """The balance parameter regulates the balance between how much you weight the distance of
@@ -319,65 +142,94 @@ class FractalAI(PolicyWrapper):
         meet the time horizon. This also means that we can give exploitation more importance,
         because we are exploring the state space well.
         """
-        self.balance = self.state_times.mean() / self.time_horizon
+        self.balance = self.times.mean() / self.time_horizon
 
-    def _predict(self, state: State,
-                 n_fixed_steps: int = None) -> np.ndarray:
+    def update_parameters(self):
+        """Here we update the parameters of the algorithm in order to maintain the average time of
+        the state swarm the closest to the minimum time horizon possible.
         """
-        Probability distribution over each action for the current state.
-        This is done by propagating and cloning the walkers to build a causal cone.
-        The cone is n_states wide and depth long.
-        :param state: State from you want the actions to be predicted.
-        :param n_fixed_steps: Number of steps that the same action will be applied.
-        :return: Array containing the probability distribution over each action.
-        """
-        fixed_steps = self.n_fixed_steps if n_fixed_steps is None else n_fixed_steps
-        self.set_root_state(state)
-        self._n_samples_done = 0
-        self._i_simulation = 1
-
-        while self._n_samples_done <= self._n_limit_samples:
-            if self._i_simulation > 1:
-                self._clone()
-            reset_walkers = self._i_simulation == 1 or (self.deaths.all() and
-                                                        not self.root_state.dead)
-
-            if reset_walkers:
-                self._init_step()
-            self._step_states(init_step=reset_walkers, n_fixed_steps=fixed_steps)
-            self._i_simulation += 1
-            self._update_time_step()
-
-        self._update_parameters()
-        action_probs = self._action_probabilities()
-        return action_probs
-
-    def set_root_state(self, state: [State, list, np.ndarray]):
-        """Set the present state of the environment that the fractal is in externally."""
-        if isinstance(state, (list, np.ndarray)):
-            if len(state) == 1:
-                state = state[0]
+        self._save_steps.append(int(self._n_samples_done))  # Save for showing while printing.
+        self._update_balance()
+        if self.balance >= 1:  # We are doing great
+            if self.n_walkers == self.max_walkers:
+                self._update_n_samples()  # Decrease the samples so we can be faster.
             else:
-                raise ValueError("State should be a State or a vector of length 1, got {} instead"
-                                 .format(state))
-        self._root_state = state.create_clone()
-        self._root_state.update_policy_data(0)  # Init time step w.r. to the present state
+                self._update_n_walkers()  # Thi will increase the number of swarm
 
-    def evaluate(self, skip_frames: int = 0, render=False,
-                 max_steps=100000, *args, **kwargs) -> tuple:
-        """Evaluate the current model by playing one episode."""
-        self.balance = 1
-        self._n_limit_samples = self.max_samples
-        episode_len = 0
+        else:  # We are not arriving at the desired time horizon.
+            if self._max_samples_step == self.max_samples:
+                self._update_n_walkers()  # Reduce the number of swarm to avoid useless clones.
+            else:
+                self._update_n_samples()  # Increase the amount of computation.
 
-        self.env.reset()
-        state = self.skip_frames(n_frames=skip_frames)
-        while not state.terminal and episode_len < max_steps:
-            state = self.act(state, render=render, *args, **kwargs)
-            episode_len += 1
+    def stop_condition(self) -> bool:
+        """This sets a hard limit on maximum samples. It also Finishes if all the walkers are dead,
+         or the target score reached.
+         """
+        stop_hard = self._n_samples_done > self._max_samples_step
+        stop_score = False if self.reward_limit is None else \
+            self.rewards.max() >= self.reward_limit
+        stop_terminal = self._end_cond.all()
+        # Define game status so the user knows why game stopped. Only used when printing the Swarm
+        if stop_hard:
+            self._game_status = "Sample limit reached."
+        elif stop_score:
+            self._game_status = "Score limit reached."
+        elif stop_terminal:
+            self._game_status = "All the walkers died."
+        else:
+            self._game_status = "Playing..."
+        return stop_hard or stop_score or stop_terminal
+
+    def recover_game(self, index=None) -> tuple:
+        """
+        By default, returns the game sampled with the highest score.
+        :param index: id of the leaf where the returned game will finish.
+        :return: a list containing the observations of the target sampled game.
+        """
+        if index is None:
+            index = self.walkers_id[self.rewards.argmax()]
+        return self.tree.get_branch(index)
+
+    def render_game(self, index=None, sleep: float=0.02):
+        """Renders the game stored in the tree that ends in the node labeled as index."""
+        idx = max(list(self.tree.data.nodes)) if index is None else index
+        states, actions, dts = self.recover_game(idx)
+        for state, action, dt in zip(states, actions, dts):
+            self._env.step(action, state=state, n_repeat_action=dt)
+            self._env.render()
+            time.sleep(sleep)
+
+    def run_agent(self, render: bool = False, print_swarm: bool=False):
+        """
+
+        :param render:
+        :param print_swarm:
+        :return:
+        """
+
+        self.tree.reset()
+        i_step, self._agent_reward, end = 0, 0, False
+        self._save_steps = []
+        state, obs = self._env.reset(return_state=True)
+        self.tree.append_leaf(i_step, parent_id=i_step - 1,
+                              state=state, action=0, dt=1)
+        while not end and self._agent_reward < self.reward_limit:
+            i_step += 1
+            self.run_swarm(state=state.copy(), obs=obs)
+            action = self.weight_actions()
+
+            state, obs, _reward, _end, info = self._env.step(state=state, action=action,
+                                                             n_repeat_action=self.min_dt)
+            self.tree.append_leaf(i_step, parent_id=i_step - 1,
+                                  state=state, action=action, dt=self._env.n_repeat_action)
+            self._agent_reward += _reward
+            self._last_action = action
+            end = info.get("terminal", _end)
+
             if render:
-                # This will also print the internal stats of the fractal after each step.
-                from IPython.core.display import clear_output
+                self._env.render()
+            if print_swarm:
+                print(self)
                 clear_output(True)
-                print("Step: {} Score: {}\n {}".format(episode_len, state.reward, self))
-        return state.reward, episode_len
+            self.update_parameters()
