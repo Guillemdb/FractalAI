@@ -4,8 +4,6 @@ import cv2
 import numpy as np
 from fractalai.environment import Environment, ExternalProcess, BatchEnv
 from gym.envs.classic_control import rendering
-from gym import spaces
-import retro
 
 
 def resize_frame(frame, height, width):
@@ -115,7 +113,8 @@ class DMControlEnv(Environment):
 
         def step(self, action: np.ndarray, state: np.ndarray = None,
                  n_repeat_action: int = None) -> tuple:
-            n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
+            n_repeat_action = n_repeat_action if n_repeat_action is not None\
+                else self.n_repeat_action
 
             custom_death = False
             end = False
@@ -127,11 +126,7 @@ class DMControlEnv(Environment):
                 end = end or time_step.last()
                 cum_reward += time_step.reward
                 # The death condition is a super efficient way to discard huge chunks of the
-                # state space at discretion of the programmer. I am not uploading the code,
-                # because it is really easy to screw up if you provide the wrong function.
-                # In the end, its just a way to leverage human knowledge, and that should only
-                # be attempted if you have a profound understanding of how everything works.
-                # If done well, the speedup is a few orders of magnitude.
+                # state space at discretion of the programmer.
                 if self._custom_death is not None:
                     custom_death = custom_death or \
                                    self._custom_death.calculate(self,
@@ -140,20 +135,18 @@ class DMControlEnv(Environment):
                 self._last_time_step = time_step
                 if end:
                     break
-            # Here we save the state of the simulation inside the microstate attribute.
             observed = self._time_step_to_obs(time_step)
             # This is written as a hack because using custom deaths should be a hack.
             if self._custom_death is not None:
                 end = end or custom_death
 
-            #if end:
-            #    self.env.reset()
             if state is not None:
                 new_state = self.get_state()
                 return new_state, observed, cum_reward, end, {"lives": 0, "dt": n_repeat_action}
             return observed, cum_reward, end, {"lives": 0, "dt": n_repeat_action}
 
-        def step_batch(self, actions, states=None, n_repeat_action: [int, np.ndarray] = None) -> tuple:
+        def step_batch(self, actions, states=None,
+                       n_repeat_action: [int, np.ndarray] = None) -> tuple:
             """
 
             :param actions:
@@ -161,7 +154,8 @@ class DMControlEnv(Environment):
             :param n_repeat_action:
             :return:
             """
-            n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
+            n_repeat_action = n_repeat_action if n_repeat_action is not None \
+                else self.n_repeat_action
             n_repeat_action = n_repeat_action if isinstance(n_repeat_action, np.ndarray) \
                 else np.ones(len(states)) * n_repeat_action
             data = [self.step(action, state, n_repeat_action=dt)
@@ -184,7 +178,7 @@ class DMControlEnv(Environment):
 
         @staticmethod
         def _time_step_to_obs(time_step) -> np.ndarray:
-            # Concat observations in a single, so it is easier to calculate distances
+            # Concat observations in a single array, so it is easier to calculate distances
             obs_array = np.hstack([np.array([time_step.observation[x]]).flatten()
                                    for x in time_step.observation])
             return obs_array
@@ -205,21 +199,23 @@ class ExternalDMControl(ExternalProcess):
           action_space: The cached action space of the environment.
         """
         self.name = name
-        super(ExternalDMControl, self).__init__(constructor=(name, wrappers, n_repeat_action, kwargs))
+        super(ExternalDMControl, self).__init__(constructor=(name, wrappers,
+                                                             n_repeat_action, kwargs))
 
     def _worker(self, data, conn):
         """The process waits for actions and sends back environment results.
         Args:
-          constructor: Constructor for the OpenAI Gym environment.
+          data: tuple containing the necessari parameters.
           conn: Connection for communication to the main process.
         Raises:
           KeyError: When receiving a message of unknown type.
         """
         try:
             name, wrappers, n_repeat_action, kwargs = data
-            dom_name, task_name = name.split("-")
+
             env = DMControlEnv(name, n_repeat_action=n_repeat_action,
                                **kwargs)
+            # dom_name, task_name = name.split("-")
             # custom_death = CustomDeath(domain_name=dom_name,
             #                             task_name=task_name)
             env.reset()
@@ -254,9 +250,10 @@ class ExternalDMControl(ExternalProcess):
 
 
 class ParallelDMControl(Environment):
-    """Wrap any environment to be stepped in parallel."""
+    """Wrap a dm_control environment to be stepped in parallel."""
 
-    def __init__(self, name: str, n_repeat_action: int=1, n_workers: int=8, blocking: bool=True, **kwargs):
+    def __init__(self, name: str, n_repeat_action: int=1, n_workers: int=8,
+                 blocking: bool=True, **kwargs):
         """
 
         :param name: Name of the Environment
@@ -349,23 +346,25 @@ class CustomDeath:
         max_reward_drop = 0.3
 
         torso_touches_ground = env.physics.height() < min_torso_height
-        #reward_change = time_step.reward - (last_time_step.reward if last_time_step is not None else 0)
-        #reward_drops = reward_change < -max_reward_drop * env.n_repeat_action
+        # reward_change = time_step.reward - (last_time_step.reward if
+        # last_time_step is not None else 0)
+        # reward_drops = reward_change < -max_reward_drop * env.n_repeat_action
         return False
 
     @staticmethod
     def _walker_death(env, time_step, last_time_step) -> bool:
         min_torso_height = 0.1
         max_reward_drop_pct = 0.5
-        max_tilt = 0 #disabled
+        # max_tilt = 0
         min_reward = 0.1
 
         torso_touches_ground = env.physics.torso_height() < min_torso_height
         last_reward = last_time_step.reward if last_time_step is not None else 0.00001
         reward_change = (time_step.reward / last_reward)
         reward_drops = reward_change < max_reward_drop_pct
-        torso_very_tilted = False #abs(env.physics.torso_upright()) < max_tilt and reward_change < 0
-        #torso_very_tilted = torso_very_tilted if not env.state.dead else False
+        torso_very_tilted = False  # abs(env.physics.torso_upright())
+        # < max_tilt and reward_change < 0
+        # torso_very_tilted = torso_very_tilted if not env.state.dead else False
 
         crappy_reward = time_step.reward < min_reward if not env.state.dead else False
 

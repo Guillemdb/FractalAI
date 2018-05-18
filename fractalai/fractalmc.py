@@ -12,7 +12,8 @@ class FractalMC(Swarm):
                  time_horizon: int=15,
                  reward_limit: float=None, max_samples: int=None, render_every: int=1e10,
                  custom_reward: Callable=None, custom_end: Callable=None, dt_mean: float=None,
-                 dt_std: float=None, accumulate_rewards: bool=True, keep_best: bool=True):
+                 dt_std: float=None, accumulate_rewards: bool=True, keep_best: bool=True,
+                 min_dt: int=1):
         """
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
@@ -35,8 +36,9 @@ class FractalMC(Swarm):
                                         balance=balance, reward_limit=reward_limit,
                                         samples_limit=self._max_samples_step,
                                         render_every=render_every, custom_reward=custom_reward,
-                                        custom_end=custom_end, dt_mean=dt_mean, dt_std=dt_std, keep_best=keep_best,
-                                        accumulate_rewards=accumulate_rewards)
+                                        custom_end=custom_end, dt_mean=dt_mean, dt_std=dt_std,
+                                        keep_best=keep_best,
+                                        accumulate_rewards=accumulate_rewards, min_dt=min_dt)
         self.init_ids = np.zeros(self.n_walkers).astype(int)
 
         self._save_steps = []
@@ -64,7 +66,9 @@ class FractalMC(Swarm):
         The the proportion of times each initial action appears on the swarm, is proportional to
         the Q value of that action.
         """
+
         if isinstance(self._model, DiscreteModel):
+            # return self.init_actions[self.rewards.argmax()]
             counts = np.bincount(self.init_actions)
             return np.argmax(counts)
         vals = self.init_actions.sum(axis=0)
@@ -77,7 +81,7 @@ class FractalMC(Swarm):
 
     def run_swarm(self, state: np.ndarray=None, obs: np.ndarray=None, print_swarm: bool=False):
         """
-        Iterate the swarm by either evolving or cloning each walker until a certain condition
+        Iterate the swarm by evolving and cloning each walker until a certain condition
         is met.
         :return:
         """
@@ -107,7 +111,7 @@ class FractalMC(Swarm):
         we are doing poorly the number of samples will increase, and it will decrease if we are
         sampling further than the minimum mean time desired.
         """
-        limit_samples = self._max_samples_step / self.balance
+        limit_samples = self._max_samples_step / np.maximum(1e-7, self.balance)
         # Round and clip
         limit_clean = int(np.clip(np.ceil(limit_samples), 2, self.max_samples))
         self._max_samples_step = limit_clean
@@ -200,6 +204,7 @@ class FractalMC(Swarm):
         """
 
         :param render:
+        :param print_swarm:
         :return:
         """
 
@@ -214,12 +219,13 @@ class FractalMC(Swarm):
             self.run_swarm(state=state.copy(), obs=obs)
             action = self.weight_actions()
 
-            state, obs, _reward, _end, info = self._env.step(state=state, action=action)
+            state, obs, _reward, _end, info = self._env.step(state=state, action=action,
+                                                             n_repeat_action=self.min_dt)
             self.tree.append_leaf(i_step, parent_id=i_step - 1,
                                   state=state, action=action, dt=self._env.n_repeat_action)
             self._agent_reward += _reward
             self._last_action = action
-            end = end or _end
+            end = info.get("terminal", _end)
 
             if render:
                 self._env.render()

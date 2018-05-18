@@ -97,11 +97,12 @@ class AtariEnvironment(Environment):
 
             obs, _reward, _end, _info = self._env.step(action)
             _info["lives"] = _info.get("ale.lives", -1)
-            end = _end or end or info["lives"] > info["lives"]
+            end = _end or end or info["lives"] > _info["lives"]
             info = _info
             reward += _reward
-            if end:
+            if _end:
                 break
+        info["terminal"] = _end
         if state is not None:
             new_state = self.get_state()
             return new_state, obs, reward, end, info
@@ -218,8 +219,7 @@ class ESEnvironment(Environment):
                 obs, _reward, end, info = self._env.step(nn_action)
                 reward += _reward
                 n_steps += 1
-                if end:
-                    break
+
         if state is not None:
             new_state = self.get_state()
             return new_state, obs, reward, False, 0
@@ -640,4 +640,3 @@ class ParallelEnvironment(Environment):
 
     def sync_states(self):
         self._batch_env.sync_states(self.get_state())
-
