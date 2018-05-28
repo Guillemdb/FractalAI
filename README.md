@@ -209,6 +209,7 @@ For each game played by the agent, the following information is is provided:
  | video pinball (*) | 91862206 | 949604 | ***999999*** | 105% | 
  | wizard of wor (*) | 233700 | 12352 | ***99900*** | 809% | 
  | yars revenge | 15000105 | 69618.1 | ***98491*** | 141% | 
+ 
  (*) Games with the "1 Million bug" where max. score is hard-limited
  
 #### Detailed Performance Sheet
