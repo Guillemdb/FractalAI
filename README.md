@@ -1,7 +1,5 @@
 # Fractal AI: A Fragile Theory of Intelligence
 
-XXX
-
 **Please note this project is under active development and may change over time.
 Treat it as an open beta.**
 
@@ -128,11 +126,11 @@ using the Fractal Monte Carlo Agent (FMC) through the code from the reference im
 The parameters utilized were chosen according to the the first principles of the theory.
 The performance observed corresponds with the expected values.
 
-| Total number of games available               |  56 |  100.0% |
+| Total number of games available               |  55 |  |
 | :-------------------------------------------- | --: | ------: |
-| Games played by FMC                           |  52 |   92.9% |
-| Games where FMC defeats the state-of-the-art  |  41 |   78.8% |
-| Games solved or defeats the human record      |  17 |   32.7% |
+| FMC better than avg. human                    |  52 |   94.55% |
+| FMC better than the state-of-the-art          |  48 |   87.27% |
+| Games solved or defeats the human record      |  31 |   56.36% |
 
 ### Fractal Monte Carlo Agent Performance Table
 
@@ -142,7 +140,7 @@ widely accepted benchmarks within the reinforcement learning community.
 For each game played by the agent, the following information is is provided:
 
 - **Human record**: the maximum score achieved by a human player, as reported in **[[8](#bibliography)]**.
-- **SotA**: stands for "State of the Art":
+- **SOtA**: stands for "State of the Art":
   - Represents the best score achieved by any of the following algorithms:
     Random, DQN, C51 DQN, NoisyNet-DQN, Dueling, NoisyNet-Dueling, A3C,
     NoisyNet-A3C, A2C, HyperNEAT, ES FF, and MCTS.
@@ -153,66 +151,66 @@ For each game played by the agent, the following information is is provided:
     A detailed source for each score can be found in the [detailed performance sheet](#detailed-performance-sheet).
 - **FMC**: the maximum score achieved by Fractal Monte Carlo Agent in the games documented.
   The number of runs for each game and the parameters used may vary between each game.
-- **FMC vs SotAa**: Relative performance of _FMC_ vs. the corresponding _State of the Art_.
+- **FMC vs SOtA**: Relative performance of _FMC_ vs. the corresponding _State of the Art_.
 
-| Game | Human Record | SotA | FMC | FMC vs SotA |
-|:--- | ---: | ---: | ---: | ---:|
-| alien | 251916 | 5899 | ***19380*** | 329% |
-| amidar | 155339 | 2354 | ***4306*** | 183% |
-| assault | 8647 | ***11477*** | 2782 | 24% |
-| asterix | 335500 | 406211 | ***999500*** | 246% |
-| asteroids | 10004100 | 26380 | ***76270*** | 289% |
-| atlantis | 7352737 | 8782433 | ***10000100*** | 114% |
-| bank heist | 199978 | 1611.9 | ***1645*** | 102% |
-| battle zone | 863000 | 42767 | ***50000*** | 117% |
-| beam rider | 999999 | 30276.5 | ***288666*** | 953% |
-| berzerk | 1057940 | 3409 | ***13290*** | 390% |
-| bowling | 300 | ***135.8*** | 86 | 63% |
-| boxing | 100 | 99.4 | ***100*** | 101% |
-| breakout |  | 748 | ***750*** | 100% |
-| centipede | 1301709 | 25275.2 | ***1351000*** | 5345% |
-| chopper command | 999900 | 15600 | ***999900*** | 6410% |
-| crazy climber | 447000 | 179877 | ***238300*** | 132% |
-| demon attack | 999970 | 130955 | ***999970*** | 764% |
-| double dunk |  | 5 | ***20*** | 400% |
-| enduro | 3617.9 | 3454 | ***5279*** | 153% |
-| fishing derby | 71 | ***49.8*** | -1 | -2% |
-| freeway | 34 | ***33.9*** | 33 | 97% |
-| frostbite | 552590 | 7413 | ***485000*** | 6543% |
-| gopher | 120000 | 104368.2 | ***616000*** | 590% |
-| gravitar | 1673950 | 805 | ***2600*** | 323% |
-| hero | 1000000 | ***38874*** | 36625 | 94% |
-| ice hockey | 36 | 10.6 | ***64*** | 604% |
-| jamesbond | 45550 | 4214 | ***9600*** | 228% |
-| kangaroo | 1436500 | ***14854*** | 7100 | 48% |
-| krull | 1006680 | 12601.4 | ***277000*** | 2198% |
-| kung fu master | 1000000 | 48375 | ***144100*** | 298% |
-| montezuma | 1219200 | 273.7 | ***2500*** | 913% |
-| ms pacman | 290090 | 6283 | ***58521*** | 931% |
-| name this game | 25220 | 15572.5 | ***53010*** | 340% |
-| phoenix | 4014440 | 70324.3 | ***250450*** | 356% |
-| pitfall | 114000 | ***123*** | 0 | 0% |
-| pong | 21 | ***21*** | ***21*** | 100% |
-| private eye | 103100 | 15095 | ***40680*** | 269% |
-| qbert | 2400000 | 23784 | ***35750*** | 150% |
-| riverraid | 194940 | ***21162.6*** | 18510 | 87% |
-| road runner | 2038100 | ***69524*** | 54000 | 78% |
-| robotank | 74 | 65.3 | ***94*** | 144% |
-| seaquest | 527160 | 266434 | ***999999*** | 375% |
-| skiing | 32,72 | ***15442.5*** |  | 0% |
-| solaris | 281740 | 11830 | ***93520*** | 791% |
-| space invaders | 621535 | 15311.5 | ***17970*** | 117% |
-| star gunner | 77400 | ***125117*** | 1600 | 1% |
-| surround |  | ***6.8*** |  | 0% |
-| tennis | 24 | 23.1 | ***24*** | 104% |
-| time pilot | 66500 | ***11666*** |  | 0% |
-| tutankham | 3493 | 321 | ***342*** | 107% |
-| up n down | 168830 | 145113 | ***999999*** | 689% |
-| venture | 31900 | ***3800*** | 1500 | 39% |
-| video pinball | 999999 | 949604 | ***999999*** | 105% |
-| wizard of wor | 233700 | 12352 | ***93090*** | 754% |
-| yars revenge | 15000105 | ***69618.1*** |  | 0% |
-
+| Game | Human Record | SOtA | FMC | FMC vs SOtA |
+|:--- | :---: | :---: | :---: | ---:|
+ | alien | 251916 | 5899 | ***479940*** | 8136% | 
+ | amidar | 155339 | 2354 | ***5779*** | 245% | 
+ | assault | 8647 | 11477 | ***14472*** | 126% | 
+ | asterix | 335500 | 406211 | ***999500*** | 246% | 
+ | asteroids | 10004100 | 26380 | ***12575000*** | 47669% | 
+ | atlantis | 7352737 | 8782433 | ***10000100*** | 114% | 
+ | bank heist | 199978 | 1611.9 | ***3139*** | 195% | 
+ | battle zone (*) | 863000 | 42767 | ***999000*** | 2336% | 
+ | beam rider | 999999 | 30276.5 | ***999999*** | 3303% | 
+ | berzerk | 1057940 | 3409 | ***17610*** | 517% | 
+ | bowling | 300 | 135.8 | ***180*** | 133% | 
+ | boxing | 100 | 99.4 | ***100*** | 101% | 
+ | breakout | 752 | 748 | ***864*** | 116% | 
+ | centipede | 1301709 | 25275.2 | ***1351000*** | 5345% | 
+ | chopper command (*) | 999900 | 15600 | ***999900*** | 6410% | 
+ | crazy climber | 447000 | 179877 | ***2254100*** | 1253% | 
+ | demon attack (*) | 1556345 | 130955 | ***999970*** | 764% | 
+ | double dunk | 199 | 5 | ***24*** | 480% | 
+ | enduro | 3617.9 | 3454 | ***5279*** | 153% | 
+ | fishing derby | 71 | 49.8 | ***63*** | 127% | 
+ | freeway | 34 | ***33.9*** | 33 | 97% | 
+ | frostbite (*) | 552590 | 7413 | ***999960*** | 13489% | 
+ | gopher (*) | 120000 | 104368.2 | ***999980*** | 958% | 
+ | gravitar | 1673950 | 1693.2 | ***14050*** | 830% | 
+ | hero | 1000000 | ***105929.4*** | 43255 | 41% | 
+ | ice hockey | 36 | 10.6 | ***64*** | 604% | 
+ | jamesbond | 45550 | 4214 | ***152950*** | 3630% | 
+ | kangaroo | 1436500 | ***14854*** | 10800 | 73% | 
+ | krull | 1006680 | 12601.4 | ***426534*** | 3385% | 
+ | kung fu master | 1000000 | 48375 | ***172600*** | 357% | 
+ | montezuma | 1219200 | 4739.6 | ***5600*** | 118% | 
+ | ms pacman (*) | 290090 | 6283 | ***999990*** | 15916% | 
+ | name this game | 25220 | 15572.5 | ***53010*** | 340% | 
+ | phoenix | 4014440 | 70324.3 | ***250450*** | 356% | 
+ | pitfall | 114000 | ***123*** | 0.001 | 0% | 
+ | pong | 21 | ***21*** | ***21*** | 100% | 
+ | private eye | 103100 | 40908.2 | ***41760*** | 102% | 
+ | qbert (*) | 2400000 | 23784 | ***999975*** | 4204% | 
+ | riverraid | 194940 | ***21162.6*** | 18510 | 87% | 
+ | road runner (*) | 2038100 | 69524 | ***999900*** | 1438% | 
+ | robotank | 74 | 65.3 | ***94*** | 144% | 
+ | seaquest (*) | 527160 | 266434 | ***999999*** | 375% | 
+ | skiing | -3272 | ***-7983.6*** | -99999 | 1253% | 
+ | solaris | 281740 | 11830 | ***93520*** | 791% | 
+ | space invaders | 621535 | 15311.5 | ***17970*** | 117% | 
+ | star gunner (*) | 77400 | 125117 | ***999800*** | 799% | 
+ | tennis | 24 | 23.1 | ***24*** | 104% | 
+ | time pilot | 66500 | 11666 | ***90000*** | 771% | 
+ | tutankham | 3493 | 321 | ***342*** | 107% | 
+ | up n down (*) | 168830 | 145113 | ***999999*** | 689% | 
+ | venture | 31900 | ***3800*** | 1500 | 39% | 
+ | video pinball (*) | 91862206 | 949604 | ***999999*** | 105% | 
+ | wizard of wor (*) | 233700 | 12352 | ***99900*** | 809% | 
+ | yars revenge | 15000105 | 69618.1 | ***98491*** | 141% | 
+ (*) Games with the "1 Million bug" where max. score is hard-limited
+ 
 #### Detailed Performance Sheet
 
 We provide a more detailed Google Docs spreadsheet where the performance of the
@@ -224,23 +222,6 @@ some of our results, please [open an issue](https://github.com/FragileTheory/Fra
 and we will update the document accordingly.
 
 - [Fractal AI performance sheet](https://docs.google.com/spreadsheets/d/1JcNw2L0YL_I2iGZPJ0bNKJshlTaqMuEl5CP2W5zie6M/edit?usp=sharing)
-
-### Run the Examples and Help Us
-
-You can help us while running the example by yourself and sending us your results:
-
-1. Record a video using our [FMC example notebook](FMC_example.ipynb).
-2. Provide the parameters used in the run.
-3. Provide the mean time as displayed as output in the notebook.
-4. Provide information about the system in which you ran the example.
-5. Share all of the above with us. You can do that in two ways:
-    1. Upload the `mp4` file generated to [YouTube](https://www.youtube.com).
-       Post the URL on [Twitter](https://www.twitter.com) alongside the corresponding information
-       in the tweet content, and use use the hashtag **#Fractal_ATARI**.
-    2. [Open an issue](https://github.com/FragileTheory/FractalAI/issues) in this repository
-       with the video/URL and corresponding information.
-
- We appreciate all your contributions.
 
 ### Benchmarking tool
 
