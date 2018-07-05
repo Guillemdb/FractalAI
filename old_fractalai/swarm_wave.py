@@ -99,7 +99,8 @@ class SwarmWave:
                  balance: float = 1.,
                  render_every: int = 5,
                  score_limit: int = None,
-                 save_tree: bool = True):
+                 save_tree: bool = True,
+                 prune_tree: bool=True):
         """
 
         :param env_name: The name of the Atari game to be sampled.
@@ -116,6 +117,7 @@ class SwarmWave:
         self.balance = balance
         self.render_every = render_every
         self.score_limit = score_limit
+        self.prune_tree = prune_tree
         # Unbounded samples + save_tree = memory depleted
         self.save_tree = False if n_samples is None else save_tree
 
@@ -314,7 +316,7 @@ class SwarmWave:
                 self._terminal[i] = False
         # Prune tree to save memory
         dead_leafs = old_ids - set(self.walkers_id)
-        if self.save_tree:
+        if self.save_tree and self.prune_tree:
             self.tree.prune_tree(dead_leafs, set(self.walkers_id))
 
     def _stop_condition(self) -> bool:

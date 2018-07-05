@@ -1,15 +1,8 @@
 import sys
 import traceback
-import cv2
 import numpy as np
 from fractalai.environment import Environment, ExternalProcess, BatchEnv
 from gym.envs.classic_control import rendering
-
-
-def resize_frame(frame, height, width):
-    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-    frame = cv2.resize(frame, (height, width), interpolation=cv2.INTER_AREA)
-    return frame[:, :, None]
 
 
 class DMControlEnv(Environment):
@@ -46,6 +39,7 @@ class DMControlEnv(Environment):
             self._viewer = rendering.SimpleImageViewer()
 
             self._custom_death = custom_death
+
             self.reset()
 
         def __getattr__(self, item):
