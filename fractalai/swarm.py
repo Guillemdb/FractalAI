@@ -6,6 +6,13 @@ from IPython.core.display import clear_output
 
 
 def normalize_vector(vector):
+    avg = vector.mean()
+    if avg == 0:
+        return np.ones(len(vector))
+    standard = vector / avg
+    return standard
+
+def relativize_vector(vector):
     std = vector.std()
     if std == 0:
         return np.ones(len(vector))
@@ -357,11 +364,11 @@ class Swarm:
         # Euclidean distance between states (pixels / RAM)
         obs = self.observations.astype(np.float32).reshape((self.n_walkers, -1))
         dist = np.sqrt(np.sum((obs[idx] - obs) ** 2, axis=tuple(range(1, len(obs.shape)))))
-        return normalize_vector(dist)
+        return relativize_vector(dist)
 
     def normalize_rewards(self) -> np.ndarray:
         rewards = np.array(self.rewards).astype(np.float32)
-        return normalize_vector(rewards)
+        return relativize_vector(rewards)
 
     def virtual_reward(self) -> np.ndarray:
         """Calculate the virtual reward of the walkers. This quantity is used for determining
