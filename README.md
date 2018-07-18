@@ -127,7 +127,7 @@ found in the literature, to compare our implementation of the FMC algorithm agai
 |                              | FMC Wins |   %  |
 | :--------------------------- | :------: | :--: |
 | FMC vs Standard Human        |  49 / 50 |  98% |
-| FMC vs World Human Record    |  31 / 50 |  62% |
+| FMC vs World Human Record    |  32 / 50 |  64% |
 | FMC vs Planning SOtA (1)     |  50 / 50 | 100% |
 | FMC vs Learning SOtA         |  45 / 50 |  90% |
 | FMC vs Hidden score limit    |  16 / 50 |  32% |
@@ -158,7 +158,7 @@ The following table depicts the Fractal Monte Carlo Agent performance on each te
 | Chopper Command (*) | ***999900*** | 34097 | 15600 | ***999900*** |
 | Crazy Climber | 447000 | 141840 | 179877 | ***2254100*** |
 | Demon Attack (*) | ***999970*** | 34405 | 130955 | ***999970*** |
-| Double Dunk | ***199*** | 24 | 24 | 24 |
+| Double Dunk | ***24*** | ***24*** | ***24*** | ***24*** |
 | Enduro | 3617.9 | 788 | 3454 | ***5279*** |
 | Fishing Derby | ***71*** | 42 | 59 | 63 |
 | Freeway | ***34*** | 32 | ***34*** | 33 |
