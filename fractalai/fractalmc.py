@@ -15,7 +15,7 @@ class FractalMC(Swarm):
                  custom_reward: Callable=None, custom_end: Callable=None, dt_mean: float=None,
                  dt_std: float=None, accumulate_rewards: bool=True, keep_best: bool=True,
                  min_dt: int=1, skip_initial_frames: int=0, update_parameters: bool=True,
-                 min_horizon: int=10):
+                 min_horizon: int=10, can_win: bool=False):
         """
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
@@ -42,7 +42,7 @@ class FractalMC(Swarm):
                                         render_every=render_every, custom_reward=custom_reward,
                                         custom_end=custom_end, dt_mean=dt_mean, dt_std=dt_std,
                                         keep_best=keep_best,
-                                        accumulate_rewards=accumulate_rewards, min_dt=min_dt)
+                                        accumulate_rewards=accumulate_rewards, min_dt=min_dt, can_win=can_win)
         self.init_ids = np.zeros(self.n_walkers).astype(int)
         self._update_parameters = update_parameters
 
@@ -93,24 +93,26 @@ class FractalMC(Swarm):
         is met.
         :return:
         """
+        self.reset()
         self.init_swarm(state=state, obs=obs)
         while not self.stop_condition():
-            try:
-                # We calculate the clone condition, and then perturb the walkers before cloning
-                # This allows the deaths to recycle faster, and the Swarm becomes more flexible
-                if self._i_simulation > 1:
-                    self.clone_condition()
-                self.step_walkers()
-                if self._i_simulation > 1:
-                    self.clone()
-                elif self._i_simulation == 0:
-                    self.init_ids = self.walkers_id.copy()
-                self._i_simulation += 1
-                if self._i_simulation % self.render_every == 0 and print_swarm:
-                    print(self)
-                    clear_output(True)
-            except ValueError:
-                break
+            #try:
+            # We calculate the clone condition, and then perturb the walkers before cloning
+            # This allows the deaths to recycle faster, and the Swarm becomes more flexible
+            if self._i_simulation > 1:
+                self.clone_condition()
+            self.step_walkers()
+            if self._i_simulation > 1:
+                self.clone()
+            elif self._i_simulation == 0:
+                self.init_ids = self.walkers_id.copy()
+            self._i_simulation += 1
+            if self._i_simulation % self.render_every == 0 and print_swarm:
+                print(self)
+                clear_output(True)
+
+            #except ValueError:
+            #    break
         if print_swarm:
             print(self)
 

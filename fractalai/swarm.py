@@ -238,6 +238,8 @@ class Swarm:
         self._old_rewards = self.rewards
         self.win_flag = False
         self._game_can_be_won = can_win
+        self.ends = np.zeros(self.n_walkers, dtype=bool)
+        self.terms = np.zeros(self.n_walkers, dtype=bool)
 
     def __str__(self):
         """Print information about the internal state of the swarm."""
@@ -311,6 +313,7 @@ class Swarm:
         self._remove_id = [None]
         self._old_rewards = self.rewards
         self.win_flag = False
+        self.ends = np.zeros(self.n_walkers, dtype=bool)
 
     def init_swarm(self, state: np.ndarray=None, obs: np.ndarray=None):
         """
@@ -348,6 +351,8 @@ class Swarm:
         self._old_rewards = self.rewards
         self._not_frozen = np.ones(self.n_walkers, dtype=bool)
         self.win_flag = False
+        self.ends = np.zeros(self.n_walkers, dtype=bool)
+        self.terms = np.zeros(self.n_walkers, dtype=bool)
 
     def calculate_dt(self):
         size = self. n_walkers
@@ -385,12 +390,12 @@ class Swarm:
             rewards = self.custom_reward(infos=infos, old_infos=old_infos, rewards=_rewards,
                                          times=self.times[self._not_frozen],
                                          old_rewards=self.rewards[self._not_frozen])
-            ends = self.custom_end(infos=infos, old_infos=old_infos, rewards=_rewards,
+            self.ends = self.custom_end(infos=infos, old_infos=old_infos, rewards=_rewards,
                                    times=self.times[self._not_frozen], terminals=terms,
                                    old_rewards=self.rewards[self._not_frozen])
             # Save data and update sample count
             steps_done = self.n_walkers
-            new_ids = self._n_samples_done + np.arange(steps_done).astype(int)
+            new_ids = self._n_samples_done + np.arange(self._not_frozen.sum()).astype(int)
             self.walkers_id[self._not_frozen] = new_ids
             self.data.append(walker_ids=new_ids, states=new_state, actions=actions, infos=infos)
             self.observations[self._not_frozen] = self.process_observations(observs)
@@ -398,6 +403,7 @@ class Swarm:
             # If you are searching for a point set to False
             non_neg_reward = np.array(rewards) >= 0
             terms = np.array([inf["terminal"] for inf in infos])
+            self.terms = terms
             # lost_live = np.array([inf.get("lost_live", False) for inf in infos])
             if self._game_can_be_won:
                 flag = np.logical_and(terms, non_neg_reward)
@@ -407,10 +413,10 @@ class Swarm:
                 self.rewards[self._not_frozen] = self.rewards[self._not_frozen] + np.array(rewards)
             else:
                 self.rewards[self._not_frozen] = np.array(rewards)
-            self._end_cond[self._not_frozen] = np.logical_or(ends, terms)
+            self._end_cond[self._not_frozen] = np.logical_or(self.ends, terms)
             if self._game_can_be_won:
                 self._end_cond[self._not_frozen][non_neg_reward] = False
-                self._end_cond[flag] = False
+                self._end_cond[self._not_frozen][flag] = False
 
             self._n_samples_done += self.dt.sum()
         else:
@@ -543,7 +549,7 @@ class Swarm:
             self._n_samples_done > self.samples_limit
         stop_score = False if self.reward_limit is None else \
             self.rewards.max() >= self.reward_limit
-        stop_terminal = self._end_cond.all() or np.logical_not(self._not_frozen).any()
+        stop_terminal = self.terms.all() or np.logical_not(self._not_frozen).any()
         # Define game status so the user knows why a game stopped. Only used when printing
         if stop_hard:
             self._game_status = "Sample limit reached."

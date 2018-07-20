@@ -14,7 +14,7 @@ class SwarmWave(Swarm):
                  save_data: bool=True, accumulate_rewards: bool=True, dt_mean: float=None,
                  dt_std: float=None, custom_reward: Callable=None, custom_end: Callable=None,
                  keep_best: bool=False, min_dt: int=1, prune_tree: bool=True,
-                 process_obs: Callable=None):
+                 process_obs: Callable=None, can_win: bool=False):
         """
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
@@ -32,7 +32,7 @@ class SwarmWave(Swarm):
                                         accumulate_rewards=accumulate_rewards, dt_mean=dt_mean,
                                         dt_std=dt_std, custom_end=custom_end,
                                         custom_reward=custom_reward, keep_best=keep_best,
-                                        min_dt=min_dt, process_obs=process_obs)
+                                        min_dt=min_dt, process_obs=process_obs, can_win=can_win)
         self.save_data = save_data
         self.prune_tree = prune_tree
         self.old_ids = np.zeros(self.n_walkers)

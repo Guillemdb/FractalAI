@@ -5,13 +5,14 @@
 
 import os
 import numpy as np
-import cv2
+#import cv2
+#  cv2.ocl.setUseOpenCL(False)
 from gym.envs.registration import registry as gym_registry
 from fractalai.datasets.mlswarm import MLWave
 from fractalai.model import RandomDiscreteModel
 from fractalai.datasets.data_env import DataVecEnv
 from fractalai.environment import AtariFAIWrapper, AtariEnvironment
-cv2.ocl.setUseOpenCL(False)
+
 from baselines import logger
 from baselines.bench import Monitor
 from baselines.common import set_global_seeds
@@ -20,13 +21,13 @@ from baselines.common.atari_wrappers import NoopResetEnv, MaxAndSkipEnv, Episodi
     FireResetEnv, ClipRewardEnv, ScaledFloatFrame, FrameStack, WarpFrame,\
     EpisodicFrameEnv, NormRewardEnv, EpisodicRewardEnv
 
-swarm_kwargs = dict(dt_mean=1,  # Apply the same action n times in average
-                    dt_std=1.25,  # Repeat same action a variable number of times
-                    min_dt=1,  # Minimum number of consecutive steps to be taken
+swarm_kwargs = dict(dt_mean=10,  # Apply the same action n times in average
+                    dt_std=5,  # Repeat same action a variable number of times
+                    min_dt=5,  # Minimum number of consecutive steps to be taken
                     samples_limit=300000,  # 200000  # Maximum number of samples allowed
-                    reward_limit=8000,  # Stop the sampling when this score is reached
-                    n_walkers=80,  # Maximum width of the tree containing al the trajectories
-                    render_every=1,  # print statistics every n iterations.
+                    reward_limit=5000,  # Stop the sampling when this score is reached
+                    n_walkers=50,  # Maximum width of the tree containing al the trajectories
+                    render_every=100,  # print statistics every n iterations.
                     balance=2,  # Balance exploration vs exploitation
                     save_data=True,  # Save the data generated
                     accumulate_rewards=True,
@@ -70,7 +71,7 @@ def make_env(env_id, wrapper_kwargs):
     return wrap_deepmind(env, **wrapper_kwargs)
 
 def make_atari_env(env_id, num_env, seed, wrapper_kwargs=None, start_index=0, n_actors: int=8,
-                   folder=None, mode="online"):
+                   folder=None, mode="online", swarm_kwargs=swarm_kwargs, generator_kwargs=generator_kwargs):
     wrapper_kwargs = wrapper_kwargs if wrapper_kwargs is not None else {}
 
 
