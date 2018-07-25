@@ -391,8 +391,8 @@ class Swarm:
                                          times=self.times[self._not_frozen],
                                          old_rewards=self.rewards[self._not_frozen])
             self.ends = self.custom_end(infos=infos, old_infos=old_infos, rewards=_rewards,
-                                   times=self.times[self._not_frozen], terminals=terms,
-                                   old_rewards=self.rewards[self._not_frozen])
+                                        times=self.times[self._not_frozen], terminals=terms,
+                                        old_rewards=self.rewards[self._not_frozen])
             # Save data and update sample count
             steps_done = self.n_walkers
             new_ids = self._n_samples_done + np.arange(self._not_frozen.sum()).astype(int)
@@ -409,7 +409,6 @@ class Swarm:
                 flag = np.logical_and(terms, non_neg_reward)
                 self.win_flag = flag.any()
             if self.accumulate_rewards:
-
                 self.rewards[self._not_frozen] = self.rewards[self._not_frozen] + np.array(rewards)
             else:
                 self.rewards[self._not_frozen] = np.array(rewards)
@@ -418,7 +417,7 @@ class Swarm:
                 self._end_cond[self._not_frozen][non_neg_reward] = False
                 self._end_cond[self._not_frozen][flag] = False
 
-            self._n_samples_done += self.dt.sum()
+            self._n_samples_done += self.dt[self._not_frozen].sum()
         else:
             raise RuntimeError
             self._end_cond = np.ones(self.n_walkers, dtype=bool)

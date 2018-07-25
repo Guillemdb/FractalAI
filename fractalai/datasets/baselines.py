@@ -66,9 +66,11 @@ def wrap_deepmind(env, episode_life=True, clip_rewards=True, frame_stack=False, 
         env = FrameStack(env, 4)
     return env
 
+
 def make_env(env_id, wrapper_kwargs):
     env = make_atari(env_id)
     return wrap_deepmind(env, **wrapper_kwargs)
+
 
 def make_atari_env(env_id, num_env, seed, wrapper_kwargs=None, start_index=0, n_actors: int=8,
                    folder=None, mode="online", swarm_kwargs=swarm_kwargs, generator_kwargs=generator_kwargs):
@@ -88,8 +90,6 @@ def make_atari_env(env_id, num_env, seed, wrapper_kwargs=None, start_index=0, n_
 
     def model_callable():
         return RandomDiscreteModel(n_actions=int(make_env(env_id, wrapper_kwargs).action_space.n))
-
-
 
     denv = DataVecEnv(num_envs=num_env, n_actors=n_actors,
                       swarm_class=MLWave, env_callable=env_callable,
@@ -134,9 +134,11 @@ def wrap_modified_rr(env, episode_life=True, episode_reward=False, episode_frame
         env = FrameStack(env, 4)
     return env
 
+
 def make_rude(env_id, wrapper_kwargs):
     env = make_atari(env_id)
     return wrap_modified_rr(env, **wrapper_kwargs)
+
 
 def make_rude_env(env_id, num_env, seed: int=1, wrapper_kwargs=None, start_index=0, n_actors: int=8):
     wrapper_kwargs = wrapper_kwargs if wrapper_kwargs is not None else {}
@@ -165,6 +167,7 @@ def make_rude_env(env_id, num_env, seed: int=1, wrapper_kwargs=None, start_index
                       data_env_callable=data_env_callable, seed=seed)
     return denv
 
+
 def _make_atari_env(env_id, num_env, seed, wrapper_kwargs=None, start_index=0):
     """
     Create a wrapped, monitored SubprocVecEnv for Atari. This is the same as the one used
@@ -172,6 +175,7 @@ def _make_atari_env(env_id, num_env, seed, wrapper_kwargs=None, start_index=0):
     """
     from baselines.common.vec_env.subproc_vec_env import SubprocVecEnv
     if wrapper_kwargs is None: wrapper_kwargs = {}
+    
     def make_env(rank): # pylint: disable=C0111
         def _thunk():
             env = make_atari(env_id)

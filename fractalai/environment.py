@@ -106,9 +106,11 @@ class AtariEnvironment(Environment):
         reward = 0
         end, _end, lost_live = False, False, False
         info = {"lives": -1}
+        terminal = False
         for i in range(n_repeat_action):
             for _ in range(self.min_dt):
                 obs, _reward, _end, _info = self._env.step(action)
+                terminal = terminal or _end
                 _info["lives"] = _info.get("ale.lives", -1)
                 lost_live = info["lives"] > _info["lives"]
                 end = _end or end or lost_live  # This will make episodic live env
@@ -118,7 +120,7 @@ class AtariEnvironment(Environment):
                     break
             if _end:
                 break
-        info["terminal"] = end
+        info["terminal"] = terminal
         info["lost_live"] = lost_live
         if self.obs_ram:
             obs = self._env.unwrapped.ale.getRAM()
