@@ -13,7 +13,7 @@ setup(
     packages=find_packages(exclude=("fractalai.tests",)),
     keywords=["fractalai", "reinforcement learning", "artificial intelligence",
               "monte carlo", "automaton-based"],
-    install_requires=[], #"numpy", "gym[atari]", "networkx"],
+    install_requires=[],  # "numpy", "gym[atari]", "networkx"],
     package_data={"": ["LICENSE", "README.md"]},
     classifiers=[
         "Development Status :: 3 - Alpha",

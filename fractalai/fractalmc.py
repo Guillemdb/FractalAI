@@ -42,7 +42,8 @@ class FractalMC(Swarm):
                                         render_every=render_every, custom_reward=custom_reward,
                                         custom_end=custom_end, dt_mean=dt_mean, dt_std=dt_std,
                                         keep_best=keep_best,
-                                        accumulate_rewards=accumulate_rewards, min_dt=min_dt, can_win=can_win)
+                                        accumulate_rewards=accumulate_rewards, min_dt=min_dt,
+                                        can_win=can_win)
         self.init_ids = np.zeros(self.n_walkers).astype(int)
         self._update_parameters = update_parameters
 
@@ -96,7 +97,6 @@ class FractalMC(Swarm):
         self.reset()
         self.init_swarm(state=state, obs=obs)
         while not self.stop_condition():
-            #try:
             # We calculate the clone condition, and then perturb the walkers before cloning
             # This allows the deaths to recycle faster, and the Swarm becomes more flexible
             if self._i_simulation > 1:
@@ -111,8 +111,6 @@ class FractalMC(Swarm):
                 print(self)
                 clear_output(True)
 
-            #except ValueError:
-            #    break
         if print_swarm:
             print(self)
 

@@ -5,14 +5,15 @@ import networkx as nx
 from IPython.core.display import clear_output
 
 
-def normalize_vector(vector):
+def normalize_vector(vector: np.ndarray):
     avg = vector.mean()
     if avg == 0:
         return np.ones(len(vector))
     standard = vector / avg
     return standard
 
-def relativize_vector(vector):
+
+def relativize_vector(vector: np.ndarray):
     std = vector.std()
     if std == 0:
         return np.ones(len(vector))
@@ -37,7 +38,9 @@ def normalize_vector_zero_one(vector):
 
 
 class DataStorage:
-    """This is a class for storing the states and the observations of a Swarm."""
+    """This is a class for storing the states and the observations of a Swarm.
+    This way is slower than storing it in a numpy array, but it allows to store
+    any kind of states and observations."""
     def __init__(self):
         self.states = {}
         self.actions = {}
@@ -107,7 +110,6 @@ class DynamicTree:
     def reset(self):
         self.data.remove_edges_from(list(self.data.edges))
         self.data.remove_nodes_from(list(self.data.nodes))
-        #self.data = nx.DiGraph()
         self.data.add_node(0)
         self.root_id = 0
 
@@ -179,9 +181,11 @@ class Swarm:
     def __init__(self, env, model, n_walkers: int=100, balance: float=1.,
                  reward_limit: float=None, samples_limit: int=None, render_every: int=1e10,
                  accumulate_rewards: bool=True, dt_mean: float=None, dt_std: float=None,
-                 custom_reward: Callable=None, custom_end: Callable=None, keep_best: bool=False,
-                 min_dt: int=1, process_obs: Callable=None, can_win: bool=False):
+                 min_dt: int=1, custom_reward: Callable=None, custom_end: Callable=None,
+                 process_obs: Callable=None, custom_skipframe: Callable=None,
+                 keep_best: bool=False,  can_win: bool=False):
         """
+
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
         :param n_walkers: Number of walkers that the swarm will use
@@ -191,9 +195,24 @@ class Swarm:
          befors stopping.
         :param render_every: Number of iterations that will be performed before printing the Swarm
          status.
+        :param accumulate_rewards: Use the accumulated reward when scoring the walkers.
+                                  False to use instantaneous reward.
+        :param dt_mean: Mean skipframe used for exploring.
+        :param dt_std: Standard deviation for the skipframe. Sampled from a normal distribution.
+        :param min_dt: Minimum skipframe to be used by the swarm.
+        :param custom_reward: Callable for calculating a custom reward function.
+        :param custom_end: Callable for calculating custom boundary conditions.
+        :param process_obs: Callable for doing custom observation processing.
+        :param custom_skipframe: Callable for sampling the skipframe values of the walkers.
+        :param keep_best: Keep track of the best accumulated reward found so far.
+        :param can_win: If the game can be won when a given score is achieved, set to True. Meant
+        to be used with Atari games like Boxing, Pong, IceHockey, etc.
         """
         def default_end(infos, old_infos, rewards, **kwargs):
-            return np.array([int(n.get("lives", -1)) < int(o.get("lives", -1))  # or r < 0
+            """Default death function: loose a life or get a
+            negative rewards in games you can win."""
+            return np.array([int(n.get("lives", -1)) < int(o.get("lives", -1)) or
+                             (can_win and r < 0)
                              for n, o, r in zip(infos, old_infos, rewards)]).astype(bool)
 
         def default_reward(rewards, *args, **kwargs):
@@ -216,15 +235,19 @@ class Swarm:
         self.dt_std = dt_std
         self.custom_end = custom_end if custom_end is not None else default_end
         self.custom_reward = custom_reward if custom_reward is not None else default_reward
+        self.custom_skipframe = custom_skipframe if custom_skipframe is not None \
+            else self._calculate_dt()
         self.keep_best = keep_best
         self.min_dt = min_dt
         # Environment information sources
         self.observations = None
         self.rewards = np.zeros(self.n_walkers)
         # Internal masks
+        # True when the boundary condition is met
         self._end_cond = np.zeros(self.n_walkers, dtype=bool)
+        # Walkers that will clone to a random companion
         self._will_clone = np.zeros(self.n_walkers, dtype=bool)
-        # self._will_step = np.ones(self.n_walkers, dtype=bool)
+        # If true the corresponding walker will not move
         self._not_frozen = np.ones(self.n_walkers, dtype=bool)
         # Processed information sources
         self._clone_idx = None
@@ -295,12 +318,13 @@ class Swarm:
         np.random.seed(seed)
 
     def reset(self):
+        """Reset the internal data of the swarm, and restores the same values as when
+         the Swarm was instantiated."""
         self.observations = None
         self.rewards = np.zeros(self.n_walkers)
         # Internal masks
         self._end_cond = np.zeros(self.n_walkers, dtype=bool)
         self._will_clone = np.zeros(self.n_walkers, dtype=bool)
-        # self._will_step = np.ones(self.n_walkers, dtype=bool)
         self._not_frozen = np.ones(self.n_walkers, dtype=bool)
         # Processed information sources
         self._clone_idx = None
@@ -334,13 +358,12 @@ class Swarm:
             state, obs = self._env.reset(return_state=True)
             obs = obs.astype(np.float32)
         # Environment Information sources
-        self.observations = self.init_observations(np.array([obs.copy()
-                                                             for _ in range(self.n_walkers)]))
+        self.observations = self.process_observations(np.array([obs.copy()
+                                                      for _ in range(self.n_walkers)]))
         self.rewards = np.zeros(self.n_walkers, dtype=np.float32)
         self._end_cond = np.zeros(self.n_walkers, dtype=bool)
         # Internal masks
         self._will_clone = np.zeros(self.n_walkers, dtype=bool)
-        # self._will_step = np.ones(self.n_walkers, dtype=bool)
         # Processed information sources
         self.virtual_rewards = np.zeros(self.n_walkers)
         self.distances = np.zeros(self.n_walkers)
@@ -361,19 +384,18 @@ class Swarm:
         self.ends = np.zeros(self.n_walkers, dtype=bool)
         self.terms = np.zeros(self.n_walkers, dtype=bool)
 
-    def calculate_dt(self):
+    def _calculate_dt(self):
+        """Sample the skipframe from a bounded normal distribution."""
         size = self. n_walkers
         if self.dt_mean is not None and self.dt_std is not None:
             abs_rnd = np.abs(np.random.normal(loc=self.dt_mean, scale=self.dt_std,
                                               size=size))
-            self.dt = np.maximum(self.min_dt, abs_rnd).astype(int)
+            skipframes = np.maximum(self.min_dt, abs_rnd).astype(int)
         else:
-            self.dt = np.ones(size, dtype=int) * self.min_dt
+            skipframes = np.ones(size, dtype=int) * self.min_dt
+        return skipframes
 
-    def init_observations(self, observations: np.ndarray=None):
-        return self._process_obs(observations)
-
-    def process_observations(self, observs):
+    def process_observations(self, observs: np.ndarray=None):
         return self._process_obs(observs)
 
     def step_walkers(self):
@@ -384,57 +406,53 @@ class Swarm:
         # Only step an state if it has not cloned and is not frozen
         # if self.keep_best:
         # self._will_step[-1] = False
-        self.calculate_dt()
+        self.dt = self.custom_skipframe()
         actions = self._model.predict_batch(self.observations[self._not_frozen])
-        if len(actions) > 0:
-            states = self.data.get_states(self.walkers_id[self._not_frozen])
-            old_infos = self.data.get_infos(self.walkers_id[self._not_frozen])
-            new_state, observs, _rewards,\
-                terms, infos = self._env.step_batch(actions, states=states,
-                                                    n_repeat_action=self.dt[self._not_frozen])
-            self.times[self._not_frozen] = self.times[self._not_frozen].astype(np.int32) \
-                                            + self.dt[self._not_frozen]
-            rewards = self.custom_reward(infos=infos, old_infos=old_infos, rewards=_rewards,
-                                         times=self.times[self._not_frozen],
-                                         old_rewards=self.rewards[self._not_frozen])
-            self.ends = self.custom_end(infos=infos, old_infos=old_infos, rewards=_rewards,
-                                        times=self.times[self._not_frozen], terminals=terms,
-                                        old_rewards=self.rewards[self._not_frozen])
-            # Save data and update sample count
-            steps_done = self.n_walkers
-            new_ids = self._n_samples_done + np.arange(self._not_frozen.sum()).astype(int)
-            self.walkers_id[self._not_frozen] = new_ids
-            self.data.append(walker_ids=new_ids, states=new_state, actions=actions, infos=infos)
-            self.observations[self._not_frozen] = self.process_observations(observs)
-            # Accumulate if you are solving a trajectory,
-            # If you are searching for a point set to False
-            non_neg_reward = np.array(rewards) >= 0
-            terms = np.array([inf["terminal"] for inf in infos])
-            self.terms = terms
-            # lost_live = np.array([inf.get("lost_live", False) for inf in infos])
-            if self._game_can_be_won:
-                flag = np.logical_and(terms, non_neg_reward)
-                self.win_flag = flag.any()
-            if self.accumulate_rewards:
-                self.rewards[self._not_frozen] = self.rewards[self._not_frozen] + np.array(rewards)
-            else:
-                self.rewards[self._not_frozen] = np.array(rewards)
-            self._end_cond[self._not_frozen] = np.logical_or(self.ends, terms)
-            if self._game_can_be_won:
-                self._end_cond[self._not_frozen][non_neg_reward] = False
-                self._end_cond[self._not_frozen][flag] = False
 
-            self._n_samples_done += self.dt[self._not_frozen].sum()
+        states = self.data.get_states(self.walkers_id[self._not_frozen])
+        old_infos = self.data.get_infos(self.walkers_id[self._not_frozen])
+        new_state, observs, _rewards,\
+            terms, infos = self._env.step_batch(actions, states=states,
+                                                n_repeat_action=self.dt[self._not_frozen])
+        self.times[self._not_frozen] = (self.times[self._not_frozen] +
+                                        self.dt[self._not_frozen]).astype(np.int32)
+        # Calculate custom rewards and boundary conditions
+        rewards = self.custom_reward(infos=infos, old_infos=old_infos, rewards=_rewards,
+                                     times=self.times[self._not_frozen],
+                                     old_rewards=self.rewards[self._not_frozen])
+        self.ends = self.custom_end(infos=infos, old_infos=old_infos, rewards=_rewards,
+                                    times=self.times[self._not_frozen], terminals=terms,
+                                    old_rewards=self.rewards[self._not_frozen])
+        # Save data and update sample count
+        new_ids = self._n_samples_done + np.arange(self._not_frozen.sum()).astype(int)
+        self.walkers_id[self._not_frozen] = new_ids
+        self.data.append(walker_ids=new_ids, states=new_state, actions=actions, infos=infos)
+        self.observations[self._not_frozen] = self.process_observations(observs)
+        non_neg_reward = np.array(rewards) >= 0
+        terms = np.array([inf["terminal"] for inf in infos])
+        self.terms = terms
+        # Check win condition
+        if self._game_can_be_won:
+            flag = np.logical_and(terms, non_neg_reward)
+            self.win_flag = flag.any()
+        # Accumulate if you are solving a trajectory,
+        # If you are searching for a point set to False
+        if self.accumulate_rewards:
+            self.rewards[self._not_frozen] = self.rewards[self._not_frozen] + np.array(rewards)
         else:
-            raise RuntimeError
-            self._end_cond = np.ones(self.n_walkers, dtype=bool)
-            self._terminals = np.ones(self.n_walkers, dtype=bool)
+            self.rewards[self._not_frozen] = np.array(rewards)
+        self._end_cond[self._not_frozen] = np.logical_or(self.ends, terms)
+        # Stop all the walkers
+        if self._game_can_be_won:
+            self._end_cond[self._not_frozen][flag] = False
+
+        self._n_samples_done += self.dt[self._not_frozen].sum()
 
     def evaluate_distance(self) -> np.ndarray:
         """Calculates the euclidean distance between pixels of two different arrays
-        on a vector of observations, and normalizes the relative distances between 0 and 1.
+        on a vector of observations, and normalizes the result applying the relativize function.
         In a more general scenario, any function that quantifies the notion of "how different two
-        observations are" could work, even though it is not a proper distance.
+        observations are" could work, even if it is not a proper distance.
         """
         # Get random companion
         idx = np.random.permutation(np.arange(self.n_walkers, dtype=int))
@@ -444,8 +462,9 @@ class Swarm:
         return relativize_vector(dist)
 
     def normalize_rewards(self) -> np.ndarray:
-        rewards = np.array(self.rewards).astype(np.float32)
-        return relativize_vector(rewards)
+        """We also apply the relativize function to the rewards"""
+        rewards = np.array(self.rewards)
+        return relativize_vector(rewards).astype(np.float32)
 
     def virtual_reward(self) -> np.ndarray:
         """Calculate the virtual reward of the walkers. This quantity is used for determining
@@ -458,7 +477,6 @@ class Swarm:
         # The balance sets how much preference we are giving exploitation over exploration
         vir_reward = dist * scores ** self.balance
         self._virtual_reward = vir_reward
-        # self._virtual_reward[-1] = 0
         return vir_reward
 
     def track_best_walker(self):
@@ -514,6 +532,7 @@ class Swarm:
 
     def perform_clone(self):
         idx = self._clone_idx
+        # A hack that avoid cloning
         if idx is None:
             return
         # This is a hack to make it work on n dimensional arrays
@@ -530,6 +549,7 @@ class Swarm:
                                    self.walkers_id).astype(int)
 
     def update_data(self):
+        """Update the states and observations of the swarm kept in self.data."""
         self._post_clone_ids = set(self.walkers_id.astype(int))
         self.data.update_values(self._post_clone_ids)
 
@@ -563,6 +583,8 @@ class Swarm:
             self._game_status = "Score limit reached."
         elif stop_terminal:
             self._game_status = "All the walkers died."
+        elif self.win_flag:
+            self._game_status = "The game was won. Congratulations!"
         else:
             self._game_status = "Playing..."
         return stop_hard or stop_score or stop_terminal or self.win_flag
@@ -578,6 +600,7 @@ class Swarm:
             try:
                 # We calculate the clone condition, and then perturb the walkers before cloning
                 # This allows the deaths to recycle faster, and the Swarm becomes more flexible
+                # If you choose to freeze some walkers.
                 if self._i_simulation > 1:
                     self.clone_condition()
                     self.clone()
@@ -587,6 +610,7 @@ class Swarm:
                     print(self)
                     clear_output(True)
             except ValueError:
+                # TOOO: Check when this stuff can fail
                 break
         if print_swarm:
             print(self)

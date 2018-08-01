@@ -81,13 +81,13 @@ class DataEnv(Env):
         self.load_new_game()
         if self.use_data_env:
             obs, reward, end, info, action = self.get_example()
-            #info = copy.copy(info)
-            #info["action"] = copy.copy(action)
-            return obs #, reward, end, info
+            # info = copy.copy(info)
+            # info["action"] = copy.copy(action)
+            return obs  # , reward, end, info
         else:
             obs, action, reward, new_ob, end = self.get_example()
-            #info = {"action": action}
-            return new_ob#, reward, end, info
+            # info = {"action": action}
+            return new_ob  # , reward, end, info
 
     def render(self, mode='human'):
         self.env.set_state(self.states[self._ix].copy())

@@ -7,7 +7,6 @@ import traceback
 import gym
 from gym.envs.registration import registry as gym_registry
 import numpy as np
-# import cv2
 from PIL import Image
 from gym import spaces, Env
 
@@ -15,11 +14,12 @@ from gym import spaces, Env
 def resize_frame(frame, height, width):
     frame = Image.fromarray(frame)
     frame = frame.convert("L").resize((height, width))
-    return np.array(frame)[:,:, None]
+    return np.array(frame)[:, :, None]
 
 
 class Environment:
-    """Inherit from this class to test the Swarm on a different problem."""
+    """Inherit from this class to test the Swarm on a different problem.
+     Pretty much the same as the OpenAI gym env."""
 
     action_space = None
     observation_space = None
@@ -41,21 +41,42 @@ class Environment:
 
     @property
     def name(self):
+        """This is the name of the environment"""
         return self._name
 
     def step(self, action, state=None, n_repeat_action: int=1) -> tuple:
+        """
+        Take a simulation step and make the environment evolve.
+        :param action: Chosen action applied to the environment.
+        :param state: Set the environment to the given state before stepping it.
+        :param n_repeat_action: Consecutive number of times that the action will be applied.
+        :return:
+        """
         raise NotImplementedError
 
     def step_batch(self, actions, states=None, n_repeat_action: int=1) -> tuple:
+        """
+        Take a step on a batch of states.
+        :param actions: Chosen action applied to the environment.
+        :param states: Set the environment to the given state before stepping it.
+        :param n_repeat_action: Consecutive number of times that the action will be applied.
+        :return:
+        """
         raise NotImplementedError
 
     def reset(self) -> tuple:
+        """Restart the environment."""
         raise NotImplementedError
 
     def get_state(self):
+        """Recover the internal state of the simulation."""
         raise NotImplementedError
 
     def set_state(self, state):
+        """Set the internal state of the simulation.
+        :param state: Target state to be set in the environment.
+        :return:
+        """
         raise NotImplementedError
 
 
@@ -63,10 +84,23 @@ class AtariEnvironment(Environment):
     """Environment for playing Atari games."""
 
     def __init__(self, name: str, clone_seeds: bool=True, n_repeat_action: int=1, min_dt: int=1,
-                 obs_ram: bool=False):
+                 obs_ram: bool=False, episodic_live: bool=False, autoreset: bool=True):
+        """Create an environment to play OpenAI gym Atari Games.
+        :param name: Name of the environment. Follows standard gym syntax rules.
+        :param clone_seeds: Clone the random seed of the ALE emulator when
+         reading/setting the state.
+        :param n_repeat_action: Consecutive number of times a given action will be applied.
+        :param min_dt: Internal number of times an action will be applied for each step
+        in n_repeat_action.
+        :param obs_ram: Use ram as observations even though it is not specified in the
+        name parameter.
+        :param episodic_live: Return end = True when losing a live.
+        :param autoreset: Restart environment when reaching a terminal state.
+        """
         super(AtariEnvironment, self).__init__(name=name, n_repeat_action=n_repeat_action)
         self.min_dt = min_dt
         self.clone_seeds = clone_seeds
+        # This is for removing undocumented wrappers.
         spec = gym_registry.spec(name)
         # not actually needed, but we feel safer
         spec.max_episode_steps = None
@@ -77,6 +111,8 @@ class AtariEnvironment(Environment):
         self.reward_range = self._env.reward_range
         self.metadata = self._env.metadata
         self.obs_ram = obs_ram
+        self.episodic_life = episodic_live
+        self.autoreset = autoreset
 
     def __getattr__(self, item):
         return getattr(self._env, item)
@@ -86,12 +122,19 @@ class AtariEnvironment(Environment):
         return self._env.action_space.n
 
     def get_state(self) -> np.ndarray:
+        """Recover the internal state of the simulation. If clone seed is False the
+        environment will be stochastic.
+        Cloning the full state ensures the environment is deterministic."""
         if self.clone_seeds:
             return self._env.unwrapped.clone_full_state()
         else:
             return self._env.unwrapped.clone_state()
 
     def set_state(self, state: np.ndarray):
+        """Set the internal state of the simulation.
+                :param state: Target state to be set in the environment.
+                :return:
+        """
         if self.clone_seeds:
             self._env.unwrapped.restore_full_state(state)
         else:
@@ -100,6 +143,16 @@ class AtariEnvironment(Environment):
 
     def step(self, action: np.ndarray, state: np.ndarray = None,
              n_repeat_action: int = None) -> tuple:
+        """
+        Take n_repeat_action simulation steps and make the environment evolve
+        in multiples of min_dt.
+        The info dictionary will contain a boolean called 'lost_live' that will be true if
+        a life was lost during the current step.
+        :param action: Chosen action applied to the environment.
+        :param state: Set the environment to the given state before stepping it.
+        :param n_repeat_action: Consecutive number of times that the action will be applied.
+        :return:
+        """
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
         if state is not None:
             self.set_state(state)
@@ -110,35 +163,36 @@ class AtariEnvironment(Environment):
         for i in range(n_repeat_action):
             for _ in range(self.min_dt):
                 obs, _reward, _end, _info = self._env.step(action)
-                terminal = terminal or _end
                 _info["lives"] = _info.get("ale.lives", -1)
-                lost_live = info["lives"] > _info["lives"]
-                end = _end or end or lost_live  # This will make episodic live env
+                lost_live = info["lives"] > _info["lives"] or lost_live
+                terminal = terminal or _end
+                terminal = terminal or lost_live if self.episodic_life else terminal
                 info = _info.copy()
                 reward += _reward
                 if _end:
                     break
             if _end:
                 break
+        # This allows to get the original values even when using an episodic life environment
         info["terminal"] = terminal
         info["lost_live"] = lost_live
         if self.obs_ram:
             obs = self._env.unwrapped.ale.getRAM()
         if state is not None:
             new_state = self.get_state()
-            data = new_state, obs, reward, end, info
+            data = new_state, obs, reward, terminal, info
         else:
-            data = obs, reward, end, info
-        if _end:
+            data = obs, reward, terminal, info
+        if _end and self.autoreset:
             self._env.reset()
         return data
 
     def step_batch(self, actions, states=None, n_repeat_action: [int, np.ndarray]=None) -> tuple:
         """
-
-        :param actions:
-        :param states:
-        :param n_repeat_action:
+        Take a step on a batch of states.
+        :param actions: Chosen action applied to the environment.
+        :param states: Set the environment to the given state before stepping it.
+        :param n_repeat_action: Consecutive number of times that the action will be applied.
         :return:
         """
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
@@ -162,7 +216,11 @@ class AtariEnvironment(Environment):
         else:
             return new_states, observs, rewards, terminals, lives
 
-    def reset(self, return_state: bool=True):
+    def reset(self, return_state: bool=True) -> [np.ndarray, tuple]:
+        """Restart the environment.
+        :param return_state: If True, return a tuple containing (state, observation)
+        :return:
+        """
         if self.obs_ram:
             obs = self._env.unwrapped.ale.getRAM()
         else:
@@ -173,16 +231,31 @@ class AtariEnvironment(Environment):
             return self.get_state(), obs
 
     def render(self):
+        """Render the environment using OpenGL."""
         return self._env.render()
 
 
 class AtariFAIWrapper(AtariEnvironment):
 
+    """Generic wrapper for the AtariEnvironment. Inherit from this class and override
+     the desired methods to implement a wrapper."""
+
     def __init__(self, env: Env, clone_seeds: bool=True, n_repeat_action: int=1, min_dt: int=1,
-                 obs_ram: bool=False):
+                 obs_ram: bool=False, episodic_live: bool=False, autoreset: bool=True):
+        """Create a wrapper for the AtariEnvironment.
+        :param clone_seeds: Clone the random seed of the ALE emulator when reading/setting
+         the state.
+        :param n_repeat_action: Consecutive number of times a given action will be applied.
+        :param min_dt: Internal number of times an action will be applied for each step in
+         n_repeat_action.
+        :param obs_ram: Use ram as observations even though it is not specified elsewhere.
+        :param episodic_live: Return end = True when losing a live.
+        :param autoreset: Restart environment when reaching a terminal state.
+        """
         super(AtariFAIWrapper, self).__init__(name=env.spec.id, clone_seeds=clone_seeds,
                                               n_repeat_action=n_repeat_action, min_dt=min_dt,
-                                              obs_ram=obs_ram)
+                                              obs_ram=obs_ram, episodic_live=episodic_live,
+                                              autoreset=autoreset)
         # Overwrite the default env with the one provided externally
         self._env = env
         self.action_space = self._env.action_space
@@ -193,19 +266,23 @@ class AtariFAIWrapper(AtariEnvironment):
 
 class MinimalPong(AtariEnvironment):
 
-    def __init__(self, name="Pong-V0", *args, **kwargs):
+    def __init__(self, name="PongNoFrameskip-V4", *args, **kwargs):
+        """Environment adapted to play pong returning the smallest observation possible.
+        This is meant for testing RL algos. The number of possible actions has been reduced to 2,
+         and it returns an observation that is 80x80x1 pixels."""
         super(MinimalPong, self).__init__(name=name, *args, **kwargs)
         self.observation_space = spaces.Box(low=0, high=1, dtype=np.float, shape=(80, 80))
         self.action_space = spaces.Discrete(2)
 
     @staticmethod
     def process_obs(obs):
-        """ prepro 210x160x3 uint8 frame into 6400 (80x80) 1D float vector """
-        obs = obs[35:195]  # crop
-        obs = obs[::2, ::2, 0]  # downsample by factor of 2
-        obs[obs == 144] = 0  # erase background (background type 1)
-        obs[obs == 109] = 0  # erase background (background type 2)
-        obs[obs != 0] = 1  # everything else (paddles, ball) just set to 1
+        """Preprocess 210x160x3 uint8 frame into 6400 (80x80) 1D float vector.
+        This was copied from Andrej Karpathy's blog."""
+        obs = obs[35:195]  # Crop
+        obs = obs[::2, ::2, 0]  # Downsample by factor of 2
+        obs[obs == 144] = 0  # Erase background (background type 1)
+        obs[obs == 109] = 0  # Erase background (background type 2)
+        obs[obs != 0] = 1  # Everything else (paddles, ball) just set to 1
         return obs.astype(np.float)  # .ravel()
 
     @property
@@ -249,7 +326,7 @@ class MinimalPong(AtariEnvironment):
 
     def reset(self, return_state: bool=True):
         obs = self._env.reset()
-        if not "ram" in self.name:
+        if "ram" not in self.name:
             proc_obs = np.zeros((80, 80, 2))
             proc_obs[:, :, 0] = self.process_obs(obs)
         else:
@@ -287,14 +364,11 @@ class MinimalPacman(AtariEnvironment):
     def reshape_frame(self, obs):
         height, width = self.obs_shape[0], self.obs_shape[1]
         cropped = obs[3: 170, 7: -7]
-
-        # MsPacman
         frame = resize_frame(cropped, width=width, height=height)
+        return frame
 
     def step(self, action: np.ndarray, state: np.ndarray = None,
              n_repeat_action: int = None) -> tuple:
-
-
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
         if state is not None:
             self.set_state(state)
@@ -318,7 +392,6 @@ class MinimalPacman(AtariEnvironment):
                 reward += _reward
                 if _end:
                     break
-                #try:
                 proced = self.reshape_frame(obs)
                 obs_hist.append(proced)
 
@@ -354,7 +427,6 @@ class MinimalPacman(AtariEnvironment):
             reward += _reward
             if _end:
                 break
-            #try:
             proced = self.reshape_frame(obs)
             obs_hist.append(proced)
 
@@ -454,7 +526,7 @@ class CartPoleEnvironment(Environment):
 
 
 class ESEnvironment(Environment):
-    """Environment for Solving Evolutionary Strategies."""
+    """DO NOT USE: NOT FINISHED!! Environment for Solving Evolutionary Strategies."""
 
     def __init__(self, name: str, dnn_callable: Callable, n_repeat_action: int=1,
                  max_episode_length=1000, noise_prob: float=0):
@@ -569,7 +641,8 @@ def split_similar_chunks(vector: list, n_chunks: int):
 class ExternalProcess(object):
     """Step environment in a separate process for lock free parallelism.
     It is mostly a copy paste from
-    https://github.com/tensorflow/agents/blob/master/agents/tools/wrappers.py
+    https://github.com/tensorflow/agents/blob/master/agents/tools/wrappers.py,
+    but it lets us set and read the envronment state.
     """
 
     # Message types for communication via the pipe.
@@ -753,6 +826,7 @@ class BatchEnv(object):
     """Combine multiple environments to step them in batch.
     It is mostly a copy paste from
     https://github.com/tensorflow/agents/blob/master/agents/tools/wrappers.py
+    that also allows to set and get the states.
     """
 
     def __init__(self, envs, blocking):
@@ -851,7 +925,7 @@ class BatchEnv(object):
             reward = np.stack(rewards)
             done = np.stack(dones)
             lives = np.stack(lives)
-        except:
+        except:  # Lets be overconfident for once TODO: change this crap.
             for obs in observs:
                 print(obs.shape)
         if states is None:
@@ -904,7 +978,7 @@ def env_callable(name, env_class, *args, **kwargs):
 
 
 class ParallelEnvironment(Environment):
-    """Wrap any environment to be stepped in parallel."""
+    """Wrap any environment to be stepped in parallel when step_batch is called. """
 
     def __init__(self, name, env_class, n_workers: int=8, blocking: bool=True, *args, **kwargs):
         """

@@ -37,7 +37,6 @@ class MLWave(SwarmWave):
         Swarm.step_walkers(self)
         if self.save_data:
             for i, idx in enumerate(self.walkers_id):
-                #print(self.data.get_infos([idx])[0])
                 self.tree.append_leaf(int(idx), parent_id=int(old_ids[i]),
                                       state=self.data.get_states([idx])[0],
                                       action=self.data.get_actions([idx])[0],
@@ -74,11 +73,6 @@ class MLWave(SwarmWave):
 
             if not np.allclose(obs, _obs):
                 print(obs - _obs, old_obs - _old_obs)
-                #raise ValueError("obs petan")
-            #for i in range(max(0, dt - 1)):
-            #    self._env.step(action, n_repeat_action=1)
-            #    self._env.render()
-            #    time.sleep(sleep)
 
 
 class MLFMC(FractalMC):

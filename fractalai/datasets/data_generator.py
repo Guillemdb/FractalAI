@@ -20,26 +20,24 @@ class DLTree(DynamicTree):
         :param dt: parameters taken into account when integrating the action.
         :return:
         """
-        #if parent_id != 0:
-        #    assert(not self.data.nodes[int(parent_id)]["terminal"])
         if parent_id == 0:
             self.data.add_node(int(parent_id), state=copy.deepcopy(state), obs=copy.deepcopy(obs))
         self.data.add_node(int(leaf_id), state=copy.deepcopy(state), obs=copy.deepcopy(obs))
         self.data.add_edge(int(parent_id), int(leaf_id), action=copy.deepcopy(action),
                            dt=copy.deepcopy(dt), reward=copy.deepcopy(reward),
                            terminal=copy.deepcopy(terminal))
+
     def reset(self):
         self.data.remove_edges_from(list(self.data.edges))
         self.data.remove_nodes_from(list(self.data.nodes))
-        #self.data = nx.DiGraph()
         self.data.add_node(0)
         self.root_id = 0
+
     @property
     def dataset(self):
         return self.data
 
     def edge_to_example(self, edge_id):
-        #print(edge_id)
         edge = copy.deepcopy(self.dataset.edges[tuple(edge_id)])
         prev_node = copy.deepcopy(self.dataset.nodes[edge_id[0]])
         next_node = copy.deepcopy(self.dataset.nodes[edge_id[1]])
@@ -50,11 +48,11 @@ class DLTree(DynamicTree):
         done = copy.deepcopy(edge["terminal"])
         return old_obs, action, reward, new_obs, done
 
-    def example_generator(self, remove_nodes=True):
+    def example_generator(self, remove_nodes=False):
         for edge in np.random.permutation(list(self.data.edges)):
             yield self.edge_to_example(edge)
-            #if remove_nodes:
-            #    self.data.remove_edge(edge)
+            if remove_nodes:
+                self.data.remove_edge(edge)
 
     def get_branch(self, leaf_id) -> tuple:
         """
@@ -65,7 +63,6 @@ class DLTree(DynamicTree):
         nodes = nx.shortest_path(self.data, 0, leaf_id)
         states = [self.data.node[n]["state"] for n in nodes[:-1]]
         actions = [self.data.edges[(n, nodes[i+1])]["action"] for i, n in enumerate(nodes[:-1])]
-        # dts = [self.data.edges[(n, nodes[i + 1])]["dt"] for i, n in enumerate(nodes[:-1])]
         ends = [self.data.edges[(n, nodes[i+1])]["terminal"] for i, n in enumerate(nodes[:-1])]
         obs = [self.data.node[n]["obs"] for n in nodes[:-1]]
         new_obs = [self.data.node[n]["obs"] for n in nodes[1:]]
@@ -103,12 +100,12 @@ class DataGenerator:
         self.output_dir = output_dir
         self.swarm.tree = DLTree()
 
-        self.img_shape = obs_shape[:-1] #if obs_is_image else None
+        self.img_shape = obs_shape[:-1]
 
-        self.frame_width = obs_shape[0] #if obs_is_image else None
-        self.frame_height = obs_shape[1] #if obs_is_image else None
-        self.stack_frames = obs_shape[2] #if obs_is_image else None
-        self.obs_shape = obs_shape #self.tree.obs_shape #if obs_is_image else None
+        self.frame_width = obs_shape[0]
+        self.frame_height = obs_shape[1]
+        self.stack_frames = obs_shape[2]
+        self.obs_shape = obs_shape
 
     def __str__(self):
         text = self.swarm.__str__()
@@ -128,7 +125,7 @@ class DataGenerator:
     def tree(self):
         return self.swarm.tree
 
-    def example_generator(self, remove_nodes: bool=True, print_val: bool=False, *args, **kwargs):
+    def example_generator(self, remove_nodes: bool=False, print_val: bool=False, *args, **kwargs):
         self.tree.reset()
         self.swarm.reset()
         self.swarm.collect_data(*args, **kwargs)
@@ -136,7 +133,6 @@ class DataGenerator:
         n_nodes = len(self.tree.dataset.nodes)
         if print_val:
             print("Generated {} examples".format(n_nodes))
-        #print(self)
         for val in generator:
             yield val
 
@@ -149,7 +145,6 @@ class DataGenerator:
         n_nodes = len(self.tree.data.nodes)
         if print_val:
             print("Generated {} examples".format(n_nodes))
-        #print(self)
         for val in generator:
             yield val
 
@@ -167,7 +162,6 @@ class DataGenerator:
         n_nodes = len(self.tree.data.nodes)
         if print_val:
             print("Generated {} examples".format(n_nodes))
-        #print(self)
         for val in generator:
             yield val
 
@@ -179,7 +173,6 @@ class DataGenerator:
         n_nodes = len(self.tree.data.nodes)
         if print_val:
             print("Generated {} examples".format(n_nodes))
-        #print(self)
         for val in generator:
             if len(val[0]) > 1:
                 yield val

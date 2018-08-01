@@ -144,7 +144,8 @@ class SwarmWave:
             efi = 0.
             sam_step = 0.
             samples = 0.
-        progress = 0 if self.n_limit_samples is None else (self._n_samples_done / self.n_limit_samples) * 100
+        progress = 0 if self.n_limit_samples is None else \
+            (self._n_samples_done / self.n_limit_samples) * 100
         if self.score_limit is not None:
             score_prog = (self.rewards.max() / self.score_limit) * 100
             progress = max(progress, score_prog)
@@ -158,21 +159,13 @@ class SwarmWave:
                "Efficiency {:.2f}%\n" \
                "Generated {} Examples |" \
                " {:.2f} samples per example.\n"\
-               "Status: {}".format(self.env_name, self._n_samples_done,
-                                                     progress,
-                                                     self.rewards.mean(),
-                                                     self.rewards.max() - self.rewards.min(),
-                                                     self.rewards.max(), self.rewards.min(),
-                                                     self.rewards.std(),
-                                                     self.times.mean(),
-                                                     self.times.max() - self.times.min(),
-                                                     self.times.max(), self.times.min(),
-                                                     self.times.std(),
-                                                     self.n_walkers, self._dead_mask.sum(),
-                                                     efi,
-                                                     samples,
-                                                     sam_step,
-                                                     self._game_status)
+               "Status: {}".format(self.env_name, self._n_samples_done, progress,
+                                   self.rewards.mean(), self.rewards.max() - self.rewards.min(),
+                                   self.rewards.max(), self.rewards.min(), self.rewards.std(),
+                                   self.times.mean(), self.times.max() - self.times.min(),
+                                   self.times.max(), self.times.min(), self.times.std(),
+                                   self.n_walkers, self._dead_mask.sum(), efi, samples,
+                                   sam_step, self._game_status)
         return text
 
     def _init_swarm(self):
@@ -214,7 +207,8 @@ class SwarmWave:
         :return: None.
         """
         # Only step an state if it has not cloned and is not frozen
-        step_ix = np.logical_and(self._not_frozen, np.logical_not(self._will_clone)) if not init_step else np.ones(self.n_walkers, dtype=bool)
+        step_ix = np.logical_and(self._not_frozen, np.logical_not(self._will_clone)) if \
+            not init_step else np.ones(self.n_walkers, dtype=bool)
 
         for i, state in enumerate(self.walkers):
             if step_ix[i]:
@@ -222,7 +216,7 @@ class SwarmWave:
                 old_lives = self._old_lives[i]
                 end = False
                 action = self.random_actions[self._i_epoch % self.random_actions.shape[0], i]
-                if self.rewards[i]<self.score_limit:
+                if self.rewards[i] < self.score_limit:
                     obs, _reward, _end, info = self.env.step(action)
                     self._n_samples_done += 1
                     self.rewards[i] += _reward
@@ -244,7 +238,7 @@ class SwarmWave:
                     self.walkers_id[i] = new_id
                     self.walkers[i] = new_state
                     # Reset if necessary
-                    if _end and self.rewards[i]<self.score_limit:
+                    if _end and self.rewards[i] < self.score_limit:
                         self._terminal[i] = True
                         self.env.reset()
                         break
@@ -323,7 +317,8 @@ class SwarmWave:
         """This sets a hard limit on maximum samples. It also Finishes if all the walkers are dead,
          or the target score reached.
          """
-        stop_hard = False if self.n_limit_samples is None else self._n_samples_done > self.n_limit_samples
+        stop_hard = False if self.n_limit_samples is None else \
+            self._n_samples_done > self.n_limit_samples
         stop_score = False if self.score_limit is None else self.rewards.max() >= self.score_limit
         stop_terminal = self._terminal.all()
         # Define game status so usr knows why game stoped
