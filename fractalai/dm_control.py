@@ -179,6 +179,8 @@ class DMControlEnv(Environment):
 
 
 class ExternalDMControl(ExternalProcess):
+    """I cannot find a way to pass a function that creates a DMControl env, so I have to create
+     it manually inside the thread."""
 
     def __init__(self, name, wrappers=None, n_repeat_action: int=1, **kwargs):
         """Step environment in a separate process for lock free paralellism.
@@ -296,6 +298,8 @@ class ParallelDMControl(Environment):
 
 
 class CustomDeath:
+
+    """Class for taking into account arbitrary boundary conditions."""
 
     def __init__(self, domain_name="cartpole", task_name="balance"):
         self._domain_name = domain_name

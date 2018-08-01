@@ -40,7 +40,7 @@ class Wrapper(gym.Env):
 
     def step(self, action, *args, **kwargs):
         if isinstance(self.env, Environment):
-           return self.env.step(action, *args, **kwargs)
+            return self.env.step(action, *args, **kwargs)
         else:
             return self.env.step(action)
 
@@ -106,7 +106,7 @@ class SonicDiscretizer(ActionWrapper):
             self._actions.append(arr)
         self.action_space = gym.spaces.Discrete(len(self._actions))
 
-    def action(self, a): # pylint: disable=W0221
+    def action(self, a):  # pylint: disable=W0221
         return self._actions[a].copy()
 
 
@@ -186,27 +186,3 @@ class FrameStack(gym.Wrapper):
     def _get_ob(self):
         assert len(self.frames) == self.k
         return LazyFrames(list(self.frames))
-
-# class AllowBacktracking(gym.Wrapper):
-"""
-Use deltas in max(X) as the reward, rather than deltas
-in X. This way, agents are not discouraged too heavily
-from exploring backwards if there is no way to advance
-head-on in the level.
-""""""
-def __init__(self, env):
-    super(AllowBacktracking, self).__init__(env)
-    self._cur_x = 0
-    self._max_x = 0
-
-def reset(self, **kwargs): # pylint: disable=E0202
-    self._cur_x = 0
-    self._max_x = 0
-    return self.env.reset(**kwargs)
-
-def step(self, action): # pylint: disable=E0202
-    obs, rew, done, info = self.env.step(action)
-    self._cur_x += rew
-    rew = max(0, self._cur_x - self._max_x)
-    self._max_x = max(self._max_x, self._cur_x)
-    return obs, rew, done, info"""

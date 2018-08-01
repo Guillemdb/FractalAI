@@ -28,7 +28,7 @@ class GameLoader:
             try:
                 loaded = np.load(os.path.join(self.folder, "{}_{}.npy".format(uid, key)))
                 data = data + tuple([loaded])
-            except:
+            except: #TODO: FIX to avoid bare except
                 print("failed to load {} attr {}".format(uid, key))
                 continue
         return data
@@ -44,6 +44,7 @@ class GameLoader:
 
     def load_game(self):
         return next(self.game_generator)
+
 
 @ray.remote
 class RemoteDataSource:

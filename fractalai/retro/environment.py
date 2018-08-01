@@ -1,6 +1,5 @@
 import sys
 import traceback
-#import cv2
 import numpy as np
 from fractalai.environment import Environment, ExternalProcess, BatchEnv, resize_frame
 from gym import spaces

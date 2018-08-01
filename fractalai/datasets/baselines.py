@@ -5,8 +5,6 @@
 
 import os
 import numpy as np
-#import cv2
-#  cv2.ocl.setUseOpenCL(False)
 from gym.envs.registration import registry as gym_registry
 from fractalai.datasets.mlswarm import MLWave
 from fractalai.model import RandomDiscreteModel
@@ -73,15 +71,12 @@ def make_env(env_id, wrapper_kwargs):
 
 
 def make_atari_env(env_id, num_env, seed, wrapper_kwargs=None, start_index=0, n_actors: int=8,
-                   folder=None, mode="online", swarm_kwargs=swarm_kwargs, generator_kwargs=generator_kwargs):
+                   folder=None, mode="online", swarm_kwargs=swarm_kwargs,
+                   generator_kwargs=generator_kwargs):
     wrapper_kwargs = wrapper_kwargs if wrapper_kwargs is not None else {}
 
-
     def env_callable():
-        # min_dt 4 to compensate default frameskip
         return AtariEnvironment(name=env_id, min_dt=frame_skip, obs_ram=True)
-        # return ParallelEnvironment(name="MsPacmanNoFrameskip-v0", env_class=AtariEnvironment,
-        #                            blocking=False, n_workers=4, min_dt=4, obs_ram=True)
 
     def data_env_callable():
         env = AtariFAIWrapper(make_env(env_id, wrapper_kwargs))
@@ -113,12 +108,9 @@ def wrap_modified_rr(env, episode_life=True, episode_reward=False, episode_frame
     if episode_frame:
         print("Episode Frame")
         env = EpisodicFrameEnv(env)
-
-    original_reward = ('DoubleDunk' in env.spec.id) or ('Boxing' in env.spec.id) or (
-    'Freeway' in env.spec.id) or \
-                      ('Enduro' in env.spec.id) or ('IceHockey' in env.spec.id) or (
-                      'Pong' in env.spec.id) or \
-                      ('Skiing' in env.spec.id) or ('Bowling' in env.spec.id)
+    _ori_r_games = ['DoubleDunk', 'Boxing', 'Freeway', 'Pong',
+                    'Bowling', 'Skiing', 'IceHockey', 'Enduro']
+    original_reward = any([game in env.spec.id for game in _ori_r_games])
 
     if 'FIRE' in env.unwrapped.get_action_meanings():
         env = FireResetEnv(env)
@@ -140,15 +132,12 @@ def make_rude(env_id, wrapper_kwargs):
     return wrap_modified_rr(env, **wrapper_kwargs)
 
 
-def make_rude_env(env_id, num_env, seed: int=1, wrapper_kwargs=None, start_index=0, n_actors: int=8):
+def make_rude_env(env_id, num_env, seed: int=1, wrapper_kwargs=None, start_index=0,
+                  n_actors: int=8):
     wrapper_kwargs = wrapper_kwargs if wrapper_kwargs is not None else {}
 
-
     def env_callable():
-        # min_dt 4 to compensate default frameskip
         return AtariEnvironment(name=env_id, min_dt=frame_skip, obs_ram=True)
-        # return ParallelEnvironment(name="MsPacmanNoFrameskip-v0", env_class=AtariEnvironment,
-        #                            blocking=False, n_workers=4, min_dt=4, obs_ram=True)
 
     def data_env_callable():
         env = AtariFAIWrapper(make_rude(env_id, wrapper_kwargs))
@@ -157,8 +146,6 @@ def make_rude_env(env_id, num_env, seed: int=1, wrapper_kwargs=None, start_index
 
     def model_callable():
         return RandomDiscreteModel(n_actions=int(make_rude(env_id, wrapper_kwargs).action_space.n))
-
-
 
     denv = DataVecEnv(num_envs=num_env, n_actors=n_actors,
                       swarm_class=MLWave, env_callable=env_callable,
@@ -174,9 +161,9 @@ def _make_atari_env(env_id, num_env, seed, wrapper_kwargs=None, start_index=0):
      in OpenAI Baselines.
     """
     from baselines.common.vec_env.subproc_vec_env import SubprocVecEnv
-    if wrapper_kwargs is None: wrapper_kwargs = {}
+    wrapper_kwargs = {} if wrapper_kwargs is None else wrapper_kwargs
     
-    def make_env(rank): # pylint: disable=C0111
+    def make_env(rank):  # pylint: disable=C0111
         def _thunk():
             env = make_atari(env_id)
             env.seed(seed + rank)
