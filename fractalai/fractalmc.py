@@ -227,6 +227,7 @@ class FractalMC(Swarm):
                                 len(self.rewards[init_act == i]) > 0 else 0
                                 for i in range(self.env.n_actions)])
         return max_rewards
+        # TODO: Adapt again for continous control problems. Open an issue if you need it.
         max_r = max_rewards.max()
         min_r = max_rewards.min()
         div = (max_r - min_r)
@@ -234,17 +235,11 @@ class FractalMC(Swarm):
 
         return normed / normed.sum()
 
-    def run_agent(self, render: bool = False, print_swarm: bool=False):
-        """
-
-        :param render:
-        :param print_swarm:
-        :return:
-        """
-
-        self.tree.reset()
+    def _skip_initial_frames(self) -> tuple:
         state, obs = self._env.reset(return_state=True)
         i_step, self._agent_reward, end = 0, 0, False
+        info = {}
+        _reward = 0
         for i in range(self.skip_initial_frames):
             i_step += 1
             action = 0
@@ -257,6 +252,17 @@ class FractalMC(Swarm):
             end = info.get("terminal", _end)
             if end:
                 break
+        return state, obs, _reward, end, info, i_step
+
+    def run_agent(self, render: bool = False, print_swarm: bool=False):
+        """
+
+        :param render:
+        :param print_swarm:
+        :return:
+        """
+        self.tree.reset()
+        state, obs, _reward, end, info, i_step = self._skip_initial_frames()
         self._save_steps = []
 
         self.tree.append_leaf(i_step, parent_id=i_step - 1,

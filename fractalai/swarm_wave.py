@@ -11,31 +11,36 @@ class SwarmWave(Swarm):
 
     def __init__(self, env, model, n_walkers: int=100, balance: float=1.,
                  reward_limit: float=None, samples_limit: int=None, render_every: int=1e10,
-                 save_data: bool=True, accumulate_rewards: bool=True, dt_mean: float=None,
-                 dt_std: float=None, custom_reward: Callable=None, custom_end: Callable=None,
-                 keep_best: bool=False, min_dt: int=1, prune_tree: bool=True,
-                 process_obs: Callable=None, can_win: bool=False):
+                 accumulate_rewards: bool=True, dt_mean: float=None, dt_std: float=None,
+                 min_dt: int=1, custom_reward: Callable=None, custom_end: Callable=None,
+                 process_obs: Callable=None, custom_skipframe: Callable=None,
+                 keep_best: bool=False,  can_win: bool=False,
+                 save_data: bool=True, prune_tree: bool=True):
         """
+
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
         :param n_walkers: Number of walkers that the swarm will use
         :param balance: Balance coefficient for the virtual reward formula.
         :param reward_limit: Maximum reward that can be reached before stopping the swarm.
         :param samples_limit: Maximum number of time the Swarm can sample the environment
-         before stopping.
+         befors stopping.
         :param render_every: Number of iterations that will be performed before printing the Swarm
          status.
-        :param save_data:
-        :param accumulate_rewards:
-        :param dt_mean:
-        :param dt_std:
-        :param custom_reward:
-        :param custom_end:
-        :param keep_best:
-        :param min_dt:
-        :param prune_tree:
-        :param process_obs:
-        :param can_win:
+        :param accumulate_rewards: Use the accumulated reward when scoring the walkers.
+                                  False to use instantaneous reward.
+        :param dt_mean: Mean skipframe used for exploring.
+        :param dt_std: Standard deviation for the skipframe. Sampled from a normal distribution.
+        :param min_dt: Minimum skipframe to be used by the swarm.
+        :param custom_reward: Callable for calculating a custom reward function.
+        :param custom_end: Callable for calculating custom boundary conditions.
+        :param process_obs: Callable for doing custom observation processing.
+        :param custom_skipframe: Callable for sampling the skipframe values of the walkers.
+        :param keep_best: Keep track of the best accumulated reward found so far.
+        :param can_win: If the game can be won when a given score is achieved, set to True. Meant
+        to be used with Atari games like Boxing, Pong, IceHockey, etc.
+        :param save_data: Store data to construct a tree of paths.
+        :param prune_tree: Delete a path if no walker is expanding it.
         """
         super(SwarmWave, self).__init__(env=env, model=model, n_walkers=n_walkers,
                                         balance=balance, reward_limit=reward_limit,
@@ -43,7 +48,8 @@ class SwarmWave(Swarm):
                                         accumulate_rewards=accumulate_rewards, dt_mean=dt_mean,
                                         dt_std=dt_std, custom_end=custom_end,
                                         custom_reward=custom_reward, keep_best=keep_best,
-                                        min_dt=min_dt, process_obs=process_obs, can_win=can_win)
+                                        min_dt=min_dt, process_obs=process_obs, can_win=can_win,
+                                        custom_skipframe=custom_skipframe)
         self.save_data = save_data
         self.prune_tree = prune_tree
         self.old_ids = np.zeros(self.n_walkers)
