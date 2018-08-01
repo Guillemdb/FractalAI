@@ -9,32 +9,54 @@ from fractalai.swarm import Swarm, DynamicTree
 
 class FractalMC(Swarm):
 
-    def __init__(self, env, model, max_walkers: int=100, balance: float=1.,
-                 time_horizon: int=15,
-                 reward_limit: float=None, max_samples: int=None, render_every: int=1e10,
-                 custom_reward: Callable=None, custom_end: Callable=None, dt_mean: float=None,
-                 dt_std: float=None, accumulate_rewards: bool=True, keep_best: bool=True,
-                 min_dt: int=1, skip_initial_frames: int=0, update_parameters: bool=True,
-                 min_horizon: int=10, can_win: bool=False):
+    def __init__(self, env, model, n_walkers: int=100, balance: float=1.,
+                 reward_limit: float=None, samples_limit: int=None, render_every: int=1e10,
+                 accumulate_rewards: bool=True, dt_mean: float=None, dt_std: float=None,
+                 min_dt: int=1, custom_reward: Callable=None, custom_end: Callable=None,
+                 process_obs: Callable=None, custom_skipframe: Callable=None,
+                 keep_best: bool=False,  can_win: bool=False,
+                 skip_initial_frames: int=0,
+                 max_samples_step: int=None, time_horizon: int=40,
+                 min_horizon: int=1, update_parameters: bool=False):
         """
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
-        :param max_walkers: Number of walkers that the swarm will use
+        :param n_walkers: Number of walkers that the swarm will use
         :param balance: Balance coefficient for the virtual reward formula.
         :param reward_limit: Maximum reward that can be reached before stopping the swarm.
-        :param max_samples: Maximum number of time the Swarm can sample the environment
+        :param samples_limit: Maximum number of time the Swarm can sample the environment
          befors stopping.
         :param render_every: Number of iterations that will be performed before printing the Swarm
          status.
+        :param accumulate_rewards: Use the accumulated reward when scoring the walkers.
+                                  False to use instantaneous reward.
+        :param dt_mean: Mean skipframe used for exploring.
+        :param dt_std: Standard deviation for the skipframe. Sampled from a normal distribution.
+        :param min_dt: Minimum skipframe to be used by the swarm.
+        :param custom_reward: Callable for calculating a custom reward function.
+        :param custom_end: Callable for calculating custom boundary conditions.
+        :param process_obs: Callable for doing custom observation processing.
+        :param custom_skipframe: Callable for sampling the skipframe values of the walkers.
+        :param keep_best: Keep track of the best accumulated reward found so far.
+        :param can_win: If the game can be won when a given score is achieved, set to True. Meant
+        to be used with Atari games like Boxing, Pong, IceHockey, etc.
+        :param skip_initial_frames: Skip n frame when the game begins.
+        :param max_samples_step:  Maximum number of steps to be sampled per action.
+        :param time_horizon: Desired path length allowed when calculating a step.
+        :param min_horizon: Minimum path length allowed when calculating a step.
+        :param update_parameters: Enable non-linear feedback loops to adjust internal params.
         """
+
         self.skip_initial_frames = skip_initial_frames
-        self.max_walkers = max_walkers
+        self.max_walkers = n_walkers
         self.time_horizon = time_horizon
-        self.max_samples = max_samples
+        self.max_samples = max_samples_step
         self.min_horizon = min_horizon
 
-        _max_samples = max_samples if max_samples is not None else 1e10
-        self._max_samples_step = min(_max_samples, max_walkers * time_horizon)
+        _max_samples = max_samples_step if max_samples_step is not None else 1e10
+        samples_limit = samples_limit if samples_limit is not None else 1e10
+        self._max_step_total = max(_max_samples, samples_limit)
+        self._max_samples_step = min(_max_samples, n_walkers * time_horizon)
 
         super(FractalMC, self).__init__(env=env, model=model, n_walkers=self.max_walkers,
                                         balance=balance, reward_limit=reward_limit,
@@ -43,7 +65,8 @@ class FractalMC(Swarm):
                                         custom_end=custom_end, dt_mean=dt_mean, dt_std=dt_std,
                                         keep_best=keep_best,
                                         accumulate_rewards=accumulate_rewards, min_dt=min_dt,
-                                        can_win=can_win)
+                                        can_win=can_win, process_obs=process_obs,
+                                        custom_skipframe=custom_skipframe)
         self.init_ids = np.zeros(self.n_walkers).astype(int)
         self._update_parameters = update_parameters
 

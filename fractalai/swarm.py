@@ -233,12 +233,12 @@ class Swarm:
         self.accumulate_rewards = accumulate_rewards
         self.dt_mean = dt_mean
         self.dt_std = dt_std
+        self.min_dt = min_dt
         self.custom_end = custom_end if custom_end is not None else default_end
         self.custom_reward = custom_reward if custom_reward is not None else default_reward
         self.custom_skipframe = custom_skipframe if custom_skipframe is not None \
-            else self._calculate_dt()
+            else self._calculate_dt
         self.keep_best = keep_best
-        self.min_dt = min_dt
         # Environment information sources
         self.observations = None
         self.rewards = np.zeros(self.n_walkers)
