@@ -25,6 +25,17 @@ class SwarmWave(Swarm):
          before stopping.
         :param render_every: Number of iterations that will be performed before printing the Swarm
          status.
+        :param save_data:
+        :param accumulate_rewards:
+        :param dt_mean:
+        :param dt_std:
+        :param custom_reward:
+        :param custom_end:
+        :param keep_best:
+        :param min_dt:
+        :param prune_tree:
+        :param process_obs:
+        :param can_win:
         """
         super(SwarmWave, self).__init__(env=env, model=model, n_walkers=n_walkers,
                                         balance=balance, reward_limit=reward_limit,
@@ -100,3 +111,7 @@ class SwarmWave(Swarm):
                 self._env.step(action, n_repeat_action=1)
                 self._env.render()
                 time.sleep(sleep)
+
+    def run_swarm(self, state: np.ndarray=None, obs: np.ndarray=None, print_swarm: bool=False):
+        self.tree.reset()
+        super(SwarmWave, self).run_swarm(state=state, obs=obs, print_swarm=print_swarm)
