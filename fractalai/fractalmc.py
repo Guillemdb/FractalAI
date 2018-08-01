@@ -1,5 +1,6 @@
 import time
 import numpy as np
+import copy
 from typing import Callable
 from IPython.core.display import clear_output
 from fractalai.model import DiscreteModel
@@ -13,7 +14,8 @@ class FractalMC(Swarm):
                  reward_limit: float=None, max_samples: int=None, render_every: int=1e10,
                  custom_reward: Callable=None, custom_end: Callable=None, dt_mean: float=None,
                  dt_std: float=None, accumulate_rewards: bool=True, keep_best: bool=True,
-                 min_dt: int=1):
+                 min_dt: int=1, skip_initial_frames: int=0, update_parameters: bool=True,
+                 min_horizon: int=10, can_win: bool=False):
         """
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
@@ -25,9 +27,11 @@ class FractalMC(Swarm):
         :param render_every: Number of iterations that will be performed before printing the Swarm
          status.
         """
+        self.skip_initial_frames = skip_initial_frames
         self.max_walkers = max_walkers
         self.time_horizon = time_horizon
         self.max_samples = max_samples
+        self.min_horizon = min_horizon
 
         _max_samples = max_samples if max_samples is not None else 1e10
         self._max_samples_step = min(_max_samples, max_walkers * time_horizon)
@@ -38,8 +42,9 @@ class FractalMC(Swarm):
                                         render_every=render_every, custom_reward=custom_reward,
                                         custom_end=custom_end, dt_mean=dt_mean, dt_std=dt_std,
                                         keep_best=keep_best,
-                                        accumulate_rewards=accumulate_rewards, min_dt=min_dt)
+                                        accumulate_rewards=accumulate_rewards, min_dt=min_dt, can_win=can_win)
         self.init_ids = np.zeros(self.n_walkers).astype(int)
+        self._update_parameters = update_parameters
 
         self._save_steps = []
         self._agent_reward = 0
@@ -52,11 +57,14 @@ class FractalMC(Swarm):
         return self.data.get_actions(self.init_ids)
 
     def init_swarm(self, state: np.ndarray=None, obs: np.ndarray=None):
-        self.init_ids = np.zeros(self.n_walkers).astype(int)
+
         super(FractalMC, self).init_swarm(state=state, obs=obs)
+        self.init_ids = np.zeros(self.n_walkers).astype(int)
 
     def clone(self):
         super(FractalMC, self).clone()
+        if self._clone_idx is None:
+            return
         self.init_ids = np.where(self._will_clone, self.init_ids[self._clone_idx], self.init_ids)
 
     def weight_actions(self) -> np.ndarray:
@@ -69,7 +77,7 @@ class FractalMC(Swarm):
 
         if isinstance(self._model, DiscreteModel):
             # return self.init_actions[self.rewards.argmax()]
-            counts = np.bincount(self.init_actions)
+            counts = np.bincount(self.init_actions, minlength=self._env.n_actions)
             return np.argmax(counts)
         vals = self.init_actions.sum(axis=0)
         return vals / self.n_walkers
@@ -85,24 +93,26 @@ class FractalMC(Swarm):
         is met.
         :return:
         """
+        self.reset()
         self.init_swarm(state=state, obs=obs)
         while not self.stop_condition():
-            try:
-                # We calculate the clone condition, and then perturb the walkers before cloning
-                # This allows the deaths to recycle faster, and the Swarm becomes more flexible
-                if self._i_simulation > 1:
-                    self.clone_condition()
-                self.step_walkers()
-                if self._i_simulation > 1:
-                    self.clone()
-                elif self._i_simulation == 0:
-                    self.init_ids = self.walkers_id.copy()
-                self._i_simulation += 1
-                if self._i_simulation % self.render_every == 0 and print_swarm:
-                    print(self)
-                    clear_output(True)
-            except KeyboardInterrupt:
-                break
+            #try:
+            # We calculate the clone condition, and then perturb the walkers before cloning
+            # This allows the deaths to recycle faster, and the Swarm becomes more flexible
+            if self._i_simulation > 1:
+                self.clone_condition()
+            self.step_walkers()
+            if self._i_simulation > 1:
+                self.clone()
+            elif self._i_simulation == 0:
+                self.init_ids = self.walkers_id.copy()
+            self._i_simulation += 1
+            if self._i_simulation % self.render_every == 0 and print_swarm:
+                print(self)
+                clear_output(True)
+
+            #except ValueError:
+            #    break
         if print_swarm:
             print(self)
 
@@ -114,7 +124,7 @@ class FractalMC(Swarm):
         limit_samples = self._max_samples_step / np.maximum(1e-7, self.balance)
         # Round and clip
         limit_clean = int(np.clip(np.ceil(limit_samples), 2, self.max_samples))
-        self._max_samples_step = limit_clean
+        self._max_samples_step = max(limit_clean, self.n_walkers * self.min_horizon)
 
     def _update_n_walkers(self):
         """The number of parallel trajectories used changes every step. It tries to use enough
@@ -200,6 +210,32 @@ class FractalMC(Swarm):
             self._env.render()
             time.sleep(sleep)
 
+    def estimate_distributions(self, state, obs):
+        self.run_swarm(state=copy.deepcopy(state), obs=obs)
+        self.update_parameters()
+        rewards = self.get_expected_reward()
+        if isinstance(self._model, DiscreteModel):
+            # return self.init_actions[self.rewards.argmax()]
+            counts = np.bincount(self.init_actions, minlength=self._env.n_actions)
+            return counts / counts.sum(), rewards
+        vals = self.init_actions.sum(axis=0)
+        probs = vals / self.n_walkers
+
+        return probs, rewards
+
+    def get_expected_reward(self):
+        init_act = self.init_actions
+        max_rewards = np.array([self.rewards[init_act == i].max() if
+                                len(self.rewards[init_act == i]) > 0 else 0
+                                for i in range(self.env.n_actions)])
+        return max_rewards
+        max_r = max_rewards.max()
+        min_r = max_rewards.min()
+        div = (max_r - min_r)
+        normed = (max_rewards - min_r) / div if div != 0 else 1 + max_rewards
+
+        return normed / normed.sum()
+
     def run_agent(self, render: bool = False, print_swarm: bool=False):
         """
 
@@ -209,14 +245,28 @@ class FractalMC(Swarm):
         """
 
         self.tree.reset()
-        i_step, self._agent_reward, end = 0, 0, False
-        self._save_steps = []
         state, obs = self._env.reset(return_state=True)
+        i_step, self._agent_reward, end = 0, 0, False
+        for i in range(self.skip_initial_frames):
+            i_step += 1
+            action = 0
+            state, obs, _reward, _end, info = self._env.step(state=state, action=action,
+                                                             n_repeat_action=self.min_dt)
+            self.tree.append_leaf(i_step, parent_id=i_step - 1,
+                                  state=state, action=action, dt=self._env.n_repeat_action)
+            self._agent_reward += _reward
+            self._last_action = action
+            end = info.get("terminal", _end)
+            if end:
+                break
+        self._save_steps = []
+
         self.tree.append_leaf(i_step, parent_id=i_step - 1,
                               state=state, action=0, dt=1)
+
         while not end and self._agent_reward < self.reward_limit:
             i_step += 1
-            self.run_swarm(state=state.copy(), obs=obs)
+            self.run_swarm(state=copy.deepcopy(state), obs=obs)
             action = self.weight_actions()
 
             state, obs, _reward, _end, info = self._env.step(state=state, action=action,
@@ -232,4 +282,5 @@ class FractalMC(Swarm):
             if print_swarm:
                 print(self)
                 clear_output(True)
-            self.update_parameters()
+            if self._update_parameters:
+                self.update_parameters()
