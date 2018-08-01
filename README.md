@@ -1,6 +1,6 @@
 # Fractal AI: A Fragile Theory of Intelligence
 
-XXX
+We are currently updating the repository. Please use the provisinal_demo.ipynb while I fix the notebooks.
 
 **Please note this project is under active development and may change over time.
 Treat it as an open beta.**
