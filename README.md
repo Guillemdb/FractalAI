@@ -1,9 +1,7 @@
 # Fractal AI: A Fragile Theory of Intelligence
 
-We are currently updating the repository. Please use the provisinal_demo.ipynb while I fix the notebooks.
-
 **Please note this project is under active development and may change over time.
-Treat it as an open beta.**
+Consider it as an open beta.**
 
 ![Boxing-v0](assets/boxing.gif "Boxing-v0 76 samples per action")
 ![MsPacman-v0](assets/mspacman.gif "MsPacman-v0 154 samples per action")
@@ -35,28 +33,23 @@ _–Richard P. Feynman, **The Pleasure of Finding Things Out**: The Best Short W
 
 ## Abstract
 
-[Fractal AI](https://docs.google.com/document/d/13SFT9m0ERaDY1flVybG16oWWZS41p7oPBi3904jNBQM/edit?usp=sharing)
-([arXiv](https://arxiv.org/abs/1803.05049)) is a theory for efficiently sampling state spaces.
-It allows one to derive new mathematical tools that could be useful for modeling information
+Fractal AI ([arXiv#1](https://arxiv.org/abs/1803.05049), [arXiv#2](https://arxiv.org/abs/1807.01081)) is a theory for efficiently sampling state spaces. It allows one to derive new mathematical tools that could be useful for modeling information
 using cellular automaton-like structures instead of smooth functions.
 
-In this repository we present a new agent called [Fractal Monte Carlo Agent](fractalai/fractalmc.py),
-derived from the first principles of the theory. The agent is capable of solving Atari games
+In this repository we present [Fractal Monte Carlo (FMC)](fractalai/fractalmc.py), a new planning algorithm derived from the first principles of [Fractal AI](https://arxiv.org/abs/1803.05049) theory. A FMC agent is capable of solving Atari-2600 games
 under the [OpenAI Gym](https://github.com/openai/gym) several [orders of magnitude more efficiently](#benchmarks)
-than similar techniques, such as _Monte Carlo Tree Search (MCTS)_ **[[1](#bibliography)]**.
+than similar planning algorithms, such as _Monte Carlo Tree Search (MCTS)_ **[[1](#bibliography)]**.
 
-We also present the [Swarm Wave algorithm](fractalai/swarm_wave.py),
-a tool derived from Fractal AI (FAI) that allows one to solve Markov decision processes under a
-perfect model of the environment. Under this assumption, the algorithm is about five orders of
-magnitude more efficient than MCTS, effectively "solving" a substantial number of Atari games.
+We also present a more advanced [Swarm Wave](fractalai/swarm_wave.py) implementation, also derived from Fractal AI principles, 
+that allows one to solve Markov decision processes under a perfect/informative model of the environment. This implementation is far more efficient than FMC, effectively "solving" a substantial number of Atari games.
 
 The code provided under this repository exemplifies how it is now possible to beat
-some of the current state-of-the-art benchmarks on Atari games and a large sample of top-performing examples
+some of the current state-of-the-art benchmarks on Atari games while generating a large set of top-performing examples
 with little computation required, turning Reinforcement Learning (RL) into a supervised problem.
 
-The algorithms propose a new approach to modeling the decision space, while maintaining
+These new algorithms propose a new approach to modeling the decision space, while maintaining
 control over any aspects of the agent's behavior. The algorithms can be applied
-to both sampling discrete and continuous state spaces.
+to all combinations of discrete or continuous decision and state spaces.
 
 ## Quick Start
 
@@ -64,8 +57,7 @@ To quickly understand the fundamentals of Fractal AI you can refer to the [Intro
 The document provides a brief explanation of the algorithms here presented and their
 potential applications on the field of Reinforcement Learning.
 
-To proof how how the Fractal Monte Carlo Agent performs on any Atari game you can refer to the [FMC example notebook](FMC_example.ipynb).
-The example allows runs either using the RAM content or pixel render as observations.
+To test how the Fractal Monte Carlo Agent performs on any Atari game you can refer to the [FMC example notebook](FMC_example.ipynb). This example allows us to run games using either the RAM content or the pixel render as observations.
 
 To better understand how the Swarm Wave algorithm works in practice you can refer to the [Swarm Wave example notebook](Swarm_Wave_example.ipynb).
 
@@ -123,129 +115,96 @@ sudo pip3 install -e .
 
 _–Richard P. Feynman_
 
-The results for the benchmarks provided come from a single ([Razer Blade laptop](https://www.razerzone.com/gaming-laptops/razer-blade-pro))
-using the Fractal Monte Carlo Agent (FMC) through the code from the reference implementation provided in this repository.
-The parameters utilized were chosen according to the the first principles of the theory.
-The performance observed corresponds with the expected values.
+We used a standard set of 50 Atari-2600 games, common to all the planning algorithms articles 
+found in the literature, to compare our implementation of the FMC algorithm against:
 
-| Total number of games available               |  56 |  100.0% |
-| :-------------------------------------------- | --: | ------: |
-| Games played by FMC                           |  52 |   92.9% |
-| Games where FMC defeats the state-of-the-art  |  41 |   78.8% |
-| Games solved or defeats the human record      |  17 |   32.7% |
+- **Standard Human**: a professional game tester after 2 hours of trainnig, as reported in **[[5](#bibliography)]**.
+- **World Human Record**: the maximum score achieved by a human player, as reported in **[[8](#bibliography)]**.
+- **Planning SOtA**: the best score achieved by any "State of the Art" planning algorithms (Full Tree, MCTS UCT, IW(1), p-IW(1), R.p-IW(1), 2BSF, BrFS), as reported in **[[12](#bibliography)]** **[[13](#bibliography)]** **[[14](#bibliography)]** **[[15](#bibliography)]** **[[16](#bibliography)]** **[[17](#bibliography)]**.
+- **Learning SOtA**: the best score achieved by any "State of the Art" learning algorithms (Random, DQN, C51 DQN, NoisyNet-DQN, Dueling, NoisyNet-Dueling, A3C, NoisyNet-A3C, A2C, HyperNEAT, ES FF), as reported in **[[1](#bibliography)]**, **[[3](#bibliography)]**, **[[4](#bibliography)]**, **[[5](#bibliography)]**, **[[6](#bibliography)]**, **[[7](#bibliography)]**.
+- **Hidden score limit**: many games do not support scoring above 1M and reset score down to zero after 999,999 is reached. In most cases the limit was totally unknow as no one -human or algorithm- had ever been able to reach this limit before. 
+
+|                              | FMC Wins |   %  |
+| :--------------------------- | :------: | :--: |
+| FMC vs Standard Human        |  49 / 50 |  98% |
+| FMC vs World Human Record    |  32 / 50 |  64% |
+| FMC vs Planning SOtA (1)     |  50 / 50 | 100% |
+| FMC vs Learning SOtA         |  45 / 50 |  90% |
+| FMC vs Hidden score limit    |  16 / 50 |  32% |
+
+(1) On average, the Swarm Wave version of FMC used 360 times fewer samples per action than the rest of planning algorithm, 
+typically using 150k samples per action.
 
 ### Fractal Monte Carlo Agent Performance Table
 
-The following table depicts the Fractal Monte Carlo Agent performance based on
-widely accepted benchmarks within the reinforcement learning community.
+The following table depicts the Fractal Monte Carlo Agent performance on each tested game.
 
-For each game played by the agent, the following information is is provided:
-
-- **Human record**: the maximum score achieved by a human player, as reported in **[[8](#bibliography)]**.
-- **SotA**: stands for "State of the Art":
-  - Represents the best score achieved by any of the following algorithms:
-    Random, DQN, C51 DQN, NoisyNet-DQN, Dueling, NoisyNet-Dueling, A3C,
-    NoisyNet-A3C, A2C, HyperNEAT, ES FF, and MCTS.
-  - Take into account when interpreting the benchmark table that some of the scores
-    are reported as an average across multiple runs (at most 100).
-    See **[[1](#bibliography)]**, **[[3](#bibliography)]**, **[[4](#bibliography)]**,
-    **[[5](#bibliography)]**, **[[6](#bibliography)]**, **[[7](#bibliography)]**.
-    A detailed source for each score can be found in the [detailed performance sheet](#detailed-performance-sheet).
-- **FMC**: the maximum score achieved by Fractal Monte Carlo Agent in the games documented.
-  The number of runs for each game and the parameters used may vary between each game.
-- **FMC vs SotAa**: Relative performance of _FMC_ vs. the corresponding _State of the Art_.
-
-| Game | Human Record | SotA | FMC | FMC vs SotA |
-|:--- | ---: | ---: | ---: | ---:|
-| alien | 251916 | 5899 | ***19380*** | 329% |
-| amidar | 155339 | 2354 | ***4306*** | 183% |
-| assault | 8647 | ***11477*** | 2782 | 24% |
-| asterix | 335500 | 406211 | ***999500*** | 246% |
-| asteroids | 10004100 | 26380 | ***76270*** | 289% |
-| atlantis | 7352737 | 8782433 | ***10000100*** | 114% |
-| bank heist | 199978 | 1611.9 | ***1645*** | 102% |
-| battle zone | 863000 | 42767 | ***50000*** | 117% |
-| beam rider | 999999 | 30276.5 | ***288666*** | 953% |
-| berzerk | 1057940 | 3409 | ***13290*** | 390% |
-| bowling | 300 | ***135.8*** | 86 | 63% |
-| boxing | 100 | 99.4 | ***100*** | 101% |
-| breakout |  | 748 | ***750*** | 100% |
-| centipede | 1301709 | 25275.2 | ***1351000*** | 5345% |
-| chopper command | 999900 | 15600 | ***999900*** | 6410% |
-| crazy climber | 447000 | 179877 | ***238300*** | 132% |
-| demon attack | 999970 | 130955 | ***999970*** | 764% |
-| double dunk |  | 5 | ***20*** | 400% |
-| enduro | 3617.9 | 3454 | ***5279*** | 153% |
-| fishing derby | 71 | ***49.8*** | -1 | -2% |
-| freeway | 34 | ***33.9*** | 33 | 97% |
-| frostbite | 552590 | 7413 | ***485000*** | 6543% |
-| gopher | 120000 | 104368.2 | ***616000*** | 590% |
-| gravitar | 1673950 | 805 | ***2600*** | 323% |
-| hero | 1000000 | ***38874*** | 36625 | 94% |
-| ice hockey | 36 | 10.6 | ***64*** | 604% |
-| jamesbond | 45550 | 4214 | ***9600*** | 228% |
-| kangaroo | 1436500 | ***14854*** | 7100 | 48% |
-| krull | 1006680 | 12601.4 | ***277000*** | 2198% |
-| kung fu master | 1000000 | 48375 | ***144100*** | 298% |
-| montezuma | 1219200 | 273.7 | ***2500*** | 913% |
-| ms pacman | 290090 | 6283 | ***58521*** | 931% |
-| name this game | 25220 | 15572.5 | ***53010*** | 340% |
-| phoenix | 4014440 | 70324.3 | ***250450*** | 356% |
-| pitfall | 114000 | ***123*** | 0 | 0% |
-| pong | 21 | ***21*** | ***21*** | 100% |
-| private eye | 103100 | 15095 | ***40680*** | 269% |
-| qbert | 2400000 | 23784 | ***35750*** | 150% |
-| riverraid | 194940 | ***21162.6*** | 18510 | 87% |
-| road runner | 2038100 | ***69524*** | 54000 | 78% |
-| robotank | 74 | 65.3 | ***94*** | 144% |
-| seaquest | 527160 | 266434 | ***999999*** | 375% |
-| skiing | 32,72 | ***15442.5*** |  | 0% |
-| solaris | 281740 | 11830 | ***93520*** | 791% |
-| space invaders | 621535 | 15311.5 | ***17970*** | 117% |
-| star gunner | 77400 | ***125117*** | 1600 | 1% |
-| surround |  | ***6.8*** |  | 0% |
-| tennis | 24 | 23.1 | ***24*** | 104% |
-| time pilot | 66500 | ***11666*** |  | 0% |
-| tutankham | 3493 | 321 | ***342*** | 107% |
-| up n down | 168830 | 145113 | ***999999*** | 689% |
-| venture | 31900 | ***3800*** | 1500 | 39% |
-| video pinball | 999999 | 949604 | ***999999*** | 105% |
-| wizard of wor | 233700 | 12352 | ***93090*** | 754% |
-| yars revenge | 15000105 | ***69618.1*** |  | 0% |
-
+| Game | Human Record | Planning SOtA | Learning SOtA | FMC |
+|:--- | :---: | :---: | :---: | :---:|
+| Alien | 251916 | 38951 | 7967 | ***479940*** |
+| Amidar | ***155339*** | 3122 | 4058 | 5779 |
+| Assault | 8647 | 1970 | 11734 | ***14472*** |
+| Asterix (*) | 335500 | 319667 | 406211 | ***999500*** |
+| Asteroids | 10004100 | 68345 | 167159 | ***12575000*** |
+| Atlantis | 7352737 | 198510 | 2872644.8 | ***10000100*** |
+| Bank Heist | ***199978*** | 1171 | 1496 | 3139 |
+| Battle Zone (*) | 863000 | 330880 | 53742 | ***999000*** |
+| Bean Rider (*) | ***999999*** | 12243 | 21077 | ***999999*** |
+| Berzerk | ***1057940*** | 2096 | 2500 | 17610 |
+| Bowling | ***300*** | 69 | 135.8 | 180 |
+| Boxing | ***100*** | ***100*** | ***100*** | ***100*** |
+| Breakout | 752 | 772 | 748 | ***864*** |
+| Centipede | 1301709 | 193799 | 25275.2 | ***1351000*** |
+| Chopper Command (*) | ***999900*** | 34097 | 15600 | ***999900*** |
+| Crazy Climber | 447000 | 141840 | 179877 | ***2254100*** |
+| Demon Attack (*) | ***999970*** | 34405 | 130955 | ***999970*** |
+| Double Dunk | ***24*** | ***24*** | ***24*** | ***24*** |
+| Enduro | 3617.9 | 788 | 3454 | ***5279*** |
+| Fishing Derby | ***71*** | 42 | 59 | 63 |
+| Freeway | ***34*** | 32 | ***34*** | 33 |
+| Frostbyte (*) | 552590 | 6427 | 4442 | ***999960*** |
+| Gopher (*) | 120000 | 26297 | 41138 | ***999980*** |
+| Gravitar | ***1673950*** | 6520 | 2308 | 14050 |
+| Hero | ***1000000*** | 15280 | 105929.4 | 43255 |
+| Ice Hockey | 36 | 62 | 10.6 | ***64*** |
+| Jamesbond | 45550 | 23070 | 6963 | ***152950*** |
+| Kangaroo | ***1436500*** | 8760 | 15470 | 10800 |
+| Krull | ***1006680*** | 15788 | 35024 | 426534 |
+| Kung fu master | ***1000000*** | 86290 | 79676 | 172600 |
+| Montezuma's Revenge | ***1219200*** | 500 | 4739.6 | 5600 |
+| Ms. Pacman (*) | 290090 | 30785 | 5913 | ***999990*** |
+| Name this Game | 25220 | 15410 | 12542 | ***53010*** |
+| Pong | ***21*** | ***21*** | ***21*** | ***21*** |
+| Private Eye | ***103100*** | 2544 | 40908.2 | 41760 |
+| Q*Bert (*) | ***999975*** | 44876 | 27543 | ***999975*** |
+| River Raid | ***194940*** | 15410 | 24568 | 18510 |
+| Road Runner (*) | ***999900*** | 120923 | 367023 | ***999900*** |
+| Robotank | 74 | 75 | 65 | ***94*** |
+| Seaquest (*) | 527160 | 35009 | 266434 | ***999999*** |
+| Space Invaders | ***621535*** | 3974 | 7227 | 17970 |
+| Star Gunner (*) | 77400 | 14193 | 84490 | ***999800*** |
+| Tennis | ***24*** | ***24*** | 23.1 | ***24*** |
+| Time Pilot | 66500 | 65213 | 18501 | ***90000*** |
+| Tutankham | ***3493*** | 226 | 288 | 342 |
+| Up and Down (*) | 168830 | 120200 | 155049 | ***999999*** |
+| Venture | ***31900*** | 1200 | 1520 | 1500 |
+| Video Pinball (*) | ***999999*** | 471859 | ***999999*** | ***999999*** |
+| Wizard of Wor (*) | 99900 | ***161640*** | 16143 | 99900 |
+| Zaxxon | ***100000*** | 39687 | 18057 | 92100 |
+ 
+ (*) Games with the "1 Million bug" where max. score is hard-limited.
+ 
 #### Detailed Performance Sheet
 
 We provide a more detailed Google Docs spreadsheet where the performance of the
 Fractal Monte Carlo Agent is logged relative to the current alternatives.
 In the spreadsheet we also provide the parameters used in each of the runs.
 
-If you find any outdated benchmarks or for some reaons you are unable to replicate
+If you find any outdated benchmarks or for some reason you are unable to replicate
 some of our results, please [open an issue](https://github.com/FragileTheory/FractalAI/issues)
 and we will update the document accordingly.
 
 - [Fractal AI performance sheet](https://docs.google.com/spreadsheets/d/1JcNw2L0YL_I2iGZPJ0bNKJshlTaqMuEl5CP2W5zie6M/edit?usp=sharing)
-
-### Run the Examples and Help Us
-
-You can help us while running the example by yourself and sending us your results:
-
-1. Record a video using our [FMC example notebook](FMC_example.ipynb).
-2. Provide the parameters used in the run.
-3. Provide the mean time as displayed as output in the notebook.
-4. Provide information about the system in which you ran the example.
-5. Share all of the above with us. You can do that in two ways:
-    1. Upload the `mp4` file generated to [YouTube](https://www.youtube.com).
-       Post the URL on [Twitter](https://www.twitter.com) alongside the corresponding information
-       in the tweet content, and use use the hashtag **#Fractal_ATARI**.
-    2. [Open an issue](https://github.com/FragileTheory/FractalAI/issues) in this repository
-       with the video/URL and corresponding information.
-
- We appreciate all your contributions.
-
-### Benchmarking tool
-
-We are currently building a tool that will allow for testing our theory at larger scale.
-We aim to provide confidence intervals for the results, by using different parameter combinations.
 
 ## Additional Resources
 
@@ -256,6 +215,9 @@ This document explains the fundamental principles of the Fractal AI theory in wh
 We worked all the fundamental principles completely from scratch to build our own solution.
 We try to be consistent with existing terminology, and this document should contain everything
 you need to understand the theory. Comments on how to better explain the content are appreciated.
+
+[Solving Atari Games Using Fractals And Entropy](https://arxiv.org/abs/1807.01081):
+A short version of the article written by [Spiros Baxevanakis](https://twitter.com/spirosbax) and submitted -under very high uncertaintly- to NIPS2018. 
 
 ### Blog
 
@@ -335,34 +297,29 @@ Their patience, understanding and support made possible for this project to evol
 We are actively working in improving this project, and we welcome all contributions.
 Some of the to-dos in our roadmap:
 
+- Build a new benchmarking tool for large scale testing with confidence intervals. 
 - Making the repository more friendly to academia.
 - Improving the Introduction to Fractal AI document.
 - Improving code clarity and docstrings.
-- Updating Benchmarks with current records.
 - Providing a command line interface (CLI).
 - Uploading the project to pip and Conda package managers.
 - Creating a Docker container for ease of use.
 
 ## Bibliography
 
- - **[1]**  Guo, Xiaoxiao and Singh, Satinder and Lee, Honglak and Lewis, Richard L and Wang, Xiaoshi. 
-***Deep Learning for Real-Time Atari Game Play Using Offline Monte-Carlo Tree Search Planning***. [NIPS2014_5421](http://papers.nips.cc/paper/5421-deep-learning-for-real-time-atari-game-play-using-offline-monte-carlo-tree-search-planning.pdf), 2014.
+ - **[1]**  Guo, Xiaoxiao and Singh, Satinder and Lee, Honglak and Lewis, Richard L and Wang, Xiaoshi. ***Deep Learning for Real-Time Atari Game Play Using Offline Monte-Carlo Tree Search Planning***. [NIPS2014_5421](http://papers.nips.cc/paper/5421-deep-learning-for-real-time-atari-game-play-using-offline-monte-carlo-tree-search-planning.pdf), 2014.
 
-- **[2]**  Greg Brockman and Vicki Cheung and Ludwig Pettersson and Jonas Schneider and John Schulman and Jie Tang and Wojciech Zaremba.
-***OpenAI Gym*** . [arXiv:1606.01540](https://arxiv.org/pdf/1606.01540.pdf), 2016.
+- **[2]**  Greg Brockman and Vicki Cheung and Ludwig Pettersson and Jonas Schneider and John Schulman and Jie Tang and Wojciech Zaremba. ***OpenAI Gym*** . [arXiv:1606.01540](https://arxiv.org/pdf/1606.01540.pdf), 2016.
 
 - **[3]**  Marc G. Bellemare, Will Dabney Rémi Munos. ***A Distributional Perspective on Reinforcement Learning***. [arXiv:1707.06887](https://arxiv.org/pdf/1707.06887.pdf), 2017.
 
-- **[4]**  Meire Fortunato, Mohammad Gheshlaghi Azar, Bilal Piot, Jacob Menick, Matteo Hessel, Ian Osband, Alex Graves, Vlad Mnih, Remi Munos, Demis Hassabis,
- Olivier Pietquin, Charles Blundell, Shane Legg. ***Noisy networks for exploration***. [arXiv:1706.10295](https://arxiv.org/pdf/1706.10295.pdf), 2018.
+- **[4]**  Meire Fortunato, Mohammad Gheshlaghi Azar, Bilal Piot, Jacob Menick, Matteo Hessel, Ian Osband, Alex Graves, Vlad Mnih, Remi Munos, Demis Hassabis, Olivier Pietquin, Charles Blundell, Shane Legg. ***Noisy networks for exploration***. [arXiv:1706.10295](https://arxiv.org/pdf/1706.10295.pdf), 2018.
  
 - **[5]**  Volodymyr Mnih & others. ***Human-level control through deep reinforcement learning***. [doi:10.1038/nature14236](http://www.davidqiu.com:8888/research/nature14236.pdf), 2015.
  
-- **[6]**  Matthias Plappert, Rein Houthooft, Prafulla Dhariwal, Szymon Sidor, Richard Y. Chen, Xi Chen, Tamim Asfour, Pieter Abbeel, Marcin Andrychowicz.
-***Parameter Space Noise for Exploration***. [arXiv:1706.01905](https://arxiv.org/abs/1706.01905), 2017.
+- **[6]**  Matthias Plappert, Rein Houthooft, Prafulla Dhariwal, Szymon Sidor, Richard Y. Chen, Xi Chen, Tamim Asfour, Pieter Abbeel, Marcin Andrychowicz. ***Parameter Space Noise for Exploration***. [arXiv:1706.01905](https://arxiv.org/abs/1706.01905), 2017.
 
-- **[7]**  Tim Salimans, Jonathan Ho, Xi Chen, Szymon Sidor, Ilya Sutskever.
-***Evolution Strategies as a Scalable Alternative to Reinforcement Learning***. [arXiv:1703.03864](https://arxiv.org/abs/1703.03864), 2017.
+- **[7]**  Tim Salimans, Jonathan Ho, Xi Chen, Szymon Sidor, Ilya Sutskever. ***Evolution Strategies as a Scalable Alternative to Reinforcement Learning***. [arXiv:1703.03864](https://arxiv.org/abs/1703.03864), 2017.
 
 - **[8]**  ***ATARI VCS/2600 Scoreboard***. [Atari compendium](http://www.ataricompendium.com/game_library/high_scores/high_scores.html), 2018.
 
@@ -371,3 +328,18 @@ Some of the to-dos in our roadmap:
 - **[10]**  Alexander Wissner-Gross. ***Causal entropic forces***. [Physical Review Letters](http://alexwg.org/publications/PhysRevLett_110-168702.pdf), 2013.
 
 - **[11]**  Shane Legg ***Machine Super Intelligence***. [Doctoral Dissertation ](http://www.vetta.org/documents/Machine_Super_Intelligence.pdf), 2008.
+
+- **[12]** Foley, Daniel John ***Model-Based Reinforcement Learning in Atari 2600 Games**. [Thesis](https://dspace.fandm.edu/handle/11016/24289), 2017.
+
+- **[13]** Justin Fu, Irving Hsu ***Model-Based Reinforcement Learning for Playing Atari Games**. [Stanford report](http://cs231n.stanford.edu/reports/2016/pdfs/116_Report.pdf), 2016.
+
+- **[14]** Xiaoxiao Guo et al. ***Deep Learning for real-time Atari game play using offline MCTS planning**. [NIPS-2014](https://web.eecs.umich.edu/~baveja/Papers/UCTtoCNNsAtariGames-FinalVersion.pdf), 2014.
+
+- **[15]** Marc G. Bellemare, Yavar Naddaf, Joel Veness, Michael Bowling ***The Arcade Learning Environment: An Evaluation Platform for General Agents**. [arxiv:1207.4708](https://arxiv.org/abs/1207.4708), 2013.
+
+- **[16]** Alexander Shleyfman, Alexander Tuisov, Carmel Domshlak ***Blind Search for Atari-Like Online Planning Revisited**. [IJCAI-16](https://www.ijcai.org/Proceedings/16/Papers/460.pdf), 2016.
+
+- **[17]** Nir Lipovetzky, Miquel Ramirez, Hector Geffner ***Classical Planning with Simulators: Results on the Atari Video Games**. [IJCAI-15](http://ijcai.org/Proceedings/15/Papers/230.pdf), 2015.
+
+- **[18]** Wilmer Bandres, Blai Bonet, Hector Geffner ***Planning with Pixels in (Almost) Real Time**. [arXiv:1801.03354](https://arxiv.org/abs/1801.03354), 2018.
+
