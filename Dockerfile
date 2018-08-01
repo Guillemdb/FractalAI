@@ -170,6 +170,7 @@ RUN rm /fractalai/*.patch /fractalai/*.deb && \
     apt-get remove -y gcc g++ make git && \
     apt-get autoremove -y
 
+#Jupyter notebook
 RUN mkdir /root/.jupyter && \
     echo 'c.NotebookApp.token = "mallorca"' > /root/.jupyter/jupyter_notebook_config.py
 CMD jupyter notebook --allow-root --port 8080 --ip 0.0.0.0
