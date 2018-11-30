@@ -102,8 +102,9 @@ class Policy:
         new_state.update_state(policy_action=action, model_action=model_action)
         return new_state
 
-    def act(self, state: [State, Iterable], render: bool = False,
-            *args, **kwargs) -> [State, list]:
+    def act(
+        self, state: [State, Iterable], render: bool = False, *args, **kwargs
+    ) -> [State, list]:
         """ Given an arbitrary state, acts on the environment and return the
         processed new state where the system ends up.
         :param state: State that represents the current state of the environment.
@@ -116,7 +117,7 @@ class Policy:
             return self._act(state, render=render, *args, **kwargs)
         return [self._act(s, render=render, *args, **kwargs) for s in state]
 
-    def _step(self, state: State, action: [np.ndarray, int, float], fixed_steps: int=1) -> State:
+    def _step(self, state: State, action: [np.ndarray, int, float], fixed_steps: int = 1) -> State:
         """
         Steps one state and returns the processed version of the next state.
         :param state: Current state of the environment.
@@ -126,8 +127,12 @@ class Policy:
         """
         return self.env.step(state, action, fixed_steps=fixed_steps)
 
-    def step(self, state: [State, Iterable], action: [int, np.ndarray, list, tuple],
-             fixed_steps: int=1) -> [State, list]:
+    def step(
+        self,
+        state: [State, Iterable],
+        action: [int, np.ndarray, list, tuple],
+        fixed_steps: int = 1,
+    ) -> [State, list]:
         """
         Step a vector of state.
         :param state:
@@ -139,10 +144,12 @@ class Policy:
 
         if not isinstance(state, Iterable):
             return self._step(state=state, action=action, fixed_steps=fixed_steps)
-        return [self._step(state=si, action=ai, fixed_steps=fixed_steps)
-                for si, ai in zip(state, action)]
+        return [
+            self._step(state=si, action=ai, fixed_steps=fixed_steps)
+            for si, ai in zip(state, action)
+        ]
 
-    def skip_frames(self, n_frames: int=0, render=False) -> State:
+    def skip_frames(self, n_frames: int = 0, render=False) -> State:
         """
         Skip the next n swarm. Play actions at random for `n_frames` frames.
         It is useful at the beginning of the environment to save some time.
@@ -205,7 +212,6 @@ class GreedyPolicy(Policy):
 
 
 class PolicyWrapper(Policy):
-
     def __init__(self, policy: Policy):
         super(PolicyWrapper, self).__init__(model=policy.model, env=policy.env)
         self.policy = policy
@@ -224,8 +230,9 @@ class PolicyWrapper(Policy):
         """
         return self.policy.predict(state, *args, **kwargs)
 
-    def _act(self, state: [State, Iterable], render: bool = False,
-             *args, **kwargs) -> [State, list]:
+    def _act(
+        self, state: [State, Iterable], render: bool = False, *args, **kwargs
+    ) -> [State, list]:
         """ Given an arbitrary state, acts on the environment and return the
         processed new state where the system ends up.
         :param state: State that represents the current state of the environment.
@@ -236,8 +243,12 @@ class PolicyWrapper(Policy):
         """
         return self.policy.act(state=state, render=render, *args, **kwargs)
 
-    def _step(self, state: [State, np.ndarray, list, tuple],
-              action: [np.ndarray, list, tuple], fixed_steps: int=1) -> [State, list]:
+    def _step(
+        self,
+        state: [State, np.ndarray, list, tuple],
+        action: [np.ndarray, list, tuple],
+        fixed_steps: int = 1,
+    ) -> [State, list]:
         """
 
         :param state:

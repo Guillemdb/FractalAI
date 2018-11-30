@@ -28,7 +28,7 @@ class GameLoader:
             try:
                 loaded = np.load(os.path.join(self.folder, "{}_{}.npy".format(uid, key)))
                 data = data + tuple([loaded])
-            except: #TODO: FIX to avoid bare except
+            except:  # TODO: FIX to avoid bare except
                 print("failed to load {} attr {}".format(uid, key))
                 continue
         return data
@@ -48,11 +48,19 @@ class GameLoader:
 
 @ray.remote
 class RemoteDataSource:
-
-    def __init__(self, swarm_class=None, env_callable=None, model_callable=None, swarm_kwargs=None,
-                 generator_kwargs=None,
-                 worker_id: int=0, data_env_callable: Callable=None, seed: int=1, folder=None,
-                 mode: str="online"):
+    def __init__(
+        self,
+        swarm_class=None,
+        env_callable=None,
+        model_callable=None,
+        swarm_kwargs=None,
+        generator_kwargs=None,
+        worker_id: int = 0,
+        data_env_callable: Callable = None,
+        seed: int = 1,
+        folder=None,
+        mode: str = "online",
+    ):
         self.folder = folder
         self.mode = mode
         self.worker_id = worker_id
@@ -63,18 +71,19 @@ class RemoteDataSource:
             assert folder is not None, "A folder to load data must be specified"
             self.generator = GameLoader(self.folder)
         else:
-            self.data_env = data_env_callable() if data_env_callable is not None \
-                else env_callable()
+            self.data_env = (
+                data_env_callable() if data_env_callable is not None else env_callable()
+            )
             self.generator = DataGenerator(swarm=swarm, **generator_kwargs)
 
-    def get_game_examples(self, with_id: bool=False):
+    def get_game_examples(self, with_id: bool = False):
         best_game = self.generator.best_game_generator()
         if with_id:
             return next(best_game), self.worker_id
         else:
             return next(best_game)
 
-    def get_game_states(self, with_id: bool=False):
+    def get_game_states(self, with_id: bool = False):
         best_game = self.generator.game_state_generator()
         if with_id:
             return next(best_game), self.worker_id
@@ -123,17 +132,18 @@ class RemoteDataSource:
         ends[-1] = True
         return states, observs, rewards, ends, infos, actions
 
-    def save_game(self, states, observs, rewards, ends, infos, actions,
-                  folder: str=None, uid: str=None):
-
+    def save_game(
+        self, states, observs, rewards, ends, infos, actions, folder: str = None, uid: str = None
+    ):
         def new_id(size=6, chars=string.ascii_uppercase + string.digits):
-            return ''.join(random.choice(chars) for _ in range(size))
+            return "".join(random.choice(chars) for _ in range(size))
 
         uid = uid if uid is not None else new_id()
         folder = folder if folder is not None else self.folder
 
         def file_name(suffix):
             return os.path.join(folder, "{}_{}".format(uid, suffix))
+
         print("Saving to {} with uid {}".format(folder, uid))
         np.save(file_name("states"), states)
         np.save(file_name("obs"), observs)
@@ -145,24 +155,42 @@ class RemoteDataSource:
 
 
 class ParallelDataGenerator:
-
-    def __init__(self, n_actors: int, swarm_class: Callable,
-                 env_callable: Callable, model_callable: Callable,
-                 swarm_kwargs: dict, generator_kwargs: dict, data_env_callable: Callable=None,
-                 seed: int=1, folder=None,
-                 mode: str="online"):
+    def __init__(
+        self,
+        n_actors: int,
+        swarm_class: Callable,
+        env_callable: Callable,
+        model_callable: Callable,
+        swarm_kwargs: dict,
+        generator_kwargs: dict,
+        data_env_callable: Callable = None,
+        seed: int = 1,
+        folder=None,
+        mode: str = "online",
+    ):
         self.n_actors = n_actors
-        self.generators = [RemoteDataSource.remote(swarm_class, env_callable,
-                           model_callable, swarm_kwargs, generator_kwargs, i, data_env_callable,
-                           seed + i, folder, mode)
-                           for i in range(n_actors)]
+        self.generators = [
+            RemoteDataSource.remote(
+                swarm_class,
+                env_callable,
+                model_callable,
+                swarm_kwargs,
+                generator_kwargs,
+                i,
+                data_env_callable,
+                seed + i,
+                folder,
+                mode,
+            )
+            for i in range(n_actors)
+        ]
 
     def get_games(self):
         compute_ids = [gen.get_game.remote() for gen in self.generators]
         games = ray.get(compute_ids)
         return games
 
-    def game_stream(self, examples: bool=False, full_game: bool=False):
+    def game_stream(self, examples: bool = False, full_game: bool = False):
         if examples:
             remaining_ids = [gen.get_game_examples.remote(with_id=True) for gen in self.generators]
         else:
@@ -187,4 +215,3 @@ class ParallelDataGenerator:
                         _states, obs, actions, rewards, new_obs, ends = game
                         for i in range(len(rewards)):
                             yield obs[i], actions[i], rewards[i], new_obs[i], ends[i]
-

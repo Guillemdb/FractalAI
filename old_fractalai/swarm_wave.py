@@ -24,6 +24,7 @@ class DynamicTree:
     pruned to delete paths that will no longer be needed. It uses a networkx Graph. If someone
      wants to spend time building a proper data structure, please make a PR. I will be super happy!
     """
+
     def __init__(self):
         self.data = nx.DiGraph()
         self.data.add_node(0)
@@ -92,15 +93,18 @@ class SwarmWave:
      parameters. Instead of approximating an small tree each step, we will construct a huge tree
      that has a time horizon as further away as possible.
      """
-    def __init__(self,
-                 env_name: str = "MsPacman-v0",
-                 n_samples: int = 1500,
-                 n_walkers: int = 50,
-                 balance: float = 1.,
-                 render_every: int = 5,
-                 score_limit: int = None,
-                 save_tree: bool = True,
-                 prune_tree: bool=True):
+
+    def __init__(
+        self,
+        env_name: str = "MsPacman-v0",
+        n_samples: int = 1500,
+        n_walkers: int = 50,
+        balance: float = 1.0,
+        render_every: int = 5,
+        score_limit: int = None,
+        save_tree: bool = True,
+        prune_tree: bool = True,
+    ):
         """
 
         :param env_name: The name of the Atari game to be sampled.
@@ -130,9 +134,9 @@ class SwarmWave:
         self.tree = None
 
         # This is an overkill, but its fast anyway
-        self.random_actions = np.random.randint(0, self.n_actions,
-                                                size=(int(1e6), n_walkers),
-                                                dtype=np.uint8)
+        self.random_actions = np.random.randint(
+            0, self.n_actions, size=(int(1e6), n_walkers), dtype=np.uint8
+        )
         self._init_swarm()
 
     def __str__(self):
@@ -141,31 +145,50 @@ class SwarmWave:
             sam_step = self._n_samples_done / len(self.tree.data.nodes)
             samples = len(self.tree.data.nodes)
         else:
-            efi = 0.
-            sam_step = 0.
-            samples = 0.
-        progress = 0 if self.n_limit_samples is None else \
-            (self._n_samples_done / self.n_limit_samples) * 100
+            efi = 0.0
+            sam_step = 0.0
+            samples = 0.0
+        progress = (
+            0
+            if self.n_limit_samples is None
+            else (self._n_samples_done / self.n_limit_samples) * 100
+        )
         if self.score_limit is not None:
             score_prog = (self.rewards.max() / self.score_limit) * 100
             progress = max(progress, score_prog)
 
-        text = "Environment: {}\n" \
-               "Total samples: {} Progress {:.2f}%\n" \
-               "Reward: mean {:.2f} | dispersion {:.2f} | max {:.2f} | min {:.2f} | std {:.2f}\n" \
-               "Episode length: mean {:.2f} | dispersion {:.2f} | max {:.2f} | min {:.2f} " \
-               "| std {:.2f}\n" \
-               "Walkers: {} deads {}\n" \
-               "Efficiency {:.2f}%\n" \
-               "Generated {} Examples |" \
-               " {:.2f} samples per example.\n"\
-               "Status: {}".format(self.env_name, self._n_samples_done, progress,
-                                   self.rewards.mean(), self.rewards.max() - self.rewards.min(),
-                                   self.rewards.max(), self.rewards.min(), self.rewards.std(),
-                                   self.times.mean(), self.times.max() - self.times.min(),
-                                   self.times.max(), self.times.min(), self.times.std(),
-                                   self.n_walkers, self._dead_mask.sum(), efi, samples,
-                                   sam_step, self._game_status)
+        text = (
+            "Environment: {}\n"
+            "Total samples: {} Progress {:.2f}%\n"
+            "Reward: mean {:.2f} | dispersion {:.2f} | max {:.2f} | min {:.2f} | std {:.2f}\n"
+            "Episode length: mean {:.2f} | dispersion {:.2f} | max {:.2f} | min {:.2f} "
+            "| std {:.2f}\n"
+            "Walkers: {} deads {}\n"
+            "Efficiency {:.2f}%\n"
+            "Generated {} Examples |"
+            " {:.2f} samples per example.\n"
+            "Status: {}".format(
+                self.env_name,
+                self._n_samples_done,
+                progress,
+                self.rewards.mean(),
+                self.rewards.max() - self.rewards.min(),
+                self.rewards.max(),
+                self.rewards.min(),
+                self.rewards.std(),
+                self.times.mean(),
+                self.times.max() - self.times.min(),
+                self.times.max(),
+                self.times.min(),
+                self.times.std(),
+                self.n_walkers,
+                self._dead_mask.sum(),
+                efi,
+                samples,
+                sam_step,
+                self._game_status,
+            )
+        )
         return text
 
     def _init_swarm(self):
@@ -207,8 +230,11 @@ class SwarmWave:
         :return: None.
         """
         # Only step an state if it has not cloned and is not frozen
-        step_ix = np.logical_and(self._not_frozen, np.logical_not(self._will_clone)) if \
-            not init_step else np.ones(self.n_walkers, dtype=bool)
+        step_ix = (
+            np.logical_and(self._not_frozen, np.logical_not(self._will_clone))
+            if not init_step
+            else np.ones(self.n_walkers, dtype=bool)
+        )
 
         for i, state in enumerate(self.walkers):
             if step_ix[i]:
@@ -292,7 +318,7 @@ class SwarmWave:
         clone = (value >= np.random.random()).astype(bool)
 
         # Walkers reaching the score limit do freeze (do not clone nor step).
-        self._not_frozen = (self.rewards < self.score_limit)
+        self._not_frozen = self.rewards < self.score_limit
 
         clone[deaths] = True
         clone[deaths[idx]] = False  # Do not clone to a dead companion
@@ -317,8 +343,9 @@ class SwarmWave:
         """This sets a hard limit on maximum samples. It also Finishes if all the walkers are dead,
          or the target score reached.
          """
-        stop_hard = False if self.n_limit_samples is None else \
-            self._n_samples_done > self.n_limit_samples
+        stop_hard = (
+            False if self.n_limit_samples is None else self._n_samples_done > self.n_limit_samples
+        )
         stop_score = False if self.score_limit is None else self.rewards.max() >= self.score_limit
         stop_terminal = self._terminal.all()
         # Define game status so usr knows why game stoped
@@ -347,6 +374,7 @@ class SwarmWave:
                 self._i_simulation += 1
                 if self._i_simulation % self.render_every == 0:
                     from IPython.core.display import clear_output
+
                     clear_output(True)
                     print(self)
             except KeyboardInterrupt:

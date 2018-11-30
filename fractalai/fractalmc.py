@@ -8,16 +8,31 @@ from fractalai.swarm import Swarm, DynamicTree
 
 
 class FractalMC(Swarm):
-
-    def __init__(self, env, model, n_walkers: int=100, balance: float=1.,
-                 reward_limit: float=None, samples_limit: int=None, render_every: int=1e10,
-                 accumulate_rewards: bool=True, dt_mean: float=None, dt_std: float=None,
-                 min_dt: int=1, custom_reward: Callable=None, custom_end: Callable=None,
-                 process_obs: Callable=None, custom_skipframe: Callable=None,
-                 keep_best: bool=False,  can_win: bool=False,
-                 skip_initial_frames: int=0,
-                 max_samples_step: int=None, time_horizon: int=40,
-                 min_horizon: int=1, update_parameters: bool=False):
+    def __init__(
+        self,
+        env,
+        model,
+        n_walkers: int = 100,
+        balance: float = 1.0,
+        reward_limit: float = None,
+        samples_limit: int = None,
+        render_every: int = 1e10,
+        accumulate_rewards: bool = True,
+        dt_mean: float = None,
+        dt_std: float = None,
+        min_dt: int = 1,
+        custom_reward: Callable = None,
+        custom_end: Callable = None,
+        process_obs: Callable = None,
+        custom_skipframe: Callable = None,
+        keep_best: bool = False,
+        can_win: bool = False,
+        skip_initial_frames: int = 0,
+        max_samples_step: int = None,
+        time_horizon: int = 40,
+        min_horizon: int = 1,
+        update_parameters: bool = False,
+    ):
         """
         :param env: Environment that will be sampled.
         :param model: Model used for sampling actions from observations.
@@ -58,15 +73,25 @@ class FractalMC(Swarm):
         self._max_step_total = max(_max_samples, samples_limit)
         self._max_samples_step = min(_max_samples, n_walkers * time_horizon)
 
-        super(FractalMC, self).__init__(env=env, model=model, n_walkers=self.max_walkers,
-                                        balance=balance, reward_limit=reward_limit,
-                                        samples_limit=self._max_samples_step,
-                                        render_every=render_every, custom_reward=custom_reward,
-                                        custom_end=custom_end, dt_mean=dt_mean, dt_std=dt_std,
-                                        keep_best=keep_best,
-                                        accumulate_rewards=accumulate_rewards, min_dt=min_dt,
-                                        can_win=can_win, process_obs=process_obs,
-                                        custom_skipframe=custom_skipframe)
+        super(FractalMC, self).__init__(
+            env=env,
+            model=model,
+            n_walkers=self.max_walkers,
+            balance=balance,
+            reward_limit=reward_limit,
+            samples_limit=self._max_samples_step,
+            render_every=render_every,
+            custom_reward=custom_reward,
+            custom_end=custom_end,
+            dt_mean=dt_mean,
+            dt_std=dt_std,
+            keep_best=keep_best,
+            accumulate_rewards=accumulate_rewards,
+            min_dt=min_dt,
+            can_win=can_win,
+            process_obs=process_obs,
+            custom_skipframe=custom_skipframe,
+        )
         self.init_ids = np.zeros(self.n_walkers).astype(int)
         self._update_parameters = update_parameters
 
@@ -80,7 +105,7 @@ class FractalMC(Swarm):
     def init_actions(self):
         return self.data.get_actions(self.init_ids)
 
-    def init_swarm(self, state: np.ndarray=None, obs: np.ndarray=None):
+    def init_swarm(self, state: np.ndarray = None, obs: np.ndarray = None):
 
         super(FractalMC, self).init_swarm(state=state, obs=obs)
         self.init_ids = np.zeros(self.n_walkers).astype(int)
@@ -98,7 +123,6 @@ class FractalMC(Swarm):
         The the proportion of times each initial action appears on the swarm, is proportional to
         the Q value of that action.
         """
-
         if isinstance(self._model, DiscreteModel):
             # return self.init_actions[self.rewards.argmax()]
             counts = np.bincount(self.init_actions, minlength=self._env.n_actions)
@@ -111,7 +135,9 @@ class FractalMC(Swarm):
         walker_data = list(set(np.array(self.walkers_id).astype(int)))
         self.data.update_values(set(walker_data + init_actions))
 
-    def run_swarm(self, state: np.ndarray=None, obs: np.ndarray=None, print_swarm: bool=False):
+    def run_swarm(
+        self, state: np.ndarray = None, obs: np.ndarray = None, print_swarm: bool = False
+    ):
         """
         Iterate the swarm by evolving and cloning each walker until a certain condition
         is met.
@@ -198,8 +224,9 @@ class FractalMC(Swarm):
          or the target score reached.
          """
         stop_hard = self._n_samples_done > self._max_samples_step
-        stop_score = False if self.reward_limit is None else \
-            self.rewards.max() >= self.reward_limit
+        stop_score = (
+            False if self.reward_limit is None else self.rewards.max() >= self.reward_limit
+        )
         stop_terminal = self._end_cond.all()
         # Define game status so the user knows why game stopped. Only used when printing the Swarm
         if stop_hard:
@@ -222,7 +249,7 @@ class FractalMC(Swarm):
             index = self.walkers_id[self.rewards.argmax()]
         return self.tree.get_branch(index)
 
-    def render_game(self, index=None, sleep: float=0.02):
+    def render_game(self, index=None, sleep: float = 0.02):
         """Renders the game stored in the tree that ends in the node labeled as index."""
         idx = max(list(self.tree.data.nodes)) if index is None else index
         states, actions, dts = self.recover_game(idx)
@@ -246,14 +273,17 @@ class FractalMC(Swarm):
 
     def get_expected_reward(self):
         init_act = self.init_actions
-        max_rewards = np.array([self.rewards[init_act == i].max() if
-                                len(self.rewards[init_act == i]) > 0 else 0
-                                for i in range(self.env.n_actions)])
+        max_rewards = np.array(
+            [
+                self.rewards[init_act == i].max() if len(self.rewards[init_act == i]) > 0 else 0
+                for i in range(self.env.n_actions)
+            ]
+        )
         return max_rewards
         # TODO: Adapt again for continous control problems. Open an issue if you need it.
         max_r = max_rewards.max()
         min_r = max_rewards.min()
-        div = (max_r - min_r)
+        div = max_r - min_r
         normed = (max_rewards - min_r) / div if div != 0 else 1 + max_rewards
 
         return normed / normed.sum()
@@ -266,10 +296,16 @@ class FractalMC(Swarm):
         for i in range(self.skip_initial_frames):
             i_step += 1
             action = 0
-            state, obs, _reward, _end, info = self._env.step(state=state, action=action,
-                                                             n_repeat_action=self.min_dt)
-            self.tree.append_leaf(i_step, parent_id=i_step - 1,
-                                  state=state, action=action, dt=self._env.n_repeat_action)
+            state, obs, _reward, _end, info = self._env.step(
+                state=state, action=action, n_repeat_action=self.min_dt
+            )
+            self.tree.append_leaf(
+                i_step,
+                parent_id=i_step - 1,
+                state=state,
+                action=action,
+                dt=self._env.n_repeat_action,
+            )
             self._agent_reward += _reward
             self._last_action = action
             end = info.get("terminal", _end)
@@ -277,7 +313,7 @@ class FractalMC(Swarm):
                 break
         return state, obs, _reward, end, info, i_step
 
-    def run_agent(self, render: bool = False, print_swarm: bool=False):
+    def run_agent(self, render: bool = False, print_swarm: bool = False):
         """
 
         :param render:
@@ -288,18 +324,23 @@ class FractalMC(Swarm):
         state, obs, _reward, end, info, i_step = self._skip_initial_frames()
         self._save_steps = []
 
-        self.tree.append_leaf(i_step, parent_id=i_step - 1,
-                              state=state, action=0, dt=1)
+        self.tree.append_leaf(i_step, parent_id=i_step - 1, state=state, action=0, dt=1)
 
         while not end and self._agent_reward < self.reward_limit:
             i_step += 1
             self.run_swarm(state=copy.deepcopy(state), obs=obs)
             action = self.weight_actions()
 
-            state, obs, _reward, _end, info = self._env.step(state=state, action=action,
-                                                             n_repeat_action=self.min_dt)
-            self.tree.append_leaf(i_step, parent_id=i_step - 1,
-                                  state=state, action=action, dt=self._env.n_repeat_action)
+            state, obs, _reward, _end, info = self._env.step(
+                state=state, action=action, n_repeat_action=self.min_dt
+            )
+            self.tree.append_leaf(
+                i_step,
+                parent_id=i_step - 1,
+                state=state,
+                action=action,
+                dt=self._env.n_repeat_action,
+            )
             self._agent_reward += _reward
             self._last_action = action
             end = info.get("terminal", _end)
@@ -311,3 +352,38 @@ class FractalMC(Swarm):
                 clear_output(True)
             if self._update_parameters:
                 self.update_parameters()
+
+
+class EntropicFMC(FractalMC):
+    def __init__(self, *args, **kwargs):
+        super(EntropicFMC, self).__init__(*args, **kwargs)
+        self.walker_life = np.ones(self.n_walkers)
+        self.entropy_dist = np.ones(self.n_walkers)
+
+    def weight_actions(self) -> np.ndarray:
+        """Gets an approximation of the Q value function for a given state.
+
+        It weights the number of times a given initial action appears in each state of the swarm.
+        The the proportion of times each initial action appears on the swarm, is proportional to
+        the Q value of that action.
+        """
+        init_actions = np.array(self.init_actions.copy())
+        self.entropy_dist = np.array(
+            [
+                self.walker_life[init_actions == action].sum()
+                for action in range(self.env.n_actions)
+            ]
+        )
+        return self.entropy_dist.argmax()
+
+    def clone_condition(self):
+        """Calculates the walkers that will cone depending on their virtual rewards. Returns the
+        index of the random companion chosen for comparing virtual rewards.
+        """
+        super(EntropicFMC, self).clone_condition()
+        self.walker_life[self._will_clone] = 0
+        self.walker_life += 1
+
+    def __str__(self):
+        text = super(EntropicFMC, self).__str__()
+        return "Entropy: {} \n".format(self.entropy_dist) + text

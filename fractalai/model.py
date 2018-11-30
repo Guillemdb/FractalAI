@@ -16,7 +16,7 @@ class BaseModel:
     def action_shape(self):
         return self._action_shape
 
-    def predict(self, observation: np.ndarray=None) -> [np.ndarray, float, int]:
+    def predict(self, observation: np.ndarray = None) -> [np.ndarray, float, int]:
         """
         Returns one action available from a given state or a vector of swarm.
 
@@ -25,7 +25,7 @@ class BaseModel:
         """
         raise NotImplementedError
 
-    def predict_batch(self,  observations: Iterable) -> np.ndarray:
+    def predict_batch(self, observations: Iterable) -> np.ndarray:
         """
         Returns a set of actions corresponding to a vector of observations.
         :param observations: vector of observations to sample a random action from.
@@ -40,7 +40,7 @@ class GymRandomModel(BaseModel):
     def __init__(self, action_space):
         super(GymRandomModel, self).__init__(action_space=action_space)
 
-    def predict(self, observation: np.ndarray=None) -> [np.ndarray, float, int]:
+    def predict(self, observation: np.ndarray = None) -> [np.ndarray, float, int]:
         """
         Returns one action available from a given state or a vector of swarm.
 
@@ -68,7 +68,7 @@ class DiscreteModel(BaseModel):
     def action_shape(self):
         return tuple([self.n_actions])
 
-    def predict(self, observation: np.ndarray=None) -> int:
+    def predict(self, observation: np.ndarray = None) -> int:
         """
         Returns one action available from a given state or a vector of swarm.
         :param observation: observation representing the state to be modeled.
@@ -81,8 +81,14 @@ class RandomDiscreteModel(DiscreteModel):
     """Discrete Model that samples an action randomly from a set of ``n_actions`` possible
     actions."""
 
-    def __init__(self, n_actions: int, action_space=None,
-                 max_wakers: int=100, samples: int=100000, use_block: bool=False):
+    def __init__(
+        self,
+        n_actions: int,
+        action_space=None,
+        max_wakers: int = 100,
+        samples: int = 100000,
+        use_block: bool = False,
+    ):
         """
 
         :param n_actions:
@@ -95,11 +101,12 @@ class RandomDiscreteModel(DiscreteModel):
         self.samples = samples
         self.use_block = use_block
         if use_block:
-            self.noise = np.random.randint(0, high=int(self.n_actions), size=(int(max_wakers),
-                                                                              int(samples)))
+            self.noise = np.random.randint(
+                0, high=int(self.n_actions), size=(int(max_wakers), int(samples))
+            )
             self._i = 0
 
-    def predict(self, observation: np.ndarray=None) -> [int, np.ndarray]:
+    def predict(self, observation: np.ndarray = None) -> [int, np.ndarray]:
         """
         Returns one action chosen at random.
         :param observation: Will be ignored. Observation representing the current state.
@@ -121,17 +128,39 @@ class RandomDiscreteModel(DiscreteModel):
         if not self.use_block:
             return np.random.randint(0, high=int(self.n_actions), size=(len(observations),))
         self._i += 1
-        return self.noise[:len(observations), self._i % self.samples]
+        return self.noise[: len(observations), self._i % self.samples]
+
+
+class MontezumaModel(RandomDiscreteModel):
+    def __init__(self):
+        super(MontezumaModel, self).__init__(n_actions=8)
+
+    def predict(self, observation: np.ndarray = None) -> [int, np.ndarray]:
+        """
+        Returns one action chosen at random.
+        :param observation: Will be ignored. Observation representing the current state.
+        :return: int representing the action to be taken.
+        """
+        return np.random.randint(1, high=13)
+
+    def predict_batch(self, observations: [Sized, Iterable]) -> np.ndarray:
+        """
+        Returns a vector of actions chosen at random.
+        :param observations: Represents a vector of observations. Only used in determining the size
+        of the returned array.
+        :return: Numpy array containing the action chosen for each observation.
+        """
+
+        return np.random.randint(1, high=13, size=(len(observations),))
 
 
 class ESModel(BaseModel):
-
-    def __init__(self, weights_shapes: [Iterable], sigma: float=0.01):
+    def __init__(self, weights_shapes: [Iterable], sigma: float = 0.01):
         super(ESModel, self).__init__(action_space=weights_shapes)
         self.weigths_shapes = weights_shapes
         self.sigma = sigma
 
-    def predict(self, observation: np.ndarray=None) -> [int, np.ndarray]:
+    def predict(self, observation: np.ndarray = None) -> [int, np.ndarray]:
         """
         Returns one action chosen at random.
         :param observation: Will be ignored. Observation representing the current state.
@@ -162,6 +191,7 @@ class ContinuousModel(BaseModel):
 
     def __init__(self, action_space):
         from dm_control.rl.specs import BoundedArraySpec
+
         assert isinstance(action_space, BoundedArraySpec), "Please use a dm_control action_spec"
         super(ContinuousModel, self).__init__(action_space=action_space)
 
@@ -189,7 +219,7 @@ class ContinuousModel(BaseModel):
     def maximum(self):
         return self.action_space.maximum
 
-    def predict(self, observation: np.ndarray=None) -> np.ndarray:
+    def predict(self, observation: np.ndarray = None) -> np.ndarray:
         """
         Returns one action sampled from a continuous domain.
         :param observation: observation corresponding to a given state.
@@ -199,7 +229,6 @@ class ContinuousModel(BaseModel):
 
 
 class RandomContinuousModel(ContinuousModel):
-
     def __init__(self, action_space):
         super(RandomContinuousModel, self).__init__(action_space=action_space)
 
@@ -209,9 +238,7 @@ class RandomContinuousModel(ContinuousModel):
         :param observation: observation corresponding to a given state.
         :return: Numpy array representing the randomly chosen action.
         """
-        return np.random.uniform(self.minimum,
-                                 self.maximum,
-                                 size=self.shape)
+        return np.random.uniform(self.minimum, self.maximum, size=self.shape)
 
     def predict_batch(self, observations: np.ndarray = None) -> np.ndarray:
         """
@@ -219,18 +246,17 @@ class RandomContinuousModel(ContinuousModel):
         :param observations: Array of observations corresponding to a vector of states.
         :return: Numpy array representing a vector of randomly chosen actions.
         """
-        return np.random.uniform(self.minimum,
-                                 self.maximum,
-                                 size=(len(observations),)+self.shape)
+        return np.random.uniform(
+            self.minimum, self.maximum, size=(len(observations),) + self.shape
+        )
 
 
 class ContinuousDiscretizedModel(RandomContinuousModel):
-
     def __init__(self, action_space, n_act_dof=7):
         super(ContinuousDiscretizedModel, self).__init__(action_space=action_space)
         self.n_act_dof = n_act_dof
 
-    def predict(self, observation: np.ndarray=None) -> np.ndarray:
+    def predict(self, observation: np.ndarray = None) -> np.ndarray:
         """
         Returns one action sampled at random from a continuous domain after discretizing it.
         :param observation: observation corresponding to a given state.

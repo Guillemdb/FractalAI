@@ -2,20 +2,37 @@ import time
 import copy
 import numpy as np
 from typing import Callable
-from fractalai.swarm import Swarm, DynamicTree
+from fractalai.swarm import Swarm, DynamicTree, relativize_vector
 
 
 class SwarmWave(Swarm):
 
     tree = DynamicTree()
 
-    def __init__(self, env, model, n_walkers: int=100, balance: float=1.,
-                 reward_limit: float=None, samples_limit: int=None, render_every: int=1e10,
-                 accumulate_rewards: bool=True, dt_mean: float=None, dt_std: float=None,
-                 min_dt: int=1, custom_reward: Callable=None, custom_end: Callable=None,
-                 process_obs: Callable=None, custom_skipframe: Callable=None,
-                 keep_best: bool=False,  can_win: bool=False,
-                 save_data: bool=True, prune_tree: bool=True):
+    def __init__(
+        self,
+        env,
+        model,
+        n_walkers: int = 100,
+        balance: float = 1.0,
+        reward_limit: float = None,
+        samples_limit: int = None,
+        render_every: int = 1e10,
+        accumulate_rewards: bool = True,
+        dt_mean: float = None,
+        dt_std: float = None,
+        min_dt: int = 1,
+        custom_reward: Callable = None,
+        custom_end: Callable = None,
+        process_obs: Callable = None,
+        custom_skipframe: Callable = None,
+        keep_best: bool = False,
+        can_win: bool = False,
+        save_data: bool = True,
+        prune_tree: bool = True,
+        dist_coef: float = 1.0,
+        entropy_coef: float = 1.0,
+    ):
         """
 
         :param env: Environment that will be sampled.
@@ -42,14 +59,27 @@ class SwarmWave(Swarm):
         :param save_data: Store data to construct a tree of paths.
         :param prune_tree: Delete a path if no walker is expanding it.
         """
-        super(SwarmWave, self).__init__(env=env, model=model, n_walkers=n_walkers,
-                                        balance=balance, reward_limit=reward_limit,
-                                        samples_limit=samples_limit, render_every=render_every,
-                                        accumulate_rewards=accumulate_rewards, dt_mean=dt_mean,
-                                        dt_std=dt_std, custom_end=custom_end,
-                                        custom_reward=custom_reward, keep_best=keep_best,
-                                        min_dt=min_dt, process_obs=process_obs, can_win=can_win,
-                                        custom_skipframe=custom_skipframe)
+        super(SwarmWave, self).__init__(
+            env=env,
+            model=model,
+            n_walkers=n_walkers,
+            balance=balance,
+            reward_limit=reward_limit,
+            samples_limit=samples_limit,
+            render_every=render_every,
+            accumulate_rewards=accumulate_rewards,
+            dt_mean=dt_mean,
+            dt_std=dt_std,
+            custom_end=custom_end,
+            custom_reward=custom_reward,
+            keep_best=keep_best,
+            min_dt=min_dt,
+            process_obs=process_obs,
+            can_win=can_win,
+            custom_skipframe=custom_skipframe,
+            dist_coef=dist_coef,
+            entropy_coef=entropy_coef,
+        )
         self.save_data = save_data
         self.prune_tree = prune_tree
         self.old_ids = np.zeros(self.n_walkers)
@@ -67,26 +97,32 @@ class SwarmWave(Swarm):
             samples = len(self.tree.data.nodes)
         else:
             efi, samples, sam_step = 0, 0, 0
-        new_text = "{}\n"\
-                   "Efficiency {:.2f}%\n" \
-                   "Generated {} Examples |" \
-                   " {:.2f} samples per example.\n".format(text, efi, samples, sam_step)
+        new_text = (
+            "{}\n"
+            "Efficiency {:.2f}%\n"
+            "Generated {} Examples |"
+            " {:.2f} samples per example.\n".format(text, efi, samples, sam_step)
+        )
         return new_text
 
-    def init_swarm(self, state: np.ndarray=None, obs: np.ndarray=None):
+    def init_swarm(self, state: np.ndarray = None, obs: np.ndarray = None):
         super(SwarmWave, self).init_swarm(state=state, obs=obs)
-        self.tree.data.nodes[0]["obs"] = obs if obs is not None else self.env.reset()[1]
-        self.tree.data.nodes[0]["terminal"] = False
+        self.tree.reset()
+        self.tree.data.nodes["0"]["obs"] = obs if obs is not None else self.env.reset()[1]
+        self.tree.data.nodes["0"]["terminal"] = False
 
     def step_walkers(self):
         old_ids = self.walkers_id.copy()
         super(SwarmWave, self).step_walkers()
         if self.save_data:
             for i, idx in enumerate(self.walkers_id):
-                self.tree.append_leaf(int(idx), parent_id=int(old_ids[i]),
-                                      state=self.data.get_states([idx]).copy()[0],
-                                      action=self.data.get_actions([idx]).copy()[0],
-                                      dt=copy.deepcopy(self.dt[i]))
+                self.tree.append_leaf(
+                    int(idx),
+                    parent_id=int(old_ids[i]),
+                    state=self.data.get_states([idx]).copy()[0],
+                    action=self.data.get_actions([idx]).copy()[0],
+                    dt=copy.deepcopy(self.dt[i]),
+                )
 
     def clone(self):
 
@@ -106,7 +142,7 @@ class SwarmWave(Swarm):
             index = self.walkers_id[self.rewards.argmax()]
         return self.tree.get_branch(index)
 
-    def render_game(self, index=None, sleep: float=0.02):
+    def render_game(self, index=None, sleep: float = 0.02):
         """Renders the game stored in the tree that ends in the node labeled as index."""
         states, actions, dts = self.recover_game(index)
         for state, action, dt in zip(states, actions, dts):
@@ -118,6 +154,9 @@ class SwarmWave(Swarm):
                 self._env.render()
                 time.sleep(sleep)
 
-    def run_swarm(self, state: np.ndarray=None, obs: np.ndarray=None, print_swarm: bool=False):
+    def run_swarm(
+        self, state: np.ndarray = None, obs: np.ndarray = None, print_swarm: bool = False
+    ):
         self.tree.reset()
+        self.reset()
         super(SwarmWave, self).run_swarm(state=state, obs=obs, print_swarm=print_swarm)

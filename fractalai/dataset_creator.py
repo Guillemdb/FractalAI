@@ -9,9 +9,13 @@ from fractalai.swarm_wave import DynamicTree, Swarm
 
 
 class DataTree(DynamicTree):
-
-    def __init__(self, env: Environment, obs_is_image: bool=False,
-                 stack_frames: int=2, img_shape: tuple=(42, 42)):
+    def __init__(
+        self,
+        env: Environment,
+        obs_is_image: bool = False,
+        stack_frames: int = 2,
+        img_shape: tuple = (42, 42),
+    ):
 
         super(DataTree, self).__init__()
         self.obs_is_image = obs_is_image
@@ -36,8 +40,9 @@ class DataTree(DynamicTree):
         :param dt: parameters taken into account when integrating the action.
         :return:
         """
-        super(DataTree, self).append_leaf(leaf_id=leaf_id, parent_id=parent_id, state=state,
-                                          action=action, dt=dt)
+        super(DataTree, self).append_leaf(
+            leaf_id=leaf_id, parent_id=parent_id, state=state, action=action, dt=dt
+        )
 
     # def create_dataset(self):
     #    for node_id in self.data.nodes:
@@ -136,9 +141,9 @@ class DataTree(DynamicTree):
                 self.dataset.remove_node(node)
 
     # def reshape_frame(self, frame):
-        # breakout
-        # return resize_frame(frame[25: 195], height=self.height, width=self.width)[:, :, 0]
-        # pong
+    # breakout
+    # return resize_frame(frame[25: 195], height=self.height, width=self.width)[:, :, 0]
+    # pong
     #    return resize_frame(frame[32:196, 5:155], height=self.height, width=self.width)[:, :, 0]
 
     def reset(self):
@@ -153,16 +158,30 @@ class DataTree(DynamicTree):
         else:
             new_obs = obs
             old_obs = np.zeros(len(obs))
-        self.dataset.add_node("0_0", old_frame=new_obs, new_frame=old_obs, reward=0,
-                              action=self.process_action(0),
-                              end=False, state=self.env.get_state())
+        self.dataset.add_node(
+            "0_0",
+            old_frame=new_obs,
+            new_frame=old_obs,
+            reward=0,
+            action=self.process_action(0),
+            end=False,
+            state=self.env.get_state(),
+        )
         self.data.add_node(0)
 
 
 class DLTree(DynamicTree):
-
-    def append_leaf(self, leaf_id: int, parent_id: int, state, action, dt: int,
-                    obs: np.ndarray, reward: float, terminal: bool):
+    def append_leaf(
+        self,
+        leaf_id: int,
+        parent_id: int,
+        state,
+        action,
+        dt: int,
+        obs: np.ndarray,
+        reward: float,
+        terminal: bool,
+    ):
         """
         Add a new state as a leaf node of the tree to keep track of the trajectories of the swarm.
         :param leaf_id: Id that identifies the state that will be added to the tree.
@@ -173,9 +192,14 @@ class DLTree(DynamicTree):
         :return:
         """
         self.data.add_node(int(leaf_id), state=copy.deepcopy(state), obs=copy.deepcopy(obs))
-        self.data.add_edge(int(parent_id), int(leaf_id), action=copy.deepcopy(action),
-                           dt=copy.deepcopy(dt), reward=copy.deepcopy(reward),
-                           terminal=copy.deepcopy(terminal))
+        self.data.add_edge(
+            int(parent_id),
+            int(leaf_id),
+            action=copy.deepcopy(action),
+            dt=copy.deepcopy(dt),
+            reward=copy.deepcopy(reward),
+            terminal=copy.deepcopy(terminal),
+        )
 
     @property
     def dataset(self):
@@ -206,9 +230,9 @@ class DLTree(DynamicTree):
         """
         nodes = nx.shortest_path(self.data, 0, leaf_id)
         states = [self.data.node[n]["state"] for n in nodes[:-1]]
-        actions = [self.data.edges[(n, nodes[i+1])]["action"] for i, n in enumerate(nodes[:-1])]
+        actions = [self.data.edges[(n, nodes[i + 1])]["action"] for i, n in enumerate(nodes[:-1])]
         # dts = [self.data.edges[(n, nodes[i + 1])]["dt"] for i, n in enumerate(nodes[:-1])]
-        ends = [self.data.edges[(n, nodes[i+1])]["terminal"] for i, n in enumerate(nodes[:-1])]
+        ends = [self.data.edges[(n, nodes[i + 1])]["terminal"] for i, n in enumerate(nodes[:-1])]
         obs = [self.data.node[n]["obs"] for n in nodes[:-1]]
         new_obs = [self.data.node[n]["obs"] for n in nodes[1:]]
         rewards = [self.data.edges[(n, nodes[i + 1])]["reward"] for i, n in enumerate(nodes[:-1])]
@@ -229,15 +253,18 @@ class DLTree(DynamicTree):
             yield self.get_branch(leaf_id)
 
     def one_game_generator(self, leaf_id):
-            yield self.get_branch(leaf_id)
+        yield self.get_branch(leaf_id)
 
 
 class DataGenerator:
-
-    def __init__(self, swarm: Swarm, save_to_disk: bool=False,
-                 output_dir: str=None,
-                 obs_is_image: bool=False,
-                 obs_shape: tuple=(42, 42, 3)):
+    def __init__(
+        self,
+        swarm: Swarm,
+        save_to_disk: bool = False,
+        output_dir: str = None,
+        obs_is_image: bool = False,
+        obs_shape: tuple = (42, 42, 3),
+    ):
 
         self.swarm = swarm
         self.obs_is_image = obs_is_image
@@ -261,16 +288,18 @@ class DataGenerator:
                 samples = len(self.tree.dataset.nodes)
         else:
             efi, samples, sam_step = 0, 0, 0
-        new_text = "{}\n"\
-                   "Generated {} Examples |" \
-                   " {:.2f} samples per example.\n".format(text, samples, sam_step)
+        new_text = (
+            "{}\n"
+            "Generated {} Examples |"
+            " {:.2f} samples per example.\n".format(text, samples, sam_step)
+        )
         return new_text
 
     @property
     def tree(self):
         return self.swarm.tree
 
-    def game_state_generator(self, print_swarm: bool=False):
+    def game_state_generator(self, print_swarm: bool = False):
         self.tree.reset()
         self.swarm.reset()
         self.swarm.run_swarm(print_swarm=print_swarm)
@@ -282,7 +311,7 @@ class DataGenerator:
         for val in generator:
             yield val
 
-    def example_generator(self, print_swarm: bool=False, remove_nodes: bool=True):
+    def example_generator(self, print_swarm: bool = False, remove_nodes: bool = True):
         self.tree.reset()
         self.swarm.reset()
         self.swarm.run_swarm(print_swarm=print_swarm)
@@ -299,7 +328,7 @@ class DataGenerator:
         for i in range(len(states)):
             yield obs[i], actions[i], rewards[i], new_obs[i], ends[i]
 
-    def best_game_generator(self, print_swarm: bool=False):
+    def best_game_generator(self, print_swarm: bool = False):
         """Generator that yields the best game found running the swarm."""
         self.tree.reset()
         self.swarm.reset()
@@ -312,7 +341,7 @@ class DataGenerator:
         for val in generator:
             yield val
 
-    def game_generator(self, print_swarm: bool=False):
+    def game_generator(self, print_swarm: bool = False):
         """Yields all the games that originate from each one of the branches of the state tree
         from the swarm."""
         self.tree.reset()
@@ -326,8 +355,13 @@ class DataGenerator:
             if len(val[0]) > 1:
                 yield val
 
-    def batch_generator(self, batch_size: int=16, epochs: int=1, print_swarm: bool=False,
-                        remove_nodes: bool=True):
+    def batch_generator(
+        self,
+        batch_size: int = 16,
+        epochs: int = 1,
+        print_swarm: bool = False,
+        remove_nodes: bool = True,
+    ):
         """Yields the examples conforming the state tree of the swarm as batches."""
         self.tree.reset()
         self.swarm.reset()
@@ -343,7 +377,7 @@ class DataGenerator:
         for batch in self._batch_generator(batch_size, remove_nodes=remove_nodes):
             yield batch
 
-    def _batch_generator(self, batch_size=16, remove_nodes: bool=True):
+    def _batch_generator(self, batch_size=16, remove_nodes: bool = True):
         generator = self.tree.example_generator(remove_nodes)
         _ = next(generator)
         n_nodes = len(self.tree.data.nodes)
@@ -360,27 +394,29 @@ class DataGenerator:
             next_state_batch.append(data[3])
             terminal_batch.append(data[4])
             if len(terminal_batch) == batch_size - 1 or len(terminal_batch) == n_nodes - 1:
-                yield np.array(state_batch), np.array(action_batch),\
-                      np.array(reward_batch), np.array(next_state_batch), np.array(terminal_batch)
+                yield np.array(state_batch), np.array(action_batch), np.array(
+                    reward_batch
+                ), np.array(next_state_batch), np.array(terminal_batch)
                 state_batch = []
                 action_batch = []
                 reward_batch = []
                 next_state_batch = []
                 terminal_batch = []
 
-    def save_run(self, folder: str=None, uid: str=None, print_swarm: bool=False):
+    def save_run(self, folder: str = None, uid: str = None, print_swarm: bool = False):
         """Saves the best game generated by the swarm."""
         generator = self.best_game_generator(print_swarm=print_swarm)
         _, state_b, action_b, reward_b, next_state_b, terminal_b = next(generator)
 
         def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
-            return ''.join(random.choice(chars) for _ in range(size))
+            return "".join(random.choice(chars) for _ in range(size))
 
         uid = uid if uid is not None else id_generator()
         folder = folder if folder is not None else self.output_dir
 
         def file_name(suffix):
             return os.path.join(folder, "{}_{}".format(uid, suffix))
+
         print("Saving to {} with uid {}".format(folder, uid))
         np.save(file_name("old_s"), state_b)
         np.save(file_name("act"), action_b)

@@ -9,16 +9,24 @@ import retro
 class RetroEnvironment(Environment):
     """Environment for playing Atari games."""
 
-    def __init__(self, name: str, n_repeat_action: int=1, height: float=100, width: float=100,
-                 wrappers=None, **kwargs):
+    def __init__(
+        self,
+        name: str,
+        n_repeat_action: int = 1,
+        height: float = 100,
+        width: float = 100,
+        wrappers=None,
+        **kwargs
+    ):
         self._env_kwargs = kwargs
         self.height = height
         self.width = width
         super(RetroEnvironment, self).__init__(name=name, n_repeat_action=n_repeat_action)
         self._env = None
         if height is not None and width is not None:
-            self.observation_space = spaces.Box(low=0, high=255,
-                                                shape=(self.height, self.width, 1), dtype=np.uint8)
+            self.observation_space = spaces.Box(
+                low=0, high=255, shape=(self.height, self.width, 1), dtype=np.uint8
+            )
         self.wrappers = wrappers
 
     def init_env(self):
@@ -28,8 +36,11 @@ class RetroEnvironment(Environment):
                 env = wrap(env)
         self._env = env
         self.action_space = self._env.action_space
-        self.observation_space = self._env.observation_space if self.observation_space is None \
+        self.observation_space = (
+            self._env.observation_space
+            if self.observation_space is None
             else self.observation_space
+        )
 
     def __getattr__(self, item):
         return getattr(self._env, item)
@@ -43,8 +54,9 @@ class RetroEnvironment(Environment):
         self._env.em.set_state(raw_state)
         return state
 
-    def step(self, action: np.ndarray, state: np.ndarray = None,
-             n_repeat_action: int = None) -> tuple:
+    def step(
+        self, action: np.ndarray, state: np.ndarray = None, n_repeat_action: int = None
+    ) -> tuple:
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
         if state is not None:
             self.set_state(state)
@@ -54,14 +66,17 @@ class RetroEnvironment(Environment):
             reward += _reward
             end_screen = info.get("screen_x", 0) >= info.get("screen_x_end", 1e6)
             terminal = info.get("x", 0) >= info.get("screen_x_end", 1e6) or end_screen
-        obs = resize_frame(obs, self.height, self.width) \
-            if self.width is not None and self.height is not None else obs
+        obs = (
+            resize_frame(obs, self.height, self.width)
+            if self.width is not None and self.height is not None
+            else obs
+        )
         if state is not None:
             new_state = self.get_state()
             return new_state, obs, reward, terminal, info
         return obs, reward, terminal, info
 
-    def step_batch(self, actions, states=None, n_repeat_action: [int, np.ndarray]=None) -> tuple:
+    def step_batch(self, actions, states=None, n_repeat_action: [int, np.ndarray] = None) -> tuple:
         """
 
         :param actions:
@@ -70,10 +85,15 @@ class RetroEnvironment(Environment):
         :return:
         """
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
-        n_repeat_action = n_repeat_action if isinstance(n_repeat_action, np.ndarray) \
+        n_repeat_action = (
+            n_repeat_action
+            if isinstance(n_repeat_action, np.ndarray)
             else np.ones(len(states)) * n_repeat_action
-        data = [self.step(action, state, n_repeat_action=dt)
-                for action, state, dt in zip(actions, states, n_repeat_action)]
+        )
+        data = [
+            self.step(action, state, n_repeat_action=dt)
+            for action, state, dt in zip(actions, states, n_repeat_action)
+        ]
         new_states, observs, rewards, terminals, infos = [], [], [], [], []
         for d in data:
             if states is None:
@@ -90,10 +110,13 @@ class RetroEnvironment(Environment):
         else:
             return new_states, observs, rewards, terminals, infos
 
-    def reset(self, return_state: bool=True):
+    def reset(self, return_state: bool = True):
         obs = self._env.reset()
-        obs = resize_frame(obs, self.height, self.width) \
-            if self.width is not None and self.height is not None else obs
+        obs = (
+            resize_frame(obs, self.height, self.width)
+            if self.width is not None and self.height is not None
+            else obs
+        )
         if not return_state:
             return obs
         else:
@@ -101,9 +124,15 @@ class RetroEnvironment(Environment):
 
 
 class ExternalRetro(ExternalProcess):
-
-    def __init__(self, name, wrappers=None, n_repeat_action: int=1,
-                 height: float=100, width: float=100, **kwargs):
+    def __init__(
+        self,
+        name,
+        wrappers=None,
+        n_repeat_action: int = 1,
+        height: float = 100,
+        width: float = 100,
+        **kwargs
+    ):
         """Step environment in a separate process for lock free paralellism.
         The environment will be created in the external process by calling the
         specified callable. This can be an environment class, or a function
@@ -116,9 +145,9 @@ class ExternalRetro(ExternalProcess):
           action_space: The cached action space of the environment.
         """
         self.name = name
-        super(ExternalRetro, self).__init__(constructor=(name, wrappers,
-                                                         n_repeat_action, height, width,
-                                                         kwargs))
+        super(ExternalRetro, self).__init__(
+            constructor=(name, wrappers, n_repeat_action, height, width, kwargs)
+        )
 
     def _worker(self, data, conn):
         """The process waits for actions and sends back environment results.
@@ -130,8 +159,14 @@ class ExternalRetro(ExternalProcess):
         """
         try:
             name, wrappers, n_repeat_action, height, width, kwargs = data
-            env = RetroEnvironment(name, wrappers=wrappers, n_repeat_action=n_repeat_action,
-                                   height=height, width=width, **kwargs)
+            env = RetroEnvironment(
+                name,
+                wrappers=wrappers,
+                n_repeat_action=n_repeat_action,
+                height=height,
+                width=width,
+                **kwargs
+            )
             env.init_env()
             env.reset()
             while True:
@@ -155,11 +190,12 @@ class ExternalRetro(ExternalProcess):
                 if message == self._CLOSE:
                     assert payload is None
                     break
-                raise KeyError('Received message of unknown type {}'.format(message))
+                raise KeyError("Received message of unknown type {}".format(message))
         except Exception:  # pylint: disable=broad-except
             import tensorflow as tf
-            stacktrace = ''.join(traceback.format_exception(*sys.exc_info()))
-            tf.logging.error('Error in environment process: {}'.format(stacktrace))
+
+            stacktrace = "".join(traceback.format_exception(*sys.exc_info()))
+            tf.logging.error("Error in environment process: {}".format(stacktrace))
             conn.send((self._EXCEPTION, stacktrace))
             conn.close()
 
@@ -167,8 +203,17 @@ class ExternalRetro(ExternalProcess):
 class ParallelRetro(Environment):
     """Wrap any environment to be stepped in parallel."""
 
-    def __init__(self, name: str, n_repeat_action: int=1, height: float=100, width: float=100,
-                 wrappers=None, n_workers: int=8, blocking: bool=True, **kwargs):
+    def __init__(
+        self,
+        name: str,
+        n_repeat_action: int = 1,
+        height: float = 100,
+        width: float = 100,
+        wrappers=None,
+        n_workers: int = 8,
+        blocking: bool = True,
+        **kwargs
+    ):
         """
 
         :param name: Name of the Environment
@@ -181,12 +226,26 @@ class ParallelRetro(Environment):
 
         super(ParallelRetro, self).__init__(name=name)
 
-        envs = [ExternalRetro(name=name, n_repeat_action=n_repeat_action,
-                              height=height, width=width, wrappers=wrappers, **kwargs)
-                for _ in range(n_workers)]
+        envs = [
+            ExternalRetro(
+                name=name,
+                n_repeat_action=n_repeat_action,
+                height=height,
+                width=width,
+                wrappers=wrappers,
+                **kwargs
+            )
+            for _ in range(n_workers)
+        ]
         self._batch_env = BatchEnv(envs, blocking)
-        self._env = RetroEnvironment(name, n_repeat_action=n_repeat_action,
-                                     height=height, width=width, wrappers=wrappers, **kwargs)
+        self._env = RetroEnvironment(
+            name,
+            n_repeat_action=n_repeat_action,
+            height=height,
+            width=width,
+            wrappers=wrappers,
+            **kwargs
+        )
         self._env.init_env()
         self.observation_space = self._env.observation_space
         self.action_space = self._env.action_space
@@ -194,15 +253,20 @@ class ParallelRetro(Environment):
     def __getattr__(self, item):
         return getattr(self._env, item)
 
-    def step_batch(self, actions: np.ndarray, states: np.ndarray=None,
-                   n_repeat_action: [np.ndarray, int]=None):
-        return self._batch_env.step_batch(actions=actions, states=states,
-                                          n_repeat_action=n_repeat_action)
+    def step_batch(
+        self,
+        actions: np.ndarray,
+        states: np.ndarray = None,
+        n_repeat_action: [np.ndarray, int] = None,
+    ):
+        return self._batch_env.step_batch(
+            actions=actions, states=states, n_repeat_action=n_repeat_action
+        )
 
-    def step(self, action: np.ndarray, state: np.ndarray=None, n_repeat_action: int=None):
+    def step(self, action: np.ndarray, state: np.ndarray = None, n_repeat_action: int = None):
         return self._env.step(action=action, state=state, n_repeat_action=n_repeat_action)
 
-    def reset(self, return_state: bool = True, blocking: bool=True):
+    def reset(self, return_state: bool = True, blocking: bool = True):
         state, obs = self._env.reset(return_state=True)
         self.sync_states()
         return state, obs if return_state else obs

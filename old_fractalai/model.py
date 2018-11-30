@@ -17,7 +17,7 @@ class BaseModel:
     def action_shape(self):
         return self._action_shape
 
-    def _predict(self, state: [State, list, np.ndarray]=None) -> [np.ndarray, float, int]:
+    def _predict(self, state: [State, list, np.ndarray] = None) -> [np.ndarray, float, int]:
         """
         Returns one action available from a given state or a vector of swarm.
 
@@ -26,7 +26,7 @@ class BaseModel:
         """
         raise NotImplementedError
 
-    def predict(self, state: [State, Iterable]=None) -> np.ndarray:
+    def predict(self, state: [State, Iterable] = None) -> np.ndarray:
         """
         Returns one action chosen at random from the policy's action space
         :param state: State or list of swarm to sample a random action from. It handles both a
@@ -58,7 +58,7 @@ class DiscreteModel(BaseModel):
     def action_shape(self):
         return tuple([self.n_actions])
 
-    def _predict(self, state: [State, list, np.ndarray]=None) -> int:
+    def _predict(self, state: [State, list, np.ndarray] = None) -> int:
         """
         Returns one action available from a given state or a vector of swarm.
         :param state: State or vector of swarm.
@@ -90,7 +90,6 @@ class RandomDiscreteModel(DiscreteModel):
 
 
 class RandomPongModel(DiscreteModel):
-
     def __init__(self, action_space=None):
         """Policy that performs random actions on an Pong game"""
         super(RandomPongModel, self).__init__(n_actions=6, action_space=action_space)
@@ -117,6 +116,7 @@ class ContinuousModel(BaseModel):
 
     def __init__(self, action_space):
         from dm_control.rl.specs import BoundedArraySpec
+
         assert isinstance(action_space, BoundedArraySpec), "Please use a dm_control action_spec"
         super(ContinuousModel, self).__init__(action_space=action_space)
 
@@ -144,7 +144,7 @@ class ContinuousModel(BaseModel):
     def maximum(self):
         return self.action_space.maximum
 
-    def _predict(self, state: State=None) -> np.ndarray:
+    def _predict(self, state: State = None) -> np.ndarray:
         """
         Returns one action available from a given state or a vector of swarm.
         :param state: State or vector of swarm.
@@ -154,29 +154,25 @@ class ContinuousModel(BaseModel):
 
 
 class RandomContinuousModel(ContinuousModel):
-
     def __init__(self, action_space):
         super(RandomContinuousModel, self).__init__(action_space=action_space)
 
-    def _predict(self, state: State=None) -> np.ndarray:
+    def _predict(self, state: State = None) -> np.ndarray:
         """
         Returns one action available from a given state or a vector of swarm.
         :param state: State or vector of swarm.
         :return: An scalar in case ``state`` represents a single state, or a numpy array otherwise.
         """
-        return np.random.uniform(self.minimum,
-                                 self.maximum,
-                                 size=self.shape)
+        return np.random.uniform(self.minimum, self.maximum, size=self.shape)
 
 
 class RandomMomentumModel(ContinuousModel):
-
     def __init__(self, action_space, dt=1, uniform=True):
         super(RandomMomentumModel, self).__init__(action_space=action_space)
         self.dt = dt
         self.uniform = uniform
 
-    def _predict(self, state: State=None) -> np.ndarray:
+    def _predict(self, state: State = None) -> np.ndarray:
         """
         Returns one action available from a given state or a vector of swarm.
         :param state: State or vector of swarm.
@@ -186,9 +182,7 @@ class RandomMomentumModel(ContinuousModel):
         # Assumes min negative and max positive, be careful.
         # This * 2 gives maximum variability, so any time it can change between max and min if dt=1
         if self.uniform:
-            vel = np.random.uniform(self.minimum * 2,
-                                    self.maximum * 2,
-                                    size=self.shape)
+            vel = np.random.uniform(self.minimum * 2, self.maximum * 2, size=self.shape)
         else:
             vel = np.random.standard_normal(self.shape)
         action = old_action + vel * self.dt
@@ -198,7 +192,6 @@ class RandomMomentumModel(ContinuousModel):
 
 
 class ContinuousDiscretizedModel(RandomContinuousModel):
-
     def __init__(self, action_space, n_act_dof=7):
         super(ContinuousDiscretizedModel, self).__init__(action_space=action_space)
         self.n_act_dof = n_act_dof
@@ -217,7 +210,7 @@ class ContinuousDiscretizedModel(RandomContinuousModel):
         normed = values / values.sum()
         return normed
 
-    def _predict(self, state: State=None) -> np.ndarray:
+    def _predict(self, state: State = None) -> np.ndarray:
         """
         Returns one action available from a given state or a vector of swarm.
         :param state: State or vector of swarm.

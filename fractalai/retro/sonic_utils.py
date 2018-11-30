@@ -32,8 +32,10 @@ class Wrapper(gym.Env):
         while True:
             if isinstance(env, Wrapper):
                 if env.class_name() == self.class_name():
-                    raise error.DoubleWrapperError("Attempted to double wrap with Wrapper: "
-                                                   "{}".format(self.__class__.__name__))
+                    raise error.DoubleWrapperError(
+                        "Attempted to double wrap with Wrapper: "
+                        "{}".format(self.__class__.__name__)
+                    )
                 env = env.env
             else:
                 break
@@ -47,7 +49,7 @@ class Wrapper(gym.Env):
     def reset(self, **kwargs):
         return self.env.reset(**kwargs)
 
-    def render(self, mode='human'):
+    def render(self, mode="human"):
         return self.env.render(mode)
 
     def close(self):
@@ -61,7 +63,7 @@ class Wrapper(gym.Env):
         return self.env.compute_reward(achieved_goal, desired_goal, info)
 
     def __str__(self):
-        return '<{}{}>'.format(type(self).__name__, self.env)
+        return "<{}{}>".format(type(self).__name__, self.env)
 
     def __repr__(self):
         return str(self)
@@ -76,7 +78,6 @@ class Wrapper(gym.Env):
 
 
 class ActionWrapper(Wrapper):
-
     def step(self, action, *args, **kwargs):
         action = self.action(action)
         if isinstance(self.env, Environment):
@@ -93,11 +94,19 @@ class SonicDiscretizer(ActionWrapper):
     Wrap a gym-retro environment and make it use discrete
     actions for the Sonic game.
     """
+
     def __init__(self, env):
         super(SonicDiscretizer, self).__init__(env)
         buttons = ["B", "A", "MODE", "START", "UP", "DOWN", "LEFT", "RIGHT", "C", "Y", "X", "Z"]
-        actions = [['LEFT'], ['RIGHT'], ['LEFT', 'DOWN'], ['RIGHT', 'DOWN'], ['DOWN'],
-                   ['DOWN', 'B'], ['B']]
+        actions = [
+            ["LEFT"],
+            ["RIGHT"],
+            ["LEFT", "DOWN"],
+            ["RIGHT", "DOWN"],
+            ["DOWN"],
+            ["DOWN", "B"],
+            ["B"],
+        ]
         self._actions = []
         for action in actions:
             arr = np.array([False] * 12)
@@ -116,6 +125,7 @@ class RewardScaler(gym.RewardWrapper):
     This is incredibly important and effects performance
     drastically.
     """
+
     def reward(self, reward):
         return reward * 0.01
 
@@ -165,9 +175,9 @@ class FrameStack(gym.Wrapper):
         self.k = k
         self.frames = deque([], maxlen=k)
         shp = env.observation_space.shape
-        self.observation_space = spaces.Box(low=0, high=255,
-                                            shape=(shp[0], shp[1], shp[2] * k),
-                                            dtype=np.uint8)
+        self.observation_space = spaces.Box(
+            low=0, high=255, shape=(shp[0], shp[1], shp[2] * k), dtype=np.uint8
+        )
 
     def __getattr__(self, item):
         return getattr(self.env, item)

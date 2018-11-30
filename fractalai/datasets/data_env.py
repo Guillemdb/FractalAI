@@ -11,18 +11,28 @@ from fractalai.datasets.ray import ParallelDataGenerator
 
 
 class DataEnv(Env):
-
-    def __init__(self, n_actors: int, swarm_class: Callable,
-                 env_callable: Callable, model_callable: Callable,
-                 swarm_kwargs: dict, generator_kwargs: dict, data_env_callable: Callable=None,
-                 seed: int=1):
+    def __init__(
+        self,
+        n_actors: int,
+        swarm_class: Callable,
+        env_callable: Callable,
+        model_callable: Callable,
+        swarm_kwargs: dict,
+        generator_kwargs: dict,
+        data_env_callable: Callable = None,
+        seed: int = 1,
+    ):
         self.use_data_env = data_env_callable is not None
-        self.generator = ParallelDataGenerator(n_actors=n_actors, swarm_class=swarm_class,
-                                               data_env_callable=data_env_callable,
-                                               swarm_kwargs=swarm_kwargs,
-                                               env_callable=env_callable,
-                                               model_callable=model_callable,
-                                               generator_kwargs=generator_kwargs, seed=seed)
+        self.generator = ParallelDataGenerator(
+            n_actors=n_actors,
+            swarm_class=swarm_class,
+            data_env_callable=data_env_callable,
+            swarm_kwargs=swarm_kwargs,
+            env_callable=env_callable,
+            model_callable=model_callable,
+            generator_kwargs=generator_kwargs,
+            seed=seed,
+        )
         self.env = env_callable() if data_env_callable is None else data_env_callable()
         self._ix = 0
         self.game_stream = self.generator.game_stream(examples=False, full_game=self.use_data_env)
@@ -59,11 +69,13 @@ class DataEnv(Env):
     def load_new_game(self):
         self._ix = -1
         if self.use_data_env:
-            self.states, self.observs, self.rewards, \
-              self.ends, self.infos, self.actions = next(self.game_stream)
+            self.states, self.observs, self.rewards, self.ends, self.infos, self.actions = next(
+                self.game_stream
+            )
         else:
-            self.states, self.observs, self.actions, self.rewards,\
-                self.new_obs, self.ends = next(self.game_stream)
+            self.states, self.observs, self.actions, self.rewards, self.new_obs, self.ends = next(
+                self.game_stream
+            )
 
     def get_example(self):
         if self._ix < len(self.rewards) - 1:
@@ -89,7 +101,7 @@ class DataEnv(Env):
             # info = {"action": action}
             return new_ob  # , reward, end, info
 
-    def render(self, mode='human'):
+    def render(self, mode="human"):
         self.env.set_state(self.states[self._ix].copy())
         self.env.step(self.actions[self._ix])
         self.env.render()
@@ -99,24 +111,41 @@ class DataEnv(Env):
 
 
 class DataVecEnv(VecEnv):
-
-    def __init__(self, num_envs: int, n_actors: int, swarm_class: Callable,
-                 env_callable: Callable, model_callable: Callable,
-                 swarm_kwargs: dict, generator_kwargs: dict, data_env_callable: Callable=None,
-                 seed: int=1, folder=None, mode="online"):
+    def __init__(
+        self,
+        num_envs: int,
+        n_actors: int,
+        swarm_class: Callable,
+        env_callable: Callable,
+        model_callable: Callable,
+        swarm_kwargs: dict,
+        generator_kwargs: dict,
+        data_env_callable: Callable = None,
+        seed: int = 1,
+        folder=None,
+        mode="online",
+    ):
         self.use_data_env = data_env_callable is not None
-        self.generator = ParallelDataGenerator(n_actors=n_actors, swarm_class=swarm_class,
-                                               data_env_callable=data_env_callable,
-                                               swarm_kwargs=swarm_kwargs,
-                                               env_callable=env_callable,
-                                               model_callable=model_callable,
-                                               generator_kwargs=generator_kwargs, seed=seed,
-                                               folder=folder, mode=mode)
+        self.generator = ParallelDataGenerator(
+            n_actors=n_actors,
+            swarm_class=swarm_class,
+            data_env_callable=data_env_callable,
+            swarm_kwargs=swarm_kwargs,
+            env_callable=env_callable,
+            model_callable=model_callable,
+            generator_kwargs=generator_kwargs,
+            seed=seed,
+            folder=folder,
+            mode=mode,
+        )
         self.env = env_callable() if data_env_callable is None else data_env_callable()
         self._ix = 0
         self.game_stream = self.generator.game_stream(examples=False, full_game=self.use_data_env)
-        super(DataVecEnv, self).__init__(observation_space=self.env.observation_space,
-                                         action_space=self.env.action_space, num_envs=num_envs)
+        super(DataVecEnv, self).__init__(
+            observation_space=self.env.observation_space,
+            action_space=self.env.action_space,
+            num_envs=num_envs,
+        )
         self.games = {i: None for i in range(self.num_envs)}
         self._indexes = np.zeros(self.num_envs, dtype=int)
 
@@ -182,11 +211,10 @@ class DataVecEnv(VecEnv):
     def close(self):
         pass
 
-    def render(self, mode='human'):
+    def render(self, mode="human"):
         self.env.set_state(self.games[0][0][self._indexes[0]].copy())
         if self.use_data_env:
             self.env.step(self.games[0][-1][self._indexes[0]])
         else:
             self.env.step(self.games[0][2][self._indexes[0]])
         self.env.render()
-

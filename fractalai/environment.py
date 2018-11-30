@@ -26,7 +26,7 @@ class Environment:
     reward_range = None
     metadata = None
 
-    def __init__(self, name, n_repeat_action: int=1):
+    def __init__(self, name, n_repeat_action: int = 1):
         self._name = name
         self.n_repeat_action = n_repeat_action
 
@@ -44,7 +44,7 @@ class Environment:
         """This is the name of the environment"""
         return self._name
 
-    def step(self, action, state=None, n_repeat_action: int=1) -> tuple:
+    def step(self, action, state=None, n_repeat_action: int = 1) -> tuple:
         """
         Take a simulation step and make the environment evolve.
         :param action: Chosen action applied to the environment.
@@ -54,7 +54,7 @@ class Environment:
         """
         raise NotImplementedError
 
-    def step_batch(self, actions, states=None, n_repeat_action: int=1) -> tuple:
+    def step_batch(self, actions, states=None, n_repeat_action: int = 1) -> tuple:
         """
         Take a step on a batch of states.
         :param actions: Chosen action applied to the environment.
@@ -83,8 +83,16 @@ class Environment:
 class AtariEnvironment(Environment):
     """Environment for playing Atari games."""
 
-    def __init__(self, name: str, clone_seeds: bool=True, n_repeat_action: int=1, min_dt: int=1,
-                 obs_ram: bool=False, episodic_live: bool=False, autoreset: bool=True):
+    def __init__(
+        self,
+        name: str,
+        clone_seeds: bool = True,
+        n_repeat_action: int = 1,
+        min_dt: int = 1,
+        obs_ram: bool = False,
+        episodic_live: bool = False,
+        autoreset: bool = True,
+    ):
         """Create an environment to play OpenAI gym Atari Games.
         :param name: Name of the environment. Follows standard gym syntax rules.
         :param clone_seeds: Clone the random seed of the ALE emulator when
@@ -141,8 +149,9 @@ class AtariEnvironment(Environment):
             self._env.unwrapped.restore_state(state)
         return state
 
-    def step(self, action: np.ndarray, state: np.ndarray = None,
-             n_repeat_action: int = None) -> tuple:
+    def step(
+        self, action: np.ndarray, state: np.ndarray = None, n_repeat_action: int = None
+    ) -> tuple:
         """
         Take n_repeat_action simulation steps and make the environment evolve
         in multiples of min_dt.
@@ -187,7 +196,7 @@ class AtariEnvironment(Environment):
             self._env.reset()
         return data
 
-    def step_batch(self, actions, states=None, n_repeat_action: [int, np.ndarray]=None) -> tuple:
+    def step_batch(self, actions, states=None, n_repeat_action: [int, np.ndarray] = None) -> tuple:
         """
         Take a step on a batch of states.
         :param actions: Chosen action applied to the environment.
@@ -196,10 +205,15 @@ class AtariEnvironment(Environment):
         :return:
         """
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
-        n_repeat_action = n_repeat_action if isinstance(n_repeat_action, np.ndarray) \
+        n_repeat_action = (
+            n_repeat_action
+            if isinstance(n_repeat_action, np.ndarray)
             else np.ones(len(states)) * n_repeat_action
-        data = [self.step(action, state, n_repeat_action=dt)
-                for action, state, dt in zip(actions, states, n_repeat_action)]
+        )
+        data = [
+            self.step(action, state, n_repeat_action=dt)
+            for action, state, dt in zip(actions, states, n_repeat_action)
+        ]
         new_states, observs, rewards, terminals, lives = [], [], [], [], []
         for d in data:
             if states is None:
@@ -216,7 +230,7 @@ class AtariEnvironment(Environment):
         else:
             return new_states, observs, rewards, terminals, lives
 
-    def reset(self, return_state: bool=True) -> [np.ndarray, tuple]:
+    def reset(self, return_state: bool = True) -> [np.ndarray, tuple]:
         """Restart the environment.
         :param return_state: If True, return a tuple containing (state, observation)
         :return:
@@ -240,8 +254,16 @@ class AtariFAIWrapper(AtariEnvironment):
     """Generic wrapper for the AtariEnvironment. Inherit from this class and override
      the desired methods to implement a wrapper."""
 
-    def __init__(self, env: Env, clone_seeds: bool=True, n_repeat_action: int=1, min_dt: int=1,
-                 obs_ram: bool=False, episodic_live: bool=False, autoreset: bool=True):
+    def __init__(
+        self,
+        env: Env,
+        clone_seeds: bool = True,
+        n_repeat_action: int = 1,
+        min_dt: int = 1,
+        obs_ram: bool = False,
+        episodic_live: bool = False,
+        autoreset: bool = True,
+    ):
         """Create a wrapper for the AtariEnvironment.
         :param clone_seeds: Clone the random seed of the ALE emulator when reading/setting
          the state.
@@ -252,10 +274,15 @@ class AtariFAIWrapper(AtariEnvironment):
         :param episodic_live: Return end = True when losing a live.
         :param autoreset: Restart environment when reaching a terminal state.
         """
-        super(AtariFAIWrapper, self).__init__(name=env.spec.id, clone_seeds=clone_seeds,
-                                              n_repeat_action=n_repeat_action, min_dt=min_dt,
-                                              obs_ram=obs_ram, episodic_live=episodic_live,
-                                              autoreset=autoreset)
+        super(AtariFAIWrapper, self).__init__(
+            name=env.spec.id,
+            clone_seeds=clone_seeds,
+            n_repeat_action=n_repeat_action,
+            min_dt=min_dt,
+            obs_ram=obs_ram,
+            episodic_live=episodic_live,
+            autoreset=autoreset,
+        )
         # Overwrite the default env with the one provided externally
         self._env = env
         self.action_space = self._env.action_space
@@ -265,7 +292,6 @@ class AtariFAIWrapper(AtariEnvironment):
 
 
 class MinimalPong(AtariEnvironment):
-
     def __init__(self, name="PongNoFrameskip-V4", *args, **kwargs):
         """Environment adapted to play pong returning the smallest observation possible.
         This is meant for testing RL algos. The number of possible actions has been reduced to 2,
@@ -289,8 +315,9 @@ class MinimalPong(AtariEnvironment):
     def n_actions(self):
         return 2
 
-    def step(self, action: np.ndarray, state: np.ndarray = None,
-             n_repeat_action: int = None) -> tuple:
+    def step(
+        self, action: np.ndarray, state: np.ndarray = None, n_repeat_action: int = None
+    ) -> tuple:
         if state is not None:
             self.set_state(state)
         final_obs = np.zeros((80, 80, 2))
@@ -324,7 +351,7 @@ class MinimalPong(AtariEnvironment):
             self._env.reset()
         return data
 
-    def reset(self, return_state: bool=True):
+    def reset(self, return_state: bool = True):
         obs = self._env.reset()
         if "ram" not in self.name:
             proc_obs = np.zeros((80, 80, 2))
@@ -338,7 +365,6 @@ class MinimalPong(AtariEnvironment):
 
 
 class MinimalPacman(AtariEnvironment):
-
     def __init__(self, *args, **kwargs):
         obs_shape = kwargs.get("obs_shape", (80, 80, 2))
         # Do not pas obs_shape to AtariEnvironment
@@ -363,12 +389,13 @@ class MinimalPacman(AtariEnvironment):
 
     def reshape_frame(self, obs):
         height, width = self.obs_shape[0], self.obs_shape[1]
-        cropped = obs[3: 170, 7: -7]
+        cropped = obs[3:170, 7:-7]
         frame = resize_frame(cropped, width=width, height=height)
         return frame
 
-    def step(self, action: np.ndarray, state: np.ndarray = None,
-             n_repeat_action: int = None) -> tuple:
+    def step(
+        self, action: np.ndarray, state: np.ndarray = None, n_repeat_action: int = None
+    ) -> tuple:
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
         if state is not None:
             self.set_state(state)
@@ -409,7 +436,7 @@ class MinimalPacman(AtariEnvironment):
             return new_state, full_obs, reward, end, info
         return full_obs, reward, end, info
 
-    def reset(self, return_state: bool=True):
+    def reset(self, return_state: bool = True):
         full_obs = np.zeros(self.observation_space.shape)
         obs = self.reshape_frame(self._env.reset())
         obs_hist = [copy.deepcopy(obs)]
@@ -445,7 +472,7 @@ class MinimalPacman(AtariEnvironment):
 class CartPoleEnvironment(Environment):
     """Environment for playing Atari games."""
 
-    def __init__(self, name: str="CartPole-v1"):
+    def __init__(self, name: str = "CartPole-v1"):
         super(CartPoleEnvironment, self).__init__(name=name, n_repeat_action=1)
         self._env = gym.make(name)
         self.action_space = self._env.action_space
@@ -468,8 +495,9 @@ class CartPoleEnvironment(Environment):
         self._env.unwrapped.state = copy.copy(state)
         return state
 
-    def step(self, action: np.ndarray, state: np.ndarray = None,
-             n_repeat_action: int = 1) -> tuple:
+    def step(
+        self, action: np.ndarray, state: np.ndarray = None, n_repeat_action: int = 1
+    ) -> tuple:
         if state is not None:
             self.set_state(state)
         info = {"lives": 1}
@@ -485,7 +513,7 @@ class CartPoleEnvironment(Environment):
             self._env.reset()
         return data
 
-    def step_batch(self, actions, states=None, n_repeat_action: [int, np.ndarray]=None) -> tuple:
+    def step_batch(self, actions, states=None, n_repeat_action: [int, np.ndarray] = None) -> tuple:
         """
 
         :param actions:
@@ -494,10 +522,15 @@ class CartPoleEnvironment(Environment):
         :return:
         """
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
-        n_repeat_action = n_repeat_action if isinstance(n_repeat_action, np.ndarray) \
+        n_repeat_action = (
+            n_repeat_action
+            if isinstance(n_repeat_action, np.ndarray)
             else np.ones(len(states)) * n_repeat_action
-        data = [self.step(action, state, n_repeat_action=dt)
-                for action, state, dt in zip(actions, states, n_repeat_action)]
+        )
+        data = [
+            self.step(action, state, n_repeat_action=dt)
+            for action, state, dt in zip(actions, states, n_repeat_action)
+        ]
         new_states, observs, rewards, terminals, lives = [], [], [], [], []
         for d in data:
             if states is None:
@@ -514,7 +547,7 @@ class CartPoleEnvironment(Environment):
         else:
             return new_states, observs, rewards, terminals, lives
 
-    def reset(self, return_state: bool=True):
+    def reset(self, return_state: bool = True):
         if not return_state:
             return self._env.reset()
         else:
@@ -528,8 +561,14 @@ class CartPoleEnvironment(Environment):
 class ESEnvironment(Environment):
     """DO NOT USE: NOT FINISHED!! Environment for Solving Evolutionary Strategies."""
 
-    def __init__(self, name: str, dnn_callable: Callable, n_repeat_action: int=1,
-                 max_episode_length=1000, noise_prob: float=0):
+    def __init__(
+        self,
+        name: str,
+        dnn_callable: Callable,
+        n_repeat_action: int = 1,
+        max_episode_length=1000,
+        noise_prob: float = 0,
+    ):
         super(ESEnvironment, self).__init__(name=name, n_repeat_action=n_repeat_action)
         self.dnn_callable = dnn_callable
         self._env = gym.make(name)
@@ -553,8 +592,7 @@ class ESEnvironment(Environment):
         self.neural_network.set_weights(state)
 
     @staticmethod
-    def _perturb_weights(weights: [list, np.ndarray],
-                         perturbations: [list, np.ndarray]) -> list:
+    def _perturb_weights(weights: [list, np.ndarray], perturbations: [list, np.ndarray]) -> list:
         """
         Updates a set of weights with a gaussian perturbation with sigma equal to self.sigma and
         mean 0.
@@ -573,8 +611,9 @@ class ESEnvironment(Environment):
         else:
             return obs
 
-    def step(self, action: np.ndarray, state: np.ndarray = None,
-             n_repeat_action: int = None) -> tuple:
+    def step(
+        self, action: np.ndarray, state: np.ndarray = None, n_repeat_action: int = None
+    ) -> tuple:
 
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
 
@@ -602,12 +641,17 @@ class ESEnvironment(Environment):
             return new_state, obs, reward, False, 0
         return obs, reward, False, 0
 
-    def step_batch(self, actions, states=None, n_repeat_action: int=None) -> tuple:
+    def step_batch(self, actions, states=None, n_repeat_action: int = None) -> tuple:
         n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
-        n_repeat_action = n_repeat_action if isinstance(n_repeat_action, np.ndarray) \
+        n_repeat_action = (
+            n_repeat_action
+            if isinstance(n_repeat_action, np.ndarray)
             else np.ones(len(states)) * n_repeat_action
-        data = [self.step(action, state, n_repeat_action=dt)
-                for action, state, dt in zip(actions, states, n_repeat_action)]
+        )
+        data = [
+            self.step(action, state, n_repeat_action=dt)
+            for action, state, dt in zip(actions, states, n_repeat_action)
+        ]
         new_states, observs, rewards, terminals, lives = [], [], [], [], []
         for d in data:
             if states is None:
@@ -624,7 +668,7 @@ class ESEnvironment(Environment):
         else:
             return new_states, observs, rewards, terminals, lives
 
-    def reset(self, return_state: bool=False):
+    def reset(self, return_state: bool = False):
         if not return_state:
             return self._env.reset()
         else:
@@ -635,7 +679,7 @@ class ESEnvironment(Environment):
 def split_similar_chunks(vector: list, n_chunks: int):
     chunk_size = int(np.ceil(len(vector) / n_chunks))
     for i in range(0, len(vector), chunk_size):
-        yield vector[i:i + chunk_size]
+        yield vector[i : i + chunk_size]
 
 
 class ExternalProcess(object):
@@ -665,8 +709,7 @@ class ExternalProcess(object):
           action_space: The cached action space of the environment.
         """
         self._conn, conn = multiprocessing.Pipe()
-        self._process = multiprocessing.Process(
-            target=self._worker, args=(constructor, conn))
+        self._process = multiprocessing.Process(target=self._worker, args=(constructor, conn))
         atexit.register(self.close)
         self._process.start()
         self._observ_space = None
@@ -675,13 +718,13 @@ class ExternalProcess(object):
     @property
     def observation_space(self):
         if not self._observ_space:
-            self._observ_space = self.__getattr__('observation_space')
+            self._observ_space = self.__getattr__("observation_space")
         return self._observ_space
 
     @property
     def action_space(self):
         if not self._action_space:
-            self._action_space = self.__getattr__('action_space')
+            self._action_space = self.__getattr__("action_space")
         return self._action_space
 
     def __getattr__(self, name):
@@ -720,21 +763,22 @@ class ExternalProcess(object):
         self._process.join()
 
     def set_state(self, state, blocking=True):
-        promise = self.call('set_state', state)
+        promise = self.call("set_state", state)
         if blocking:
             return promise()
         else:
             return promise
 
-    def step_batch(self, actions, states=None,
-                   n_repeat_action: [np.ndarray, int]=None, blocking=True):
-        promise = self.call('step_batch', actions, states, n_repeat_action)
+    def step_batch(
+        self, actions, states=None, n_repeat_action: [np.ndarray, int] = None, blocking=True
+    ):
+        promise = self.call("step_batch", actions, states, n_repeat_action)
         if blocking:
             return promise()
         else:
             return promise
 
-    def step(self, action, state=None, n_repeat_action: int=None, blocking=True):
+    def step(self, action, state=None, n_repeat_action: int = None, blocking=True):
         """Step the environment.
         Args:
           action: The action to apply to the environment.
@@ -744,13 +788,13 @@ class ExternalProcess(object):
           transition tuple.
         """
 
-        promise = self.call('step', action, state, n_repeat_action)
+        promise = self.call("step", action, state, n_repeat_action)
         if blocking:
             return promise()
         else:
             return promise
 
-    def reset(self, blocking=True, return_states: bool=False):
+    def reset(self, blocking=True, return_states: bool = False):
         """Reset the environment.
         Args:
           blocking: Whether to wait for the result.
@@ -758,7 +802,7 @@ class ExternalProcess(object):
           New observation when blocking, otherwise callable that returns the new
           observation.
         """
-        promise = self.call('reset', return_states=return_states)
+        promise = self.call("reset", return_states=return_states)
         if blocking:
             return promise()
         else:
@@ -779,7 +823,7 @@ class ExternalProcess(object):
             raise Exception(stacktrace)
         if message == self._RESULT:
             return payload
-        raise KeyError('Received message of unexpected type {}'.format(message))
+        raise KeyError("Received message of unexpected type {}".format(message))
 
     def _worker(self, constructor, conn):
         """The process waits for actions and sends back environment results.
@@ -813,11 +857,12 @@ class ExternalProcess(object):
                 if message == self._CLOSE:
                     assert payload is None
                     break
-                raise KeyError('Received message of unknown type {}'.format(message))
+                raise KeyError("Received message of unknown type {}".format(message))
         except Exception:  # pylint: disable=broad-except
             import tensorflow as tf
-            stacktrace = ''.join(traceback.format_exception(*sys.exc_info()))
-            tf.logging.error('Error in environment process: {}'.format(stacktrace))
+
+            stacktrace = "".join(traceback.format_exception(*sys.exc_info()))
+            tf.logging.error("Error in environment process: {}".format(stacktrace))
             conn.send((self._EXCEPTION, stacktrace))
             conn.close()
 
@@ -860,20 +905,28 @@ class BatchEnv(object):
         """
         return getattr(self._envs[0], name)
 
-    def _make_transitions(self, actions, states=None, n_repeat_action: [np.ndarray, int]=None):
+    def _make_transitions(self, actions, states=None, n_repeat_action: [np.ndarray, int] = None):
         states = states if states is not None else [None] * len(actions)
-        n_repeat_action = n_repeat_action if isinstance(n_repeat_action, np.ndarray) \
+        n_repeat_action = (
+            n_repeat_action
+            if isinstance(n_repeat_action, np.ndarray)
             else np.ones(len(states)) * n_repeat_action
+        )
         chunks = len(self._envs)
         states_chunk = split_similar_chunks(states, n_chunks=chunks)
         actions_chunk = split_similar_chunks(actions, n_chunks=chunks)
         repeat_chunk = split_similar_chunks(n_repeat_action, n_chunks=chunks)
         results = []
-        for env, states_batch, actions_batch, dt in zip(self._envs,
-                                                        states_chunk, actions_chunk, repeat_chunk):
-                result = env.step_batch(actions=actions_batch, states=states_batch,
-                                        n_repeat_action=dt, blocking=self._blocking)
-                results.append(result)
+        for env, states_batch, actions_batch, dt in zip(
+            self._envs, states_chunk, actions_chunk, repeat_chunk
+        ):
+            result = env.step_batch(
+                actions=actions_batch,
+                states=states_batch,
+                n_repeat_action=dt,
+                blocking=self._blocking,
+            )
+            results.append(result)
 
         _states = []
         observs = []
@@ -903,7 +956,7 @@ class BatchEnv(object):
             transitions = _states, observs, rewards, terminals, infos
         return transitions
 
-    def step_batch(self, actions, states=None, n_repeat_action: [np.ndarray, int]=None):
+    def step_batch(self, actions, states=None, n_repeat_action: [np.ndarray, int] = None):
         """Forward a batch of actions to the wrapped environments.
         Args:
           actions: Batched action to apply to the environment.
@@ -918,8 +971,9 @@ class BatchEnv(object):
         if states is None:
             observs, rewards, dones, lives = self._make_transitions(actions, None, n_repeat_action)
         else:
-            states, observs, rewards, dones, lives = self._make_transitions(actions, states,
-                                                                            n_repeat_action)
+            states, observs, rewards, dones, lives = self._make_transitions(
+                actions, states, n_repeat_action
+            )
         try:
             observ = np.stack(observs)
             reward = np.stack(rewards)
@@ -933,14 +987,14 @@ class BatchEnv(object):
         else:
             return states, observs, rewards, dones, lives
 
-    def sync_states(self, state, blocking: bool=True):
+    def sync_states(self, state, blocking: bool = True):
         for env in self._envs:
             try:
                 env.set_state(state, blocking=blocking)
             except EOFError:
                 continue
 
-    def reset(self, indices=None, return_states: bool=True):
+    def reset(self, indices=None, return_states: bool = True):
         """Reset the environment and convert the resulting observation.
         Args:
           indices: The batch indices of environments to reset; defaults to all.
@@ -953,9 +1007,10 @@ class BatchEnv(object):
         if self._blocking:
             observs = [self._envs[index].reset(return_states=return_states) for index in indices]
         else:
-            transitions = [self._envs[index].reset(blocking=False,
-                                                   return_states=return_states)
-                           for index in indices]
+            transitions = [
+                self._envs[index].reset(blocking=False, return_states=return_states)
+                for index in indices
+            ]
             transitions = [trans() for trans in transitions]
             states, observs = zip(*transitions)
 
@@ -967,20 +1022,23 @@ class BatchEnv(object):
     def close(self):
         """Send close messages to the external process and join them."""
         for env in self._envs:
-            if hasattr(env, 'close'):
+            if hasattr(env, "close"):
                 env.close()
 
 
 def env_callable(name, env_class, *args, **kwargs):
     def _dummy():
         return env_class(name, *args, **kwargs)
+
     return _dummy
 
 
 class ParallelEnvironment(Environment):
     """Wrap any environment to be stepped in parallel when step_batch is called. """
 
-    def __init__(self, name, env_class, n_workers: int=8, blocking: bool=True, *args, **kwargs):
+    def __init__(
+        self, name, env_class, n_workers: int = 8, blocking: bool = True, *args, **kwargs
+    ):
         """
 
         :param name: Name of the Environment
@@ -992,8 +1050,10 @@ class ParallelEnvironment(Environment):
         """
         super(ParallelEnvironment, self).__init__(name=name)
         self._env = env_callable(name, env_class, *args, **kwargs)()
-        envs = [ExternalProcess(constructor=env_callable(name, env_class, *args, **kwargs))
-                for _ in range(n_workers)]
+        envs = [
+            ExternalProcess(constructor=env_callable(name, env_class, *args, **kwargs))
+            for _ in range(n_workers)
+        ]
         self._batch_env = BatchEnv(envs, blocking)
         self.action_space = self._env.action_space
         self.observation_space = self._env.observation_space
@@ -1001,15 +1061,20 @@ class ParallelEnvironment(Environment):
     def __getattr__(self, item):
         return getattr(self._env, item)
 
-    def step_batch(self, actions: np.ndarray, states: np.ndarray=None,
-                   n_repeat_action: [np.ndarray, int]=None):
-        return self._batch_env.step_batch(actions=actions, states=states,
-                                          n_repeat_action=n_repeat_action)
+    def step_batch(
+        self,
+        actions: np.ndarray,
+        states: np.ndarray = None,
+        n_repeat_action: [np.ndarray, int] = None,
+    ):
+        return self._batch_env.step_batch(
+            actions=actions, states=states, n_repeat_action=n_repeat_action
+        )
 
-    def step(self, action: np.ndarray, state: np.ndarray=None, n_repeat_action: int=None):
+    def step(self, action: np.ndarray, state: np.ndarray = None, n_repeat_action: int = None):
         return self._env.step(action=action, state=state, n_repeat_action=n_repeat_action)
 
-    def reset(self, return_state: bool = True, blocking: bool=True):
+    def reset(self, return_state: bool = True, blocking: bool = True):
         state, obs = self._env.reset(return_state=True)
         self.sync_states()
         return state, obs if return_state else obs

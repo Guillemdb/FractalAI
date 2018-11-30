@@ -6,7 +6,7 @@ from gym.envs.classic_control import rendering
 
 
 class DMControlEnv(Environment):
-        """I am offering this just to show that it can also work with any kind of problem, but I will
+    """I am offering this just to show that it can also work with any kind of problem, but I will
         not be offering support for the dm_control package. It relies on Mujoco, and I don't want
         to pollute this publication with proprietary code. Unfortunately, Mujoco is the only
          library that allows to easily set and clone the state of the environment.
@@ -15,10 +15,14 @@ class DMControlEnv(Environment):
         and run simulations in a cluster using ray.
         """
 
-        def __init__(self, name: str = "cartpole-balance",
-                     visualize_reward: bool = True, n_repeat_action: int = 1,
-                     custom_death: "CustomDeath" = None):
-            """
+    def __init__(
+        self,
+        name: str = "cartpole-balance",
+        visualize_reward: bool = True,
+        n_repeat_action: int = 1,
+        custom_death: "CustomDeath" = None,
+    ):
+        """
             Creates DMControlEnv and initializes the environment.
             :param domain_name: match dm_control interface.
             :param task_name: match dm_control interface.
@@ -27,162 +31,170 @@ class DMControlEnv(Environment):
                             This allows us to set the frequency at which the policy will play.
             :param custom_death: Pro hack to beat the shit out of DeepMind even further.
             """
-            from dm_control import suite
-            domain_name, task_name = name.split("-")
-            super(DMControlEnv, self).__init__(name=name, n_repeat_action=n_repeat_action)
-            self._render_i = 0
-            self._env = suite.load(domain_name=domain_name, task_name=task_name,
-                                   visualize_reward=visualize_reward)
-            self._name = name
-            self.viewer = []
-            self._last_time_step = None
-            self._viewer = rendering.SimpleImageViewer()
+        from dm_control import suite
 
-            self._custom_death = custom_death
+        domain_name, task_name = name.split("-")
+        super(DMControlEnv, self).__init__(name=name, n_repeat_action=n_repeat_action)
+        self._render_i = 0
+        self._env = suite.load(
+            domain_name=domain_name, task_name=task_name, visualize_reward=visualize_reward
+        )
+        self._name = name
+        self.viewer = []
+        self._last_time_step = None
+        self._viewer = rendering.SimpleImageViewer()
 
-            self.reset()
+        self._custom_death = custom_death
 
-        def __getattr__(self, item):
-            return getattr(self._env, item)
+        self.reset()
 
-        def action_spec(self):
-            return self.env.action_spec()
+    def __getattr__(self, item):
+        return getattr(self._env, item)
 
-        @property
-        def physics(self):
-            return self.env.physics
+    def action_spec(self):
+        return self.env.action_spec()
 
-        @property
-        def env(self):
-            """Access to the environment."""
-            return self._env
+    @property
+    def physics(self):
+        return self.env.physics
 
-        def set_seed(self, seed):
-            np.random.seed(seed)
-            self.env.seed(seed)
+    @property
+    def env(self):
+        """Access to the environment."""
+        return self._env
 
-        def render(self, mode='human'):
-            img = self.env.physics.render(camera_id=0)
-            if mode == 'rgb_array':
-                return img
-            elif mode == 'human':
-                self.viewer.append(img)
-            return True
+    def set_seed(self, seed):
+        np.random.seed(seed)
+        self.env.seed(seed)
 
-        def show_game(self, sleep: float=0.05):
-            import time
-            for img in self.viewer:
-                self._viewer.imshow(img)
-                time.sleep(sleep)
+    def render(self, mode="human"):
+        img = self.env.physics.render(camera_id=0)
+        if mode == "rgb_array":
+            return img
+        elif mode == "human":
+            self.viewer.append(img)
+        return True
 
-        def reset(self, return_state: bool = False) -> [np.ndarray, tuple]:
-            """Resets the environment and returns the first observation"""
+    def show_game(self, sleep: float = 0.05):
+        import time
 
-            time_step = self._env.reset()
-            observed = self._time_step_to_obs(time_step)
-            self._render_i = 0
-            if not return_state:
-                return observed
-            else:
-                return self.get_state(), observed
+        for img in self.viewer:
+            self._viewer.imshow(img)
+            time.sleep(sleep)
 
-        def set_state(self, state: np.ndarray):
-            """
+    def reset(self, return_state: bool = False) -> [np.ndarray, tuple]:
+        """Resets the environment and returns the first observation"""
+
+        time_step = self._env.reset()
+        observed = self._time_step_to_obs(time_step)
+        self._render_i = 0
+        if not return_state:
+            return observed
+        else:
+            return self.get_state(), observed
+
+    def set_state(self, state: np.ndarray):
+        """
             Sets the microstate of the simulator to the microstate of the target State.
             I will be super grateful if someone shows me how to do this using Open Source code.
             :param state:
             :return:
             """
-            with self.env.physics.reset_context():
-                # mj_reset () is  called  upon  entering  the  context.
-                self.env.physics.data.qpos[:] = state[0]  # Set  position ,
-                self.env.physics.data.qvel[:] = state[1]  # velocity
-                self.env.physics.data.ctrl[:] = state[2]  # and  control.
+        with self.env.physics.reset_context():
+            # mj_reset () is  called  upon  entering  the  context.
+            self.env.physics.data.qpos[:] = state[0]  # Set  position ,
+            self.env.physics.data.qvel[:] = state[1]  # velocity
+            self.env.physics.data.ctrl[:] = state[2]  # and  control.
 
-        def get_state(self) -> tuple:
-            state = (np.array(self.env.physics.data.qpos),
-                     np.array(self.env.physics.data.qvel),
-                     np.array(self.env.physics.data.ctrl))
-            return state
+    def get_state(self) -> tuple:
+        state = (
+            np.array(self.env.physics.data.qpos),
+            np.array(self.env.physics.data.qvel),
+            np.array(self.env.physics.data.ctrl),
+        )
+        return state
 
-        def step(self, action: np.ndarray, state: np.ndarray = None,
-                 n_repeat_action: int = None) -> tuple:
-            n_repeat_action = n_repeat_action if n_repeat_action is not None\
-                else self.n_repeat_action
+    def step(
+        self, action: np.ndarray, state: np.ndarray = None, n_repeat_action: int = None
+    ) -> tuple:
+        n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
 
-            custom_death = False
-            end = False
-            cum_reward = 0
-            if state is not None:
-                self.set_state(state)
-            for i in range(n_repeat_action):
-                time_step = self.env.step(action)
-                end = end or time_step.last()
-                cum_reward += time_step.reward
-                # The death condition is a super efficient way to discard huge chunks of the
-                # state space at discretion of the programmer.
-                if self._custom_death is not None:
-                    custom_death = custom_death or \
-                                   self._custom_death.calculate(self,
-                                                                time_step,
-                                                                self._last_time_step)
-                self._last_time_step = time_step
-                if end:
-                    break
-            observed = self._time_step_to_obs(time_step)
-            # This is written as a hack because using custom deaths should be a hack.
+        custom_death = False
+        end = False
+        cum_reward = 0
+        if state is not None:
+            self.set_state(state)
+        for i in range(n_repeat_action):
+            time_step = self.env.step(action)
+            end = end or time_step.last()
+            cum_reward += time_step.reward
+            # The death condition is a super efficient way to discard huge chunks of the
+            # state space at discretion of the programmer.
             if self._custom_death is not None:
-                end = end or custom_death
+                custom_death = custom_death or self._custom_death.calculate(
+                    self, time_step, self._last_time_step
+                )
+            self._last_time_step = time_step
+            if end:
+                break
+        observed = self._time_step_to_obs(time_step)
+        # This is written as a hack because using custom deaths should be a hack.
+        if self._custom_death is not None:
+            end = end or custom_death
 
-            if state is not None:
-                new_state = self.get_state()
-                return new_state, observed, cum_reward, end, {"lives": 0, "dt": n_repeat_action}
-            return observed, cum_reward, end, {"lives": 0, "dt": n_repeat_action}
+        if state is not None:
+            new_state = self.get_state()
+            return new_state, observed, cum_reward, end, {"lives": 0, "dt": n_repeat_action}
+        return observed, cum_reward, end, {"lives": 0, "dt": n_repeat_action}
 
-        def step_batch(self, actions, states=None,
-                       n_repeat_action: [int, np.ndarray] = None) -> tuple:
-            """
+    def step_batch(self, actions, states=None, n_repeat_action: [int, np.ndarray] = None) -> tuple:
+        """
 
             :param actions:
             :param states:
             :param n_repeat_action:
             :return:
             """
-            n_repeat_action = n_repeat_action if n_repeat_action is not None \
-                else self.n_repeat_action
-            n_repeat_action = n_repeat_action if isinstance(n_repeat_action, np.ndarray) \
-                else np.ones(len(states)) * n_repeat_action
-            data = [self.step(action, state, n_repeat_action=dt)
-                    for action, state, dt in zip(actions, states, n_repeat_action)]
-            new_states, observs, rewards, terminals, lives = [], [], [], [], []
-            for d in data:
-                if states is None:
-                    obs, _reward, end, info = d
-                else:
-                    new_state, obs, _reward, end, info = d
-                    new_states.append(new_state)
-                observs.append(obs)
-                rewards.append(_reward)
-                terminals.append(end)
-                lives.append(info)
+        n_repeat_action = n_repeat_action if n_repeat_action is not None else self.n_repeat_action
+        n_repeat_action = (
+            n_repeat_action
+            if isinstance(n_repeat_action, np.ndarray)
+            else np.ones(len(states)) * n_repeat_action
+        )
+        data = [
+            self.step(action, state, n_repeat_action=dt)
+            for action, state, dt in zip(actions, states, n_repeat_action)
+        ]
+        new_states, observs, rewards, terminals, lives = [], [], [], [], []
+        for d in data:
             if states is None:
-                return observs, rewards, terminals, lives
+                obs, _reward, end, info = d
             else:
-                return new_states, observs, rewards, terminals, lives
+                new_state, obs, _reward, end, info = d
+                new_states.append(new_state)
+            observs.append(obs)
+            rewards.append(_reward)
+            terminals.append(end)
+            lives.append(info)
+        if states is None:
+            return observs, rewards, terminals, lives
+        else:
+            return new_states, observs, rewards, terminals, lives
 
-        @staticmethod
-        def _time_step_to_obs(time_step) -> np.ndarray:
-            # Concat observations in a single array, so it is easier to calculate distances
-            obs_array = np.hstack([np.array([time_step.observation[x]]).flatten()
-                                   for x in time_step.observation])
-            return obs_array
+    @staticmethod
+    def _time_step_to_obs(time_step) -> np.ndarray:
+        # Concat observations in a single array, so it is easier to calculate distances
+        obs_array = np.hstack(
+            [np.array([time_step.observation[x]]).flatten() for x in time_step.observation]
+        )
+        return obs_array
 
 
 class ExternalDMControl(ExternalProcess):
     """I cannot find a way to pass a function that creates a DMControl env, so I have to create
      it manually inside the thread."""
 
-    def __init__(self, name, wrappers=None, n_repeat_action: int=1, **kwargs):
+    def __init__(self, name, wrappers=None, n_repeat_action: int = 1, **kwargs):
         """Step environment in a separate process for lock free paralellism.
         The environment will be created in the external process by calling the
         specified callable. This can be an environment class, or a function
@@ -195,8 +207,9 @@ class ExternalDMControl(ExternalProcess):
           action_space: The cached action space of the environment.
         """
         self.name = name
-        super(ExternalDMControl, self).__init__(constructor=(name, wrappers,
-                                                             n_repeat_action, kwargs))
+        super(ExternalDMControl, self).__init__(
+            constructor=(name, wrappers, n_repeat_action, kwargs)
+        )
 
     def _worker(self, data, conn):
         """The process waits for actions and sends back environment results.
@@ -209,8 +222,7 @@ class ExternalDMControl(ExternalProcess):
         try:
             name, wrappers, n_repeat_action, kwargs = data
 
-            env = DMControlEnv(name, n_repeat_action=n_repeat_action,
-                               **kwargs)
+            env = DMControlEnv(name, n_repeat_action=n_repeat_action, **kwargs)
             # dom_name, task_name = name.split("-")
             # custom_death = CustomDeath(domain_name=dom_name,
             #                             task_name=task_name)
@@ -236,11 +248,12 @@ class ExternalDMControl(ExternalProcess):
                 if message == self._CLOSE:
                     assert payload is None
                     break
-                raise KeyError('Received message of unknown type {}'.format(message))
+                raise KeyError("Received message of unknown type {}".format(message))
         except Exception:  # pylint: disable=broad-except
             import tensorflow as tf
-            stacktrace = ''.join(traceback.format_exception(*sys.exc_info()))
-            tf.logging.error('Error in environment process: {}'.format(stacktrace))
+
+            stacktrace = "".join(traceback.format_exception(*sys.exc_info()))
+            tf.logging.error("Error in environment process: {}".format(stacktrace))
             conn.send((self._EXCEPTION, stacktrace))
             conn.close()
 
@@ -248,8 +261,14 @@ class ExternalDMControl(ExternalProcess):
 class ParallelDMControl(Environment):
     """Wrap a dm_control environment to be stepped in parallel."""
 
-    def __init__(self, name: str, n_repeat_action: int=1, n_workers: int=8,
-                 blocking: bool=True, **kwargs):
+    def __init__(
+        self,
+        name: str,
+        n_repeat_action: int = 1,
+        n_workers: int = 8,
+        blocking: bool = True,
+        **kwargs
+    ):
         """
 
         :param name: Name of the Environment
@@ -262,8 +281,10 @@ class ParallelDMControl(Environment):
 
         super(ParallelDMControl, self).__init__(name=name)
 
-        envs = [ExternalDMControl(name=name, n_repeat_action=n_repeat_action, **kwargs)
-                for _ in range(n_workers)]
+        envs = [
+            ExternalDMControl(name=name, n_repeat_action=n_repeat_action, **kwargs)
+            for _ in range(n_workers)
+        ]
         self._batch_env = BatchEnv(envs, blocking)
         self._env = DMControlEnv(name, n_repeat_action=n_repeat_action, **kwargs)
 
@@ -273,15 +294,20 @@ class ParallelDMControl(Environment):
     def __getattr__(self, item):
         return getattr(self._env, item)
 
-    def step_batch(self, actions: np.ndarray, states: np.ndarray=None,
-                   n_repeat_action: [np.ndarray, int]=None):
-        return self._batch_env.step_batch(actions=actions, states=states,
-                                          n_repeat_action=n_repeat_action)
+    def step_batch(
+        self,
+        actions: np.ndarray,
+        states: np.ndarray = None,
+        n_repeat_action: [np.ndarray, int] = None,
+    ):
+        return self._batch_env.step_batch(
+            actions=actions, states=states, n_repeat_action=n_repeat_action
+        )
 
-    def step(self, action: np.ndarray, state: np.ndarray=None, n_repeat_action: int=None):
+    def step(self, action: np.ndarray, state: np.ndarray = None, n_repeat_action: int = None):
         return self._env.step(action=action, state=state, n_repeat_action=n_repeat_action)
 
-    def reset(self, return_state: bool = True, blocking: bool=True):
+    def reset(self, return_state: bool = True, blocking: bool = True):
         state, obs = self._env.reset(return_state=True)
         self.sync_states()
         return state, obs if return_state else obs
@@ -332,7 +358,7 @@ class CustomDeath:
         return time_step.reward <= 0 and last_rew > 0
 
     @staticmethod
-    def _cartpole_balance_death(env, time_step, ) -> bool:
+    def _cartpole_balance_death(env, time_step) -> bool:
         """If the reward is less than 0.7 consider a state dead. This threshold is because rewards
         lesser than 0.7 involve positions where the cartpole is not balanced.
         """
@@ -358,7 +384,7 @@ class CustomDeath:
 
         torso_touches_ground = env.physics.torso_height() < min_torso_height
         last_reward = last_time_step.reward if last_time_step is not None else 0.00001
-        reward_change = (time_step.reward / last_reward)
+        reward_change = time_step.reward / last_reward
         reward_drops = reward_change < max_reward_drop_pct
         torso_very_tilted = False  # abs(env.physics.torso_upright())
         # < max_tilt and reward_change < 0

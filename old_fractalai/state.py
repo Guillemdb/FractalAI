@@ -53,11 +53,13 @@ class AbstractState:
         """Probability distribution of choosing a given action output by the policy."""
         raise NotImplementedError
 
-    def update_state(self,
-                     observed: np.ndarray=None,
-                     microstate: [int, float, np.ndarray, "Microstate"]=None,
-                     reward: [int, float]=None,
-                     end: bool=None):
+    def update_state(
+        self,
+        observed: np.ndarray = None,
+        microstate: [int, float, np.ndarray, "Microstate"] = None,
+        reward: [int, float] = None,
+        end: bool = None,
+    ):
         """
         Update the information of the state with the raw information that is output by the model.
         :param observed: np.ndarray; Observation of the environment.
@@ -105,15 +107,17 @@ class State(AbstractState):
          Indicates if the current state meets the dead condition.
     """
 
-    def __init__(self,
-                 observed: np.ndarray=None,
-                 microstate: [int, float, np.ndarray, "Microstate"]=None,
-                 reward: float=0.,
-                 end: bool=False,
-                 model_data: Iterable=None,
-                 model_action: np.ndarray=None,
-                 policy_action: np.ndarray=None,
-                 policy_data: Iterable=None):
+    def __init__(
+        self,
+        observed: np.ndarray = None,
+        microstate: [int, float, np.ndarray, "Microstate"] = None,
+        reward: float = 0.0,
+        end: bool = False,
+        model_data: Iterable = None,
+        model_action: np.ndarray = None,
+        policy_action: np.ndarray = None,
+        policy_data: Iterable = None,
+    ):
         """
         Initializes an State class meant to define the state of an Environment.
         :param observed: np.ndarray.
@@ -204,7 +208,7 @@ class State(AbstractState):
         self._reward = val
 
     def reset_state(self):
-        self._reward = 0.
+        self._reward = 0.0
         self._dead = False
         self._terminal = False
 
@@ -214,15 +218,17 @@ class State(AbstractState):
     def update_model_action(self, val: Iterable):
         self._model_action = val
 
-    def update_state(self,
-                     observed: np.ndarray=None,
-                     microstate: [int, float, np.ndarray, "Microstate"]=None,
-                     reward: [int, float]=None,
-                     end: bool=None,
-                     policy_action: np.ndarray=None,
-                     model_action: np.ndarray = None,
-                     policy_data: Iterable=None,
-                     model_data: Iterable=None):
+    def update_state(
+        self,
+        observed: np.ndarray = None,
+        microstate: [int, float, np.ndarray, "Microstate"] = None,
+        reward: [int, float] = None,
+        end: bool = None,
+        policy_action: np.ndarray = None,
+        model_action: np.ndarray = None,
+        policy_data: Iterable = None,
+        model_data: Iterable = None,
+    ):
         """
         Update the information of the state with the raw information that is output by the model.
         :param observed: np.ndarray; Observation of the environment.
@@ -261,6 +267,7 @@ class State(AbstractState):
 
 class MicrostateCore:
     """This is for avoiding memory leaks when cloning Atari ale environments."""
+
     def __init__(self, env, ptr):
         self._env = env
         self._value = ptr
@@ -276,6 +283,7 @@ class MicrostateCore:
 
 class Microstate:
     """This is for avoiding memory leaks when cloning  Atari ale environments."""
+
     def __init__(self, env, ptr):
         self._core = MicrostateCore(env, ptr)
 
@@ -324,10 +332,18 @@ class AtariState(State):
          Indicates if the current state meets the dead condition.
     """
 
-    def __init__(self, observed: np.ndarray=None,
-                 microstate: "Microstate"=None,
-                 reward: float = 0, end: bool = False, lives: int = -1000, model_data=None,
-                 model_action=None, policy_data=None, policy_action=None):
+    def __init__(
+        self,
+        observed: np.ndarray = None,
+        microstate: "Microstate" = None,
+        reward: float = 0,
+        end: bool = False,
+        lives: int = -1000,
+        model_data=None,
+        model_action=None,
+        policy_data=None,
+        policy_action=None,
+    ):
         """
         Initializes an State class meant to define the state of an Atari game.
         :param observed: np.ndarray.
@@ -344,10 +360,16 @@ class AtariState(State):
         :param lives: Number of lives the agent has in the current environment.
 
         """
-        super(AtariState, self).__init__(observed=observed, microstate=microstate,
-                                         reward=reward, end=end, model_data=model_data,
-                                         policy_data=policy_data, model_action=model_action,
-                                         policy_action=policy_action)
+        super(AtariState, self).__init__(
+            observed=observed,
+            microstate=microstate,
+            reward=reward,
+            end=end,
+            model_data=model_data,
+            policy_data=policy_data,
+            model_action=model_action,
+            policy_action=policy_action,
+        )
         self._old_lives = lives
         self._lives = lives
 
@@ -369,25 +391,26 @@ class AtariState(State):
         self._old_lives = int(self._lives)
 
         if isinstance(val, dict):
-            self._lives = int(val['ale.lives'])
+            self._lives = int(val["ale.lives"])
         elif isinstance(val, (int, float)):
             self._lives = int(val)
         else:
-            raise ValueError(
-                "Lives is not a number nor a dict: found type {}".format(type(val)))
+            raise ValueError("Lives is not a number nor a dict: found type {}".format(type(val)))
         if self.lives < self._old_lives:
             self._dead = True
 
-    def update_state(self,
-                     observed: np.ndarray=None,
-                     microstate: [int, float, np.ndarray, "Microstate"]=None,
-                     reward: [int, float]=None,
-                     end: bool=None,
-                     lives: int=None,
-                     policy_action: np.ndarray=None,
-                     model_action: np.ndarray = None,
-                     policy_data: Iterable=None,
-                     model_data: Iterable=None):
+    def update_state(
+        self,
+        observed: np.ndarray = None,
+        microstate: [int, float, np.ndarray, "Microstate"] = None,
+        reward: [int, float] = None,
+        end: bool = None,
+        lives: int = None,
+        policy_action: np.ndarray = None,
+        model_action: np.ndarray = None,
+        policy_data: Iterable = None,
+        model_data: Iterable = None,
+    ):
         """
         Update the information of the state with the raw information that is output by the model.
         :param observed: np.ndarray; Observation of the environment.
@@ -402,8 +425,15 @@ class AtariState(State):
         :param policy_data: Additional data output by the policy of the environment.
         :return: None.
         """
-        super().update_state(observed=observed, microstate=microstate, reward=reward, end=end,
-                             policy_action=policy_action, model_action=model_action,
-                             policy_data=policy_data, model_data=model_data)
+        super().update_state(
+            observed=observed,
+            microstate=microstate,
+            reward=reward,
+            end=end,
+            policy_action=policy_action,
+            model_action=model_action,
+            policy_data=policy_data,
+            model_data=model_data,
+        )
         if lives is not None:
             self.update_lives(lives)

@@ -15,21 +15,33 @@ from baselines import logger
 from baselines.bench import Monitor
 from baselines.common import set_global_seeds
 from baselines.common.vec_env.vec_frame_stack import VecFrameStack
-from baselines.common.atari_wrappers import NoopResetEnv, MaxAndSkipEnv, EpisodicLifeEnv,\
-    FireResetEnv, ClipRewardEnv, ScaledFloatFrame, FrameStack, WarpFrame,\
-    EpisodicFrameEnv, NormRewardEnv, EpisodicRewardEnv
+from baselines.common.atari_wrappers import (
+    NoopResetEnv,
+    MaxAndSkipEnv,
+    EpisodicLifeEnv,
+    FireResetEnv,
+    ClipRewardEnv,
+    ScaledFloatFrame,
+    FrameStack,
+    WarpFrame,
+    EpisodicFrameEnv,
+    NormRewardEnv,
+    EpisodicRewardEnv,
+)
 
-swarm_kwargs = dict(dt_mean=10,  # Apply the same action n times in average
-                    dt_std=5,  # Repeat same action a variable number of times
-                    min_dt=5,  # Minimum number of consecutive steps to be taken
-                    samples_limit=300000,  # 200000  # Maximum number of samples allowed
-                    reward_limit=5000,  # Stop the sampling when this score is reached
-                    n_walkers=50,  # Maximum width of the tree containing al the trajectories
-                    render_every=100,  # print statistics every n iterations.
-                    balance=2,  # Balance exploration vs exploitation
-                    save_data=True,  # Save the data generated
-                    accumulate_rewards=True,
-                    prune_tree=True)
+swarm_kwargs = dict(
+    dt_mean=10,  # Apply the same action n times in average
+    dt_std=5,  # Repeat same action a variable number of times
+    min_dt=5,  # Minimum number of consecutive steps to be taken
+    samples_limit=300000,  # 200000  # Maximum number of samples allowed
+    reward_limit=5000,  # Stop the sampling when this score is reached
+    n_walkers=50,  # Maximum width of the tree containing al the trajectories
+    render_every=100,  # print statistics every n iterations.
+    balance=2,  # Balance exploration vs exploitation
+    save_data=True,  # Save the data generated
+    accumulate_rewards=True,
+    prune_tree=True,
+)
 
 generator_kwargs = {}
 
@@ -42,7 +54,7 @@ def make_atari(env_id):
     spec.max_episode_steps = None
     spec.max_episode_time = None
     env = spec.make()
-    assert 'NoFrameskip' in env.spec.id
+    assert "NoFrameskip" in env.spec.id
     env = NoopResetEnv(env, noop_max=30)
     env = MaxAndSkipEnv(env, skip=frame_skip)
     return env
@@ -53,7 +65,7 @@ def wrap_deepmind(env, episode_life=True, clip_rewards=True, frame_stack=False, 
     """
     if episode_life:
         env = EpisodicLifeEnv(env)
-    if 'FIRE' in env.unwrapped.get_action_meanings():
+    if "FIRE" in env.unwrapped.get_action_meanings():
         env = FireResetEnv(env)
     env = WarpFrame(env)
     if scale:
@@ -70,9 +82,18 @@ def make_env(env_id, wrapper_kwargs):
     return wrap_deepmind(env, **wrapper_kwargs)
 
 
-def make_atari_env(env_id, num_env, seed, wrapper_kwargs=None, start_index=0, n_actors: int=8,
-                   folder=None, mode="online", swarm_kwargs=swarm_kwargs,
-                   generator_kwargs=generator_kwargs):
+def make_atari_env(
+    env_id,
+    num_env,
+    seed,
+    wrapper_kwargs=None,
+    start_index=0,
+    n_actors: int = 8,
+    folder=None,
+    mode="online",
+    swarm_kwargs=swarm_kwargs,
+    generator_kwargs=generator_kwargs,
+):
     wrapper_kwargs = wrapper_kwargs if wrapper_kwargs is not None else {}
 
     def env_callable():
@@ -86,17 +107,31 @@ def make_atari_env(env_id, num_env, seed, wrapper_kwargs=None, start_index=0, n_
     def model_callable():
         return RandomDiscreteModel(n_actions=int(make_env(env_id, wrapper_kwargs).action_space.n))
 
-    denv = DataVecEnv(num_envs=num_env, n_actors=n_actors,
-                      swarm_class=MLWave, env_callable=env_callable,
-                      model_callable=model_callable,
-                      swarm_kwargs=swarm_kwargs, generator_kwargs=generator_kwargs,
-                      data_env_callable=data_env_callable, seed=seed, folder=folder, mode=mode)
+    denv = DataVecEnv(
+        num_envs=num_env,
+        n_actors=n_actors,
+        swarm_class=MLWave,
+        env_callable=env_callable,
+        model_callable=model_callable,
+        swarm_kwargs=swarm_kwargs,
+        generator_kwargs=generator_kwargs,
+        data_env_callable=data_env_callable,
+        seed=seed,
+        folder=folder,
+        mode=mode,
+    )
     return denv
 
 
-def wrap_modified_rr(env, episode_life=True, episode_reward=False, episode_frame=False,
-                     norm_rewards=True,
-                     frame_stack=False, scale=False):
+def wrap_modified_rr(
+    env,
+    episode_life=True,
+    episode_reward=False,
+    episode_frame=False,
+    norm_rewards=True,
+    frame_stack=False,
+    scale=False,
+):
     """Configure environment for DeepMind-style Atari modified as described in RUDDER paper;
     """
     if episode_life:
@@ -108,18 +143,26 @@ def wrap_modified_rr(env, episode_life=True, episode_reward=False, episode_frame
     if episode_frame:
         print("Episode Frame")
         env = EpisodicFrameEnv(env)
-    _ori_r_games = ['DoubleDunk', 'Boxing', 'Freeway', 'Pong',
-                    'Bowling', 'Skiing', 'IceHockey', 'Enduro']
+    _ori_r_games = [
+        "DoubleDunk",
+        "Boxing",
+        "Freeway",
+        "Pong",
+        "Bowling",
+        "Skiing",
+        "IceHockey",
+        "Enduro",
+    ]
     original_reward = any([game in env.spec.id for game in _ori_r_games])
 
-    if 'FIRE' in env.unwrapped.get_action_meanings():
+    if "FIRE" in env.unwrapped.get_action_meanings():
         env = FireResetEnv(env)
     env = WarpFrame(env)
     if scale:
         env = ScaledFloatFrame(env)
     if norm_rewards and not original_reward:
         print("Normalizing reward....")
-        env = NormRewardEnv(env, 100.)
+        env = NormRewardEnv(env, 100.0)
     else:
         print("Normal reward")
     if frame_stack:
@@ -132,8 +175,9 @@ def make_rude(env_id, wrapper_kwargs):
     return wrap_modified_rr(env, **wrapper_kwargs)
 
 
-def make_rude_env(env_id, num_env, seed: int=1, wrapper_kwargs=None, start_index=0,
-                  n_actors: int=8):
+def make_rude_env(
+    env_id, num_env, seed: int = 1, wrapper_kwargs=None, start_index=0, n_actors: int = 8
+):
     wrapper_kwargs = wrapper_kwargs if wrapper_kwargs is not None else {}
 
     def env_callable():
@@ -147,11 +191,17 @@ def make_rude_env(env_id, num_env, seed: int=1, wrapper_kwargs=None, start_index
     def model_callable():
         return RandomDiscreteModel(n_actions=int(make_rude(env_id, wrapper_kwargs).action_space.n))
 
-    denv = DataVecEnv(num_envs=num_env, n_actors=n_actors,
-                      swarm_class=MLWave, env_callable=env_callable,
-                      model_callable=model_callable,
-                      swarm_kwargs=swarm_kwargs, generator_kwargs=generator_kwargs,
-                      data_env_callable=data_env_callable, seed=seed)
+    denv = DataVecEnv(
+        num_envs=num_env,
+        n_actors=n_actors,
+        swarm_class=MLWave,
+        env_callable=env_callable,
+        model_callable=model_callable,
+        swarm_kwargs=swarm_kwargs,
+        generator_kwargs=generator_kwargs,
+        data_env_callable=data_env_callable,
+        seed=seed,
+    )
     return denv
 
 
@@ -161,16 +211,22 @@ def _make_atari_env(env_id, num_env, seed, wrapper_kwargs=None, start_index=0):
      in OpenAI Baselines.
     """
     from baselines.common.vec_env.subproc_vec_env import SubprocVecEnv
+
     wrapper_kwargs = {} if wrapper_kwargs is None else wrapper_kwargs
-    
+
     def make_env(rank):  # pylint: disable=C0111
         def _thunk():
             env = make_atari(env_id)
             env.seed(seed + rank)
-            env = Monitor(env, logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
-                          allow_early_resets=True)
+            env = Monitor(
+                env,
+                logger.get_dir() and os.path.join(logger.get_dir(), str(rank)),
+                allow_early_resets=True,
+            )
             return wrap_deepmind(env, **wrapper_kwargs)
+
         return _thunk
+
     set_global_seeds(seed)
     return SubprocVecEnv([make_env(i + start_index) for i in range(num_env)])
 
@@ -179,13 +235,22 @@ class A2CTester:
     """This class tests the network used in an A2C agent to see how it performs in the environment.
     """
 
-    def __init__(self, model, env_id, num_env: int=4, seed: int=1,
-                 wrapper_kwargs=None, start_index=0, stack_frames: int=4):
+    def __init__(
+        self,
+        model,
+        env_id,
+        num_env: int = 4,
+        seed: int = 1,
+        wrapper_kwargs=None,
+        start_index=0,
+        stack_frames: int = 4,
+    ):
         if wrapper_kwargs is None:
             wrapper_kwargs = {}
         wrapper_kwargs["episode_life"] = False
-        self.env = VecFrameStack(_make_atari_env(env_id, num_env, seed,
-                                                 wrapper_kwargs, start_index), stack_frames)
+        self.env = VecFrameStack(
+            _make_atari_env(env_id, num_env, seed, wrapper_kwargs, start_index), stack_frames
+        )
         self.model = model
         self.end_ix = np.zeros(num_env, dtype=bool)
         self.states = model.initial_state
@@ -224,4 +289,3 @@ class A2CTester:
             except RuntimeError:
                 break
         return total_rewards, total_len
-
