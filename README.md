@@ -1,7 +1,9 @@
 # Fractal AI: A Fragile Theory of Intelligence
+[![deprecated](http://badges.github.io/stability-badges/dist/deprecated.svg)](http://github.com/badges/stability-badges)
 
-**Please note this project is under active development and may change over time.
-Consider it as an open beta.**
+**This repository is deprecated. If you would like to use any of the algorithms for your own research please refer to the [fragile framework](https://github.com/guillemdb/fragile).**
+
+**It is only for educational purposes, and for providing code to the [Fractal AI](https://arxiv.org/abs/1803.05049) paper.** 
 
 ![Boxing-v0](assets/boxing.gif "Boxing-v0 76 samples per action")
 ![MsPacman-v0](assets/mspacman.gif "MsPacman-v0 154 samples per action")
@@ -121,7 +123,6 @@ found in the literature, to compare our implementation of the FMC algorithm agai
 - **Standard Human**: a professional game tester after 2 hours of trainnig, as reported in **[[5](#bibliography)]**.
 - **World Human Record**: the maximum score achieved by a human player, as reported in **[[8](#bibliography)]**.
 - **Planning SOtA**: the best score achieved by any "State of the Art" planning algorithms (Full Tree, MCTS UCT, IW(1), p-IW(1), R.p-IW(1), 2BSF, BrFS), as reported in **[[12](#bibliography)]** **[[13](#bibliography)]** **[[14](#bibliography)]** **[[15](#bibliography)]** **[[16](#bibliography)]** **[[17](#bibliography)]**.
-- **Learning SOtA**: the best score achieved by any "State of the Art" learning algorithms (Random, DQN, C51 DQN, NoisyNet-DQN, Dueling, NoisyNet-Dueling, A3C, NoisyNet-A3C, A2C, HyperNEAT, ES FF), as reported in **[[1](#bibliography)]**, **[[3](#bibliography)]**, **[[4](#bibliography)]**, **[[5](#bibliography)]**, **[[6](#bibliography)]**, **[[7](#bibliography)]**.
 - **Hidden score limit**: many games do not support scoring above 1M and reset score down to zero after 999,999 is reached. In most cases the limit was totally unknow as no one -human or algorithm- had ever been able to reach this limit before. 
 
 |                              | FMC Wins |   %  |
@@ -129,7 +130,6 @@ found in the literature, to compare our implementation of the FMC algorithm agai
 | FMC vs Standard Human        |  49 / 50 |  98% |
 | FMC vs World Human Record    |  32 / 50 |  64% |
 | FMC vs Planning SOtA (1)     |  50 / 50 | 100% |
-| FMC vs Learning SOtA         |  45 / 50 |  90% |
 | FMC vs Hidden score limit    |  16 / 50 |  32% |
 
 (1) On average, the Swarm Wave version of FMC used 360 times fewer samples per action than the rest of planning algorithm, 
@@ -139,58 +139,58 @@ typically using 150k samples per action.
 
 The following table depicts the Fractal Monte Carlo Agent performance on each tested game.
 
-| Game | Human Record | Planning SOtA | Learning SOtA | FMC |
-|:--- | :---: | :---: | :---: | :---:|
-| Alien | 251916 | 38951 | 7967 | ***479940*** |
-| Amidar | ***155339*** | 3122 | 4058 | 5779 |
-| Assault | 8647 | 1970 | 11734 | ***14472*** |
-| Asterix (*) | 335500 | 319667 | 406211 | ***999500*** |
-| Asteroids | 10004100 | 68345 | 167159 | ***12575000*** |
-| Atlantis | 7352737 | 198510 | 2872644.8 | ***10000100*** |
-| Bank Heist | ***199978*** | 1171 | 1496 | 3139 |
-| Battle Zone (*) | 863000 | 330880 | 53742 | ***999000*** |
-| Bean Rider (*) | ***999999*** | 12243 | 21077 | ***999999*** |
-| Berzerk | ***1057940*** | 2096 | 2500 | 17610 |
-| Bowling | ***300*** | 69 | 135.8 | 180 |
-| Boxing | ***100*** | ***100*** | ***100*** | ***100*** |
-| Breakout | 752 | 772 | 748 | ***864*** |
-| Centipede | 1301709 | 193799 | 25275.2 | ***1351000*** |
-| Chopper Command (*) | ***999900*** | 34097 | 15600 | ***999900*** |
-| Crazy Climber | 447000 | 141840 | 179877 | ***2254100*** |
-| Demon Attack (*) | ***999970*** | 34405 | 130955 | ***999970*** |
-| Double Dunk | ***24*** | ***24*** | ***24*** | ***24*** |
-| Enduro | 3617.9 | 788 | 3454 | ***5279*** |
-| Fishing Derby | ***71*** | 42 | 59 | 63 |
-| Freeway | ***34*** | 32 | ***34*** | 33 |
-| Frostbyte (*) | 552590 | 6427 | 4442 | ***999960*** |
-| Gopher (*) | 120000 | 26297 | 41138 | ***999980*** |
-| Gravitar | ***1673950*** | 6520 | 2308 | 14050 |
-| Hero | ***1000000*** | 15280 | 105929.4 | 43255 |
-| Ice Hockey | 36 | 62 | 10.6 | ***64*** |
-| Jamesbond | 45550 | 23070 | 6963 | ***152950*** |
-| Kangaroo | ***1436500*** | 8760 | 15470 | 10800 |
-| Krull | ***1006680*** | 15788 | 35024 | 426534 |
-| Kung fu master | ***1000000*** | 86290 | 79676 | 172600 |
-| Montezuma's Revenge | ***1219200*** | 500 | 4739.6 | 5600 |
-| Ms. Pacman (*) | 290090 | 30785 | 5913 | ***999990*** |
-| Name this Game | 25220 | 15410 | 12542 | ***53010*** |
-| Pong | ***21*** | ***21*** | ***21*** | ***21*** |
-| Private Eye | ***103100*** | 2544 | 40908.2 | 41760 |
-| Q*Bert (*) | ***999975*** | 44876 | 27543 | ***999975*** |
-| River Raid | ***194940*** | 15410 | 24568 | 18510 |
-| Road Runner (*) | ***999900*** | 120923 | 367023 | ***999900*** |
-| Robotank | 74 | 75 | 65 | ***94*** |
-| Seaquest (*) | 527160 | 35009 | 266434 | ***999999*** |
-| Space Invaders | ***621535*** | 3974 | 7227 | 17970 |
-| Star Gunner (*) | 77400 | 14193 | 84490 | ***999800*** |
-| Tennis | ***24*** | ***24*** | 23.1 | ***24*** |
-| Time Pilot | 66500 | 65213 | 18501 | ***90000*** |
-| Tutankham | ***3493*** | 226 | 288 | 342 |
-| Up and Down (*) | 168830 | 120200 | 155049 | ***999999*** |
-| Venture | ***31900*** | 1200 | 1520 | 1500 |
-| Video Pinball (*) | ***999999*** | 471859 | ***999999*** | ***999999*** |
-| Wizard of Wor (*) | 99900 | ***161640*** | 16143 | 99900 |
-| Zaxxon | ***100000*** | 39687 | 18057 | 92100 |
+| Game | Human Record | Planning SOtA | FMC |
+|:--- | :---: | :---: | :---:|
+| Alien | 251916 | 38951 | ***479940*** |
+| Amidar | ***155339*** | 3122  | 5779 |
+| Assault | 8647 | 1970  | ***14472*** |
+| Asterix (*) | 335500 | 319667 | ***999500*** |
+| Asteroids | 10004100 | 68345  | ***12575000*** |
+| Atlantis | 7352737 | 198510  | ***10000100*** |
+| Bank Heist | ***199978*** | 1171  | 3139 |
+| Battle Zone (*) | 863000 | 330880  | ***999000*** |
+| Bean Rider (*) | ***999999*** | 12243  | ***999999*** |
+| Berzerk | ***1057940*** | 2096 | 17610 |
+| Bowling | ***300*** | 69  | 180 |
+| Boxing | ***100*** | ***100***  | ***100*** |
+| Breakout | 752 | 772 | ***864*** |
+| Centipede | 1301709 | 193799 | ***1351000*** |
+| Chopper Command (*) | ***999900*** | 34097  | ***999900*** |
+| Crazy Climber | 447000 | 141840  | ***2254100*** |
+| Demon Attack (*) | ***999970*** | 34405  | ***999970*** |
+| Double Dunk | ***24*** | ***24***  | ***24*** |
+| Enduro | 3617.9 | 788  | ***5279*** |
+| Fishing Derby | ***71*** | 42  | 63 |
+| Freeway | ***34*** | 32 | 33 |
+| Frostbyte (*) | 552590 | 6427 | ***999960*** |
+| Gopher (*) | 120000 | 26297  | ***999980*** |
+| Gravitar | ***1673950*** | 6520  | 14050 |
+| Hero | ***1000000*** | 15280  | 43255 |
+| Ice Hockey | 36 | 62  | ***64*** |
+| Jamesbond | 45550 | 23070  | ***152950*** |
+| Kangaroo | ***1436500*** | 8760  | 10800 |
+| Krull | ***1006680*** | 15788  | 426534 |
+| Kung fu master | ***1000000*** | 86290  | 172600 |
+| Montezuma's Revenge | ***1219200*** | 500  | 5600 |
+| Ms. Pacman (*) | 290090 | 30785  | ***999990*** |
+| Name this Game | 25220 | 15410  | ***53010*** |
+| Pong | ***21*** | ***21***  | ***21*** |
+| Private Eye | ***103100*** | 2544  | 41760 |
+| Q*Bert (*) | ***999975*** | 44876  | ***999975*** |
+| River Raid | ***194940*** | 15410  | 18510 |
+| Road Runner (*) | ***999900*** | 120923  | ***999900*** |
+| Robotank | 74 | 75  | ***94*** |
+| Seaquest (*) | 527160 | 35009  | ***999999*** |
+| Space Invaders | ***621535*** | 3974  | 17970 |
+| Star Gunner (*) | 77400 | 14193  | ***999800*** |
+| Tennis | ***24*** | ***24***  | ***24*** |
+| Time Pilot | 66500 | 65213  | ***90000*** |
+| Tutankham | ***3493*** | 226  | 342 |
+| Up and Down (*) | 168830 | 120200  | ***999999*** |
+| Venture | ***31900*** | 1200  | 1500 |
+| Video Pinball (*) | ***999999*** | 471859  | ***999999*** |
+| Wizard of Wor (*) | 99900 | ***161640***  | 99900 |
+| Zaxxon | ***100000*** | 39687  | 92100 |
  
  (*) Games with the "1 Million bug" where max. score is hard-limited.
  
@@ -291,19 +291,6 @@ Their patience, understanding and support made possible for this project to evol
   [José M. Amigó](http://www.umh.es/contenido/pdi/:persona_5536/datos_es.html), [Antoni Elias](https://twitter.com/eliasfuste),
   [Jose Berengueres](https://twitter.com/harriken), [Javier Ozón](https://twitter.com/fjozon),
   [Samuel Graván](https://twitter.com/Samuel__GP), and [Marc Garcia](https://twitter.com/datapythonista).
-
-## TODO
-
-We are actively working in improving this project, and we welcome all contributions.
-Some of the to-dos in our roadmap:
-
-- Build a new benchmarking tool for large scale testing with confidence intervals. 
-- Making the repository more friendly to academia.
-- Improving the Introduction to Fractal AI document.
-- Improving code clarity and docstrings.
-- Providing a command line interface (CLI).
-- Uploading the project to pip and Conda package managers.
-- Creating a Docker container for ease of use.
 
 ## Bibliography
 
